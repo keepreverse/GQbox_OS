@@ -1,0 +1,46 @@
+:root {
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #0f0f16;
+  --color-bg-tertiary: #14141f;
+  --color-bg-elevated: #1a1a26;
+  --color-bg-hover: #202030;
+
+  --color-border-subtle: rgba(160, 140, 255, 0.08);
+  --color-border-default: rgba(160, 140, 255, 0.12);
+  --color-border-strong: rgba(160, 140, 255, 0.18);
+
+  --color-text-primary: #f2f2f9;
+  --color-text-secondary: #b8b8c8;
+  --color-text-tertiary: #7a7a90;
+  --color-text-muted: #5a5a70;
+
+  --color-accent: #a78bfa;
+  --color-accent-hover: #c4b5fd;
+  --color-accent-dim: rgba(167, 139, 250, 0.08);
+  --color-accent-glow: rgba(167, 139, 250, 0.25);
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #818cf8;
+
+  --color-cable: #8b7ab8;
+  --color-szu: #d4a54a;
+  --color-bzu: #34a85a;
+  --color-azu: #c45a5a;
+  --color-headphones: #c46a9a;
+  --color-adapter: #3ab8c8;
+  --color-pin: #7a8bc8;
+  --color-holder: #8bc44a;
+  --color-case: #c47a5a;
+  --color-kit: #9a6ac8;
+  --color-packaging: #6a8ca8;
+  --color-blogo: #3ac4a8;
+
+  --color-wb: #c084fc;
+  --color-wb-bg: rgba(192, 132, 252, 0.12);
+  --color-wb-border: rgba(192, 132, 252, 0.28);
+  --color-ozon: #5ba0f5;
+  --color-ozon-bg: rgba(91, 160, 245, 0.12);
+  --color-ozon-border: rgba(91, 160, 245, 0.28);
+}
