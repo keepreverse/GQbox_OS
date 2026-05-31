@@ -83,11 +83,11 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm t-backdrop${closing ? ' is-closing' : ''}`}
+      className={`fixed inset-0 z-50 flex items-start justify-center pt-[100px] px-4 pb-4 bg-black/70 backdrop-blur-sm t-backdrop${closing ? ' is-closing' : ''}`}
       onClick={handleClose}
     >
       <div
-        className={`t-modal glass-strong rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-border-strong shadow-2xl${!closing ? ' is-open' : ' is-closing'}`}
+        className={`t-modal glass-strong rounded-2xl w-full max-w-5xl max-h-[calc(100vh-120px)] overflow-hidden border border-border-strong shadow-2xl${!closing ? ' is-open' : ' is-closing'}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -133,7 +133,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                 {t('Медиа', 'Media')}
               </h3>
               {primaryMedia ? (
-                <div className="aspect-[16/7] rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden">
+                <div className="aspect-[16/7.5] rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden">
                   {primaryMedia.mediaType === 'image' ? (
                     <ImageIcon className="w-12 h-12 text-text-muted" />
                   ) : (
@@ -141,7 +141,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                   )}
                 </div>
               ) : (
-                <div className="aspect-video rounded-xl bg-bg-tertiary/50 border border-border-subtle border-dashed flex items-center justify-center">
+                <div className="aspect-[16/7.5] rounded-xl bg-bg-tertiary/50 border border-border-subtle border-dashed flex items-center justify-center">
                   <span className="text-xs text-text-tertiary">{t('Нет медиа', 'No media')}</span>
                 </div>
               )}

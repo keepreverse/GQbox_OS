@@ -208,9 +208,9 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
             <h3 className="text-sm font-medium">{t('dash.recent')}</h3>
             <button
               onClick={() => onViewChange && onViewChange('matrix')}
-              className="text-xs text-accent hover:bg-bg-hover hover:text-text-primary flex items-center gap-1 transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer"
             >
-              {t('dash.viewAll')} <ChevronRight className="w-3 h-3" />
+              {t('dash.viewAll')} <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
           <div className="space-y-2">
