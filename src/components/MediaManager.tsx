@@ -114,7 +114,7 @@ export default function MediaManager() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-50 flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
+            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
           >
             <Check className="w-4 h-4 flex-shrink-0" />
             <span>{toastMessage}</span>
@@ -124,8 +124,8 @@ export default function MediaManager() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-semibold text-gradient">{t('media.title')}</h2>
-          <p className="text-sm text-text-secondary mt-1">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('media.title')}</h2>
+          <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
             {mediaList.length} {t('media.subtitle')} · {mediaList.filter(m => m.type === 'image').length} {t('media.images')} · {mediaList.filter(m => m.type === 'video').length} {t('media.videos')}
           </p>
         </div>
@@ -165,13 +165,15 @@ export default function MediaManager() {
           <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-md transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'grid' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              className={`p-2 rounded-md transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'grid' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              aria-label="Grid view"
             >
               <Grid className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-md transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'list' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              className={`p-2 rounded-md transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'list' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              aria-label="List view"
             >
               <List className="w-3.5 h-3.5" />
             </button>
@@ -191,21 +193,21 @@ export default function MediaManager() {
           <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleDownloadSelected}
-              className="p-1.5 rounded hover:bg-accent/10 text-accent transition-colors cursor-pointer"
+              className="p-1.5 rounded hover:bg-accent/10 hover:text-text-primary text-accent transition-colors cursor-pointer"
               title={language === 'ru' ? 'Скачать выбранные' : 'Download selected'}
             >
               <Download className="w-4 h-4" />
             </button>
             <button
               onClick={handleTrashSelected}
-              className="p-1.5 rounded hover:bg-danger/10 text-danger transition-colors cursor-pointer"
+              className="p-1.5 rounded hover:bg-danger/10 hover:text-text-primary text-danger transition-colors cursor-pointer"
               title={language === 'ru' ? 'Удалить выбранные' : 'Delete selected'}
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setSelectedItems([])}
-              className="text-xs text-accent hover:bg-bg-hover hover:text-text-primary px-2 transition-colors cursor-pointer"
+              className="text-xs text-accent hover:bg-bg-hover hover:text-text-primary px-2 py-1.5 rounded transition-colors cursor-pointer"
             >
               {t('media.clear')}
             </button>
@@ -258,17 +260,17 @@ export default function MediaManager() {
       {viewMode === 'list' && (
         <div className="glass rounded-xl overflow-hidden">
           <div className="w-full overflow-x-auto">
-            <div className="min-w-[600px]">
+            <div className="min-w-[500px] sm:min-w-[600px]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-subtle">
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">File</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">Type</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">SKU</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">Size</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">Date</th>
-                    <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase"></th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">File</th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Type</th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">SKU</th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Size</th>
+                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Date</th>
+                    <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -280,31 +282,42 @@ export default function MediaManager() {
                     }`}
                       onClick={() => toggleSelect(item.id)}
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedItems.includes(item.id) ? 'bg-accent border-accent' : 'border-border-default'}`}>
                           {selectedItems.includes(item.id) && <Check className="w-3 h-3 text-white" />}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          {item.type === 'image' ? <FileImage className="w-4 h-4 text-text-muted flex-shrink-0" /> : <FileVideo className="w-4 h-4 text-text-muted flex-shrink-0" />}
-                          <span className="text-xs sm:text-sm truncate max-w-[200px]">{item.name}</span>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          {item.type === 'image' ? <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" /> : <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />}
+                          <span className="text-[11px] sm:text-sm truncate max-w-[120px] sm:max-w-[200px]">{item.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3"><span className="text-[10px] sm:text-xs px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle uppercase">{item.type}</span></td>
-                      <td className="px-4 py-3 text-xs text-accent">{item.productSku}</td>
-                      <td className="px-4 py-3 text-xs text-text-secondary">{item.size}</td>
-                      <td className="px-4 py-3 text-xs text-text-secondary">{item.uploadedAt}</td>
-                      <td className="px-4 py-3 text-right">
-                        <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary">
-                          <MoreVertical className="w-3.5 h-3.5" />
-                        </button>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                        <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
+                          item.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
+                        }`}>
+                          {item.type === 'image' ? 'Image' : 'Video'}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-accent">{item.productSku}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{item.size}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-tertiary">{item.uploadedAt}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(language === 'ru' ? `Скачивание "${item.name}"...` : `Downloading "${item.name}"...`); }}>
+                            <Download className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                          </button>
+                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(language === 'ru' ? `Удаление "${item.name}"...` : `Deleting "${item.name}"...`); }}>
+                            <MoreVertical className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-xs text-text-tertiary">
+                      <td colSpan={7} className="px-3 sm:px-4 py-8 text-center text-xs text-text-tertiary">
                         {language === 'ru' ? 'Файлы не найдены' : 'No media files found'}
                       </td>
                     </tr>
@@ -319,18 +332,18 @@ export default function MediaManager() {
       {/* Upload Modal */}
       {showUpload && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
           onClick={closeUpload}
         >
           <div
-            className={`t-modal glass-strong rounded-xl w-full max-w-md p-6 border border-border-strong shadow-2xl${!uploadClosing ? ' is-open' : ' is-closing'}`}
+            className={`t-modal glass-strong rounded-xl w-full max-w-md p-4 sm:p-6 border border-border-strong shadow-2xl${!uploadClosing ? ' is-open' : ' is-closing'}`}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">
                 {language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
               </h3>
-              <button onClick={closeUpload} className="p-1 rounded hover:bg-bg-hover text-text-tertiary cursor-pointer">
+              <button onClick={closeUpload} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>

@@ -54,20 +54,20 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.color')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.color')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {categories.map(cat => (
                 <tr key={cat.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{cat.code}</td>
-                  <td className="px-4 py-3 text-text-secondary">{displaySource(cat, language)}</td>
-                  <td className="px-4 py-3">{displayName(cat, language)}</td>
-                  <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} /><span className="text-xs text-text-tertiary">{cat.color}</span></div></td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{cat.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(cat, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(cat, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3"><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} /><span className="text-xs text-text-tertiary">{cat.color}</span></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -77,22 +77,22 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.category')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.category')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {models.map(model => {
                 const cat = categories.find(c => c.id === model.categoryId);
                 return (
                   <tr key={model.id} className="border-b border-border-subtle/50 table-row-hover">
-                    <td className="px-4 py-3 text-xs text-accent">{model.code}</td>
-                    <td className="px-4 py-3 text-text-secondary">{displaySource(model, language)}</td>
-                    <td className="px-4 py-3">{displayName(model, language)}</td>
-                    <td className="px-4 py-3"><span className="text-xs" style={{ color: cat?.color }}>{cat ? displaySource(cat, language) : '—'}</span></td>
-                    <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{model.code}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(model, language)}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(model, language)}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3"><span className="text-xs" style={{ color: cat?.color }}>{cat ? displaySource(cat, language) : '—'}</span></td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                   </tr>
                 );
               })}
@@ -103,20 +103,20 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.preview')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.preview')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {colors.map(color => (
                 <tr key={color.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{color.code}</td>
-                  <td className="px-4 py-3 text-text-secondary">{displaySource(color, language)}</td>
-                  <td className="px-4 py-3">{displayName(color, language)}</td>
-                  <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: color.hexValue === 'gradient' ? 'conic-gradient(#ff0000 0deg, #ff7f00 36deg, #ffff00 72deg, #80ff00 108deg, #00ff00 144deg, #00ffff 180deg, #0000ff 216deg, #8000ff 252deg, #ff00ff 288deg, #ff007f 324deg, #ff0000 360deg)' : color.hexValue }} /><span className="text-xs text-text-tertiary">{color.hexValue === 'gradient' ? '—' : color.hexValue}</span></div></td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{color.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(color, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(color, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3"><div className="flex items-center gap-1.5 sm:gap-2"><div className="w-4 sm:w-5 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : color.hexValue }} /><span className="text-xs text-text-tertiary hidden sm:inline">{color.hexValue === 'gradient' ? '—' : color.hexValue}</span></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -126,16 +126,16 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{language === 'ru' ? 'Название' : 'Name'}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{language === 'ru' ? 'Название' : 'Name'}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {suppliers.map(sup => (
                 <tr key={sup.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{sup.code}</td>
-                  <td className="px-4 py-3">{sup.name}</td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{sup.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{sup.name}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -145,18 +145,18 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {connectors.map(conn => (
                 <tr key={conn.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{conn.code}</td>
-                  <td className="px-4 py-3 text-text-secondary">{displaySource(conn, language)}</td>
-                  <td className="px-4 py-3">{displayName(conn, language)}</td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{conn.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(conn, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(conn, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -166,20 +166,20 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.description')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.description')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {chargingProtocols.map(proto => (
                 <tr key={proto.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{proto.code}</td>
-                  <td className="px-4 py-3 text-text-secondary">{displaySource(proto, language)}</td>
-                  <td className="px-4 py-3">{displayName(proto, language)}</td>
-                  <td className="px-4 py-3 text-xs text-text-secondary">{proto.description}</td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{proto.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(proto, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(proto, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-text-secondary">{proto.description}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -189,18 +189,18 @@ export default function DictionaryManager() {
         return (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.source')}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.product')}</th>
+              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
               {materials.map(mat => (
                 <tr key={mat.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-4 py-3 text-xs text-accent">{mat.code}</td>
-                  <td className="px-4 py-3 text-text-secondary">{displaySource(mat, language)}</td>
-                  <td className="px-4 py-3">{displayName(mat, language)}</td>
-                  <td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent">{mat.code}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary">{displaySource(mat, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">{displayName(mat, language)}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -218,7 +218,7 @@ export default function DictionaryManager() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-50 flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
+            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
           >
             <Check className="w-4 h-4 flex-shrink-0" />
             <span>{toastMessage}</span>
@@ -228,12 +228,12 @@ export default function DictionaryManager() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-semibold text-gradient">{t('dict.title')}</h2>
-          <p className="text-sm text-text-secondary mt-1">{t('dict.subtitle')}</p>
+          <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('dict.title')}</h2>
+          <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('dict.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40"
+          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40"
         >
           <Plus className="w-4 h-4" /> {t('dict.add')}
         </button>
@@ -245,7 +245,7 @@ export default function DictionaryManager() {
           <button
             key={dict.id}
             onClick={() => setActiveDict(dict.id)}
-            className={`flex h-9 min-w-[132px] items-center justify-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer ${
+            className={`flex h-10 min-w-[120px] items-center justify-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer ${
               activeDict === dict.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : 'bg-bg-secondary text-text-secondary border border-border-subtle hover:bg-bg-hover hover:text-text-primary'
@@ -333,7 +333,7 @@ export default function DictionaryManager() {
       {/* Data Table */}
       <div className="glass rounded-xl overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <div className="min-w-[600px]">
+          <div className="min-w-[450px] sm:min-w-[600px]">
             {renderTable()}
           </div>
         </div>

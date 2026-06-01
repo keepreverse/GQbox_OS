@@ -137,10 +137,10 @@ This SKU represents a 2-meter black ZS-standard cable.`,
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] flex flex-col">
+    <div className="space-y-4 sm:space-y-6 h-[calc(100dvh-120px)] sm:h-[calc(100dvh-140px)] flex flex-col">
       <div>
-        <h2 className="text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
-        <p className="text-sm text-text-secondary mt-1">{t('ai.subtitle')}</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
+        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('ai.subtitle')}</p>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-0">
@@ -261,7 +261,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40"
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40"
                 >
                   <Send className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 </button>

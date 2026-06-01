@@ -30,17 +30,17 @@ export default function Architecture() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-gradient">{t('arch.title')}</h2>
-        <p className="text-sm text-text-secondary mt-1">{t('arch.subtitle')}</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('arch.title')}</h2>
+        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('arch.subtitle')}</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-bg-secondary border border-border-subtle w-fit">
+      <div className="flex gap-1 p-1 rounded-xl bg-bg-secondary border border-border-subtle overflow-x-auto w-full">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex h-9 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer ${
+            className={`flex h-10 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer flex-shrink-0 ${
               activeTab === tab.id
                 ? 'bg-bg-elevated text-text-primary shadow-sm font-medium'
                 : 'text-text-tertiary hover:bg-bg-hover hover:text-text-secondary'
@@ -55,13 +55,13 @@ export default function Architecture() {
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-accent" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+              <Layers className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.summary.title')}
             </h3>
             <div className="prose prose-invert prose-sm max-w-none">
-              <div className="whitespace-pre-wrap text-text-secondary leading-relaxed text-sm">
+              <div className="whitespace-pre-wrap text-text-secondary leading-relaxed text-xs sm:text-sm">
                 {currentArchitectureNotes}
               </div>
             </div>
@@ -78,15 +78,15 @@ export default function Architecture() {
             ].map((item) => (
               <div
                 key={item.label}
-                className="glass rounded-xl p-4 flex items-center gap-4"
+                className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4"
               >
-                <div className="w-10 h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-5 h-5 text-accent" />
+                <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xl font-bold">{item.value}</p>
-                  <p className="text-xs text-text-tertiary truncate">{item.label}</p>
-                  <p className="text-[10px] text-text-muted truncate">{item.desc}</p>
+                  <p className="text-lg sm:text-xl font-bold">{item.value}</p>
+                  <p className="text-[11px] sm:text-xs text-text-tertiary truncate">{item.label}</p>
+                  <p className="text-[9px] sm:text-[10px] text-text-muted truncate">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -97,12 +97,12 @@ export default function Architecture() {
       {/* SKU Logic Tab */}
       {activeTab === 'sku' && (
         <div className="space-y-6">
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-              <Hash className="w-5 h-5 text-accent" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-2 flex items-center gap-2">
+              <Hash className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.sku.title')}
             </h3>
-            <p className="text-sm text-text-secondary mb-4">{currentSkuLogic.pattern}</p>
+            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">{currentSkuLogic.pattern}</p>
             
             <div className="space-y-3">
               {currentSkuLogic.segments.map((seg) => (
@@ -126,9 +126,9 @@ export default function Architecture() {
             </div>
           </div>
 
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-success" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+              <Shield className="w-4 sm:w-5 h-4 sm:h-5 text-success" />
               {t('arch.sku.rules_title')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -148,12 +148,12 @@ export default function Architecture() {
       {/* Naming Logic Tab */}
       {activeTab === 'naming' && (
         <div className="space-y-6">
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-              <Type className="w-5 h-5 text-accent" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-2 flex items-center gap-2">
+              <Type className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.naming.title')}
             </h3>
-            <p className="text-sm text-text-secondary mb-4">{currentNamingLogic.pattern}</p>
+            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">{currentNamingLogic.pattern}</p>
             
             <div className="space-y-3">
               {currentNamingLogic.segments.map((seg) => (
@@ -177,9 +177,9 @@ export default function Architecture() {
             </div>
           </div>
 
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <FileCode className="w-5 h-5 text-warning" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+              <FileCode className="w-4 sm:w-5 h-4 sm:h-5 text-warning" />
               {t('arch.naming.rules_title')}
             </h3>
             <div className="space-y-2">
@@ -200,9 +200,9 @@ export default function Architecture() {
       {activeTab === 'schema' && (
         <div className="space-y-6">
           {/* ER Diagram Visualization */}
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <GitBranch className="w-5 h-5 text-accent" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+              <GitBranch className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.schema.title')}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -231,7 +231,7 @@ export default function Architecture() {
               <h4 className="text-xs font-medium text-text-secondary mb-3">
                 {t('arch.schema.relationships_title')}
               </h4>
-              <div className="space-y-2 min-w-[600px]">
+              <div className="space-y-2 min-w-[450px] sm:min-w-[600px]">
                 {relationships.map((rel, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
                     <span className="text-accent">{rel.from}</span>
@@ -257,21 +257,21 @@ export default function Architecture() {
             }}
           >
             <div className="overflow-hidden">
-              <div className="glass rounded-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium flex items-center gap-2">
-                    <Database className="w-5 h-5 text-accent" />
+              <div className="glass rounded-xl p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-medium flex items-center gap-2">
+                    <Database className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                     {expandedEntity}
                   </h3>
                   <button
                     onClick={() => setExpandedEntity(null)}
-                    className="text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-primary cursor-pointer"
+                    className="p-1 rounded text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-primary cursor-pointer"
                   >
                     {t('arch.schema.close')}
                   </button>
                 </div>
                 <div className="overflow-x-auto">
-                  <div className="min-w-[500px]">
+                  <div className="min-w-[350px] sm:min-w-[500px]">
                     {currentEntities.find(e => e.name === expandedEntity)?.fields.map((field) => (
                       <div key={field.name} className="flex items-center gap-4 py-2 border-b border-border-subtle last:border-0">
                         <div className="flex items-center gap-2 w-48 flex-shrink-0">
@@ -296,9 +296,9 @@ export default function Architecture() {
       {activeTab === 'system' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="glass rounded-xl p-6">
-              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-accent" />
+            <div className="glass rounded-xl p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+                <Zap className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                 {t('arch.system.frontend_title')}
               </h3>
               <div className="space-y-3 text-sm text-text-secondary">
@@ -321,9 +321,9 @@ export default function Architecture() {
               </div>
             </div>
 
-            <div className="glass rounded-xl p-6">
-              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Server className="w-5 h-5 text-success" />
+            <div className="glass rounded-xl p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+                <Server className="w-4 sm:w-5 h-4 sm:h-5 text-success" />
                 {t('arch.system.backend_title')}
               </h3>
               <div className="space-y-3 text-sm text-text-secondary">
@@ -347,9 +347,9 @@ export default function Architecture() {
             </div>
           </div>
 
-          <div className="glass rounded-xl p-6">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Search className="w-5 h-5 text-warning" />
+          <div className="glass rounded-xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 flex items-center gap-2">
+              <Search className="w-4 sm:w-5 h-4 sm:h-5 text-warning" />
               {t('arch.system.ai_title')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

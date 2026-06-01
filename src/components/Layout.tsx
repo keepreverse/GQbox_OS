@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Cpu, Grid3X3, Wrench, BookOpen, Package, Image,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
+import { LayoutProvider } from '../context/LayoutContext';
 
 const MODAL_CLOSE_MS = 150;
 
@@ -99,9 +100,18 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   ];
 
   const sidebarWidth = isMobile ? 244 : sidebarCollapsed ? 72 : 244;
+  const headerHeight = 72;
+
+  const layoutCtx = useMemo(() => ({
+    sidebarWidth: isMobile ? 0 : sidebarWidth,
+    headerHeight,
+    isMobile,
+    sidebarCollapsed,
+  }), [sidebarWidth, isMobile, sidebarCollapsed]);
 
   return (
-    <div className="flex h-screen bg-bg-primary text-text-primary overflow-hidden noise-overlay">
+    <LayoutProvider value={layoutCtx}>
+    <div className="flex h-[100dvh] overflow-hidden bg-bg-primary text-text-primary noise-overlay">
       <AnimatePresence>
         {isMobile && sidebarOpen && (
           <motion.div
@@ -115,24 +125,26 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       </AnimatePresence>
 
       <aside
-        className={`top-0 bottom-0 left-0 z-50 border-r border-border-subtle bg-bg-secondary flex flex-col overflow-hidden transition-[width,transform] duration-200 ease-out ${
-          isMobile ? 'fixed' : 'relative flex-shrink-0'
+        className={`border-r border-border-subtle bg-bg-secondary flex flex-col overflow-hidden z-50 flex-shrink-0 transition-[width] duration-150 ease-out ${
+          isMobile ? 'fixed top-0 bottom-0 left-0' : ''
         }`}
         style={{
-          width: sidebarWidth,
-          transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+          width: isMobile ? (sidebarOpen ? sidebarWidth : 0) : (sidebarCollapsed ? 72 : 244),
+          transform: isMobile
+            ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)')
+            : 'none',
         }}
       >
         {/* Шапка сайдбара — анимация логотипа и кнопок */}
         <div className="flex-shrink-0 border-b border-border-subtle relative flex flex-col" style={{ height: 72 }}>
           {/* Логотип GQ (статичный по X, смещен левее) */}
           <div className="flex items-center pl-[16px] pt-2">
-            <span className="text-[26px] font-bold text-white leading-none">GQ</span>
+            <span className="text-[26px] font-bold text-text-primary leading-none">GQ</span>
             <motion.span
               initial={false}
               animate={{ maxWidth: sidebarCollapsed ? 0 : 88, opacity: sidebarCollapsed ? 0 : 1, marginLeft: sidebarCollapsed ? 0 : 2 }}
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[28px] font-bold text-white leading-none overflow-hidden whitespace-nowrap inline-block"
+              className="text-[28px] font-bold text-text-primary leading-none overflow-hidden whitespace-nowrap inline-block"
             >
               box
             </motion.span>
@@ -159,20 +171,20 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               if (isMobile) setSidebarOpen(false);
               else setSidebarCollapsed(true);
             }}
-            className="absolute right-0 top-0 h-full w-8 border-l border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
+            className="absolute right-0 top-0 h-full w-10 border-l border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
             style={{ pointerEvents: sidebarCollapsed ? 'none' : 'auto' }}
             title={language === 'ru' ? 'Свернуть меню' : 'Collapse menu'}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </motion.button>
 
-          {/* Кнопка разворачивания (Горизонтальная, снизу) */}
+          {/* Кнопка разворачивания (слева, всегда в видимой области) */}
           <motion.button
             initial={false}
             animate={{ opacity: sidebarCollapsed ? 1 : 0, y: sidebarCollapsed ? 0 : 20 }}
             transition={{ duration: 0.2 }}
             onClick={() => setSidebarCollapsed(false)}
-            className="absolute bottom-0 left-0 w-full h-6 border-t border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
+            className="absolute bottom-0 left-0 w-[72px] h-6 border-t border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
             style={{ pointerEvents: sidebarCollapsed ? 'auto' : 'none' }}
             title={language === 'ru' ? 'Развернуть меню' : 'Expand menu'}
           >
@@ -239,14 +251,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0">
         <header className="border-b border-border-subtle flex items-center justify-between px-4 bg-bg-secondary/50 backdrop-blur-sm z-30" style={{ height: 72 }}>
           <div className="flex items-center gap-3">
             {isMobile && !sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+                className="p-2.5 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
                 title={language === 'ru' ? 'Открыть меню' : 'Open menu'}
+                aria-label={language === 'ru' ? 'Открыть меню' : 'Open menu'}
               >
                 <Menu className="w-4 h-4" />
               </button>
@@ -289,7 +302,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               </button>
 
               <div
-                className={`t-dropdown absolute right-0 mt-2 w-80 glass-strong rounded-xl shadow-xl border border-border-strong overflow-hidden z-50 ${
+                className={`t-dropdown absolute right-0 mt-2 w-80 sm:max-w-[90vw] glass-strong rounded-xl shadow-xl border border-border-strong overflow-hidden z-50 ${
                   notificationsOpen ? 'is-open' : ''
                 }`}
                 data-origin="top-right"
@@ -331,16 +344,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           </div>
         </header>
 
-        <main id="main-content" className="flex-1 overflow-y-auto grid-pattern relative">
-          <AnimatePresence mode="wait">
+        <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden grid-pattern relative">
+          <AnimatePresence mode="popLayout">
             <motion.div
               key={currentView}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="p-4 sm:p-6 max-w-[1600px] mx-auto"
-              style={{ willChange: 'opacity' }}
+              transition={{ duration: 0.12 }}
+              className="p-3 sm:p-6 max-w-[1600px] mx-auto"
             >
               {children}
             </motion.div>
@@ -351,7 +363,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       {settingsOpen && (
           <div
             onClick={closeSettings}
-            className={`fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm t-backdrop${settingsClosing ? ' is-closing' : ''}`}
+            className={`fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm t-backdrop${settingsClosing ? ' is-closing' : ''}`}
           >
             <div
               onClick={(e) => e.stopPropagation()}
@@ -444,5 +456,6 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           </div>
         )}
     </div>
+    </LayoutProvider>
   );
 }

@@ -194,7 +194,7 @@ export default function KitBuilder() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-50 flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
+            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
           >
             <Check className="w-4 h-4 flex-shrink-0" />
             <span>{toastMessage}</span>
@@ -203,11 +203,11 @@ export default function KitBuilder() {
       </AnimatePresence>
 
       <div>
-        <h2 className="text-2xl font-semibold text-gradient">{t('kit.title')}</h2>
-        <p className="text-sm text-text-secondary mt-1">{t('kit.subtitle')}</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('kit.title')}</h2>
+        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('kit.subtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Kit Configuration */}
         <div className="lg:col-span-2 space-y-4 min-w-0">
           <div className="glass rounded-xl p-4 sm:p-5 space-y-4">
@@ -371,8 +371,8 @@ export default function KitBuilder() {
                 <p className="text-[10px] text-text-tertiary uppercase mb-1">
                   {language === 'ru' ? 'Сгенерированное название' : 'Generated Name'}
                 </p>
-                <p className="text-xs sm:text-sm">
-                  {kitNameRu || (language === 'ru' ? 'Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ' : 'Kit. Wall Charger PD 20W + Cable L-TC PR 1m White')}
+                <p className={`text-xs sm:text-sm ${kitNameRu ? '' : 'text-text-muted'}`}>
+                  {kitNameRu || '—'}
                 </p>
               </div>
 
@@ -410,11 +410,11 @@ export default function KitBuilder() {
       {/* Product Picker Modal */}
       {showPicker && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${pickerClosing ? ' is-closing' : ''}`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${pickerClosing ? ' is-closing' : ''}`}
           onClick={closePicker}
         >
           <div
-            className={`t-modal glass-strong rounded-xl w-full max-w-lg max-h-[70vh] flex flex-col border border-border-strong shadow-2xl overflow-hidden${!pickerClosing ? ' is-open' : ' is-closing'}`}
+            className={`t-modal glass-strong rounded-xl w-full max-w-lg max-h-[70dvh] flex flex-col border border-border-strong shadow-2xl overflow-hidden${!pickerClosing ? ' is-open' : ' is-closing'}`}
             onClick={e => e.stopPropagation()}
           >
               <div className="p-4 border-b border-border-subtle flex items-center gap-3 bg-bg-secondary">
@@ -446,7 +446,7 @@ export default function KitBuilder() {
                         <button
                           key={cat.id}
                           onClick={() => { setSelectedCategoryCode(cat.code); setPickerView('products'); setSearchQuery(''); }}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle cursor-pointer"
+className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                         >
                           <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                             {(() => {
@@ -477,7 +477,7 @@ export default function KitBuilder() {
                       <button
                         key={product.id}
                         onClick={() => addComponent(product)}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle"
+                        className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                       >
                         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                           <Hash className="w-5 h-5" style={{ color: getCategoryColorVar(product.category.code) }} />

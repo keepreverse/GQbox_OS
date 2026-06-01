@@ -143,15 +143,15 @@ export default function SKUConstructor() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h2 className="text-2xl font-semibold text-gradient">{t('sku.title')}</h2>
-        <p className="text-sm text-text-secondary mt-1">{t('sku.subtitle')}</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('sku.title')}</h2>
+        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('sku.subtitle')}</p>
       </div>
 
       {/* Stepper */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {steps.map((s, i) => (
           <Fragment key={s.id}>
-                <div className={`flex h-9 min-w-[132px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-all ${
+                <div className={`flex h-10 min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all ${
               step === s.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : step > s.id
@@ -174,7 +174,7 @@ export default function SKUConstructor() {
       </div>
 
       {/* Form Content */}
-      <div className="glass rounded-xl p-4 sm:p-6 min-h-[400px]">
+      <div className="glass rounded-xl p-3 sm:p-6 min-h-[300px] sm:min-h-[400px]">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
@@ -184,31 +184,31 @@ export default function SKUConstructor() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <h3 className="text-lg font-medium">{t('sku.step1')}</h3>
+              <h3 className="text-base sm:text-lg font-medium">{t('sku.step1')}</h3>
               
               <div className="space-y-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-2 block">
                     {language === 'ru' ? 'Категория товара' : 'Product Category'}
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
                     {categories.map(cat => (
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
-                        className={`p-2.5 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                        className={`p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                           form.categoryId === cat.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} />
-                          <span className="text-xs sm:text-sm font-medium truncate">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} />
+                          <span className="text-[11px] sm:text-sm font-medium truncate">
                             {displaySource(cat, language)}
                           </span>
                         </div>
-                        <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-1 truncate">{cat.code}</p>
+                        <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 sm:mt-1 truncate">{cat.code}</p>
                       </button>
                     ))}
                   </div>
@@ -219,21 +219,21 @@ export default function SKUConstructor() {
                     <label className="text-xs sm:text-sm text-text-secondary mb-2 block">
                       {language === 'ru' ? 'Модель / Линейка' : 'Model / Line'}
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
                       {availableModels.map(model => (
                         <button
                           key={model.id}
                           onClick={() => toggleModel(model.id)}
-                          className={`p-2.5 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                          className={`p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                             form.modelId === model.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                           }`}
                         >
-                          <span className="text-xs sm:text-sm font-medium block truncate">
+                          <span className="text-[11px] sm:text-sm font-medium block truncate">
                             {displaySource(model, language)}
                           </span>
-                          <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5 truncate">{model.code}</p>
+                          <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 truncate">{model.code}</p>
                         </button>
                       ))}
                     </div>
@@ -249,11 +249,11 @@ export default function SKUConstructor() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <h3 className="text-lg font-medium">{t('sku.step2')}</h3>
+              <h3 className="text-base sm:text-lg font-medium">{t('sku.step2')}</h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Базовый номер (5 цифр)' : 'Base Number (5 digits)'}
@@ -334,11 +334,11 @@ export default function SKUConstructor() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <h3 className="text-lg font-medium">{t('sku.step3')}</h3>
+              <h3 className="text-base sm:text-lg font-medium">{t('sku.step3')}</h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Мощность (W)' : 'Power (W)'}
@@ -431,16 +431,16 @@ export default function SKUConstructor() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <h3 className="text-lg font-medium">{t('sku.step4')}</h3>
+              <h3 className="text-base sm:text-lg font-medium">{t('sku.step4')}</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="text-xs sm:text-sm text-text-secondary mb-3 block">
+                  <label className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3 block">
                     {language === 'ru' ? 'Цвет' : 'Color'}
                   </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                     {colors.map(color => (
                       <button
                         key={color.id}
@@ -451,7 +451,10 @@ export default function SKUConstructor() {
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                         }`}
                       >
-                        <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full mx-auto mb-1 border border-border-subtle flex-shrink-0" style={{ background: color.hexValue }} />
+                        <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-full mx-auto mb-1 flex-shrink-0" style={{
+                          background: color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : color.hexValue,
+                          border: color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+                        }} />
                         <span className="text-[9px] sm:text-[10px] block truncate">
                           {displaySource(color, language)}
                         </span>
@@ -477,7 +480,7 @@ export default function SKUConstructor() {
                       >
                         <div className={`w-7 sm:w-8 h-7 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                           sup.code === 'A' ? 'bg-accent/20 text-accent' :
-                          sup.code === 'W' ? 'bg-pink-500/20 text-pink-400' :
+                          sup.code === 'W' ? 'bg-wb-bg text-wb' :
                           sup.code === 'AW' ? 'bg-success/20 text-success' :
                           'bg-bg-elevated text-text-muted'
                         }`}>
@@ -503,9 +506,9 @@ export default function SKUConstructor() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <h3 className="text-lg font-medium">{t('sku.step5')}</h3>
+              <h3 className="text-base sm:text-lg font-medium">{t('sku.step5')}</h3>
               
               {!generatedSKU ? (
                 <div className="text-center py-12">

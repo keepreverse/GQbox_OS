@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Cable, Zap, Wifi, Car, Headphones, ArrowLeftRight, Pin,
@@ -13,6 +13,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
+import { useLayout } from '../context/LayoutContext';
 import type { ViewType } from '../data/types';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
@@ -24,12 +25,54 @@ const categoryIcons: Record<string, React.ElementType> = {
   kit: Package, packaging: Box, blogo: Monitor,
 };
 
+const tooltipStyle = {
+  background: 'var(--color-bg-secondary)',
+  border: '1px solid var(--color-border-default)',
+  borderRadius: 8,
+  fontSize: 12,
+  color: 'var(--color-text-primary)',
+};
+
+const tooltipItemStyle = { color: 'var(--color-text-primary)' };
+
+const tooltipLabelStyle = { color: 'var(--color-text-secondary)', marginBottom: '4px' };
+
+function ChartFreeze({ sidebarCollapsed, children }: { sidebarCollapsed: boolean; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [frozenWidth, setFrozenWidth] = useState<number | null>(null);
+  const prevRef = useRef(sidebarCollapsed);
+
+  useEffect(() => {
+    if (prevRef.current !== sidebarCollapsed) {
+      prevRef.current = sidebarCollapsed;
+      const el = ref.current;
+      if (el) {
+        setFrozenWidth(el.clientWidth);
+      }
+    }
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
+    if (frozenWidth !== null) {
+      const timer = setTimeout(() => setFrozenWidth(null), 150);
+      return () => clearTimeout(timer);
+    }
+  }, [frozenWidth]);
+
+  return (
+    <div ref={ref} style={frozenWidth !== null ? { width: frozenWidth, flexShrink: 0 } : undefined}>
+      {children}
+    </div>
+  );
+}
+
 interface DashboardProps {
   onViewChange?: (view: ViewType) => void;
 }
 
 export default function Dashboard({ onViewChange }: DashboardProps) {
   const { t, language } = useLanguage();
+  const { sidebarCollapsed } = useLayout();
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
 
   const stats = useMemo(() => {
@@ -80,8 +123,8 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-gradient">{t('dash.title')}</h2>
-          <p className="text-sm text-text-secondary mt-1.5">{t('dash.subtitle')}</p>
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gradient">{t('dash.title')}</h2>
+          <p className="text-xs sm:text-sm text-text-secondary mt-1">{t('dash.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-text-tertiary">
           <Activity className="w-3.5 h-3.5" />
@@ -99,19 +142,19 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="glass rounded-xl p-5 hover:border-border-strong transition-colors"
+            className="glass rounded-xl p-3 sm:p-5 hover:border-border-strong transition-colors"
           >
             <div className="flex items-start justify-between">
-              <div className={`p-2 rounded-lg ${stat.bg}`}>
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              <div className={`p-1.5 sm:p-2 rounded-lg ${stat.bg}`}>
+                <stat.icon className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${stat.color}`} />
               </div>
-              <span className={`flex items-center gap-0.5 text-xs ${stat.trend === 'up' ? 'text-success' : stat.trend === 'down' ? 'text-danger' : 'text-text-muted'}`}>
-                {stat.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : stat.trend === 'down' ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+              <span className={`flex items-center gap-0.5 text-[10px] sm:text-xs ${stat.trend === 'up' ? 'text-success' : stat.trend === 'down' ? 'text-danger' : 'text-text-muted'}`}>
+                {stat.trend === 'up' ? <TrendingUp className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : stat.trend === 'down' ? <TrendingDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : <TrendingUp className="w-2.5 sm:w-3 h-2.5 sm:h-3" />}
                 {stat.change}
               </span>
             </div>
-            <p className="text-2xl font-medium mt-3">{stat.value}</p>
-            <p className="text-xs text-text-tertiary mt-0.5">{stat.label}</p>
+            <p className="text-xl sm:text-2xl font-medium mt-2 sm:mt-3">{stat.value}</p>
+            <p className="text-[11px] sm:text-xs text-text-tertiary mt-0.5">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -120,11 +163,12 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Category Distribution */}
         <div
-          className="glass rounded-xl p-5 lg:col-span-2 overflow-hidden"
-          style={{ willChange: 'transform' }}
+          className="glass rounded-xl p-3 sm:p-5 lg:col-span-2 overflow-hidden"
         >
-          <h3 className="text-sm font-medium mb-4">{t('dash.catDist')}</h3>
-          <ResponsiveContainer width="100%" height={260} debounce={0}>
+          <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.catDist')}</h3>
+          <div className="pt-1 sm:pt-2">
+          <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
+          <ResponsiveContainer width="100%" height={260} debounce={16}>
             <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
               <XAxis
@@ -141,9 +185,9 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
               <Tooltip
                 isAnimationActive={false}
                 cursor={{ fill: 'var(--color-accent-dim)' }}
-                contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-default)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-primary)' }}
-                itemStyle={{ color: 'var(--color-text-primary)' }}
-                labelStyle={{ color: 'var(--color-text-secondary)', marginBottom: '4px' }}
+                contentStyle={tooltipStyle}
+                itemStyle={tooltipItemStyle}
+                labelStyle={tooltipLabelStyle}
                 formatter={(value) => [value, t('dash.items')]}
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={32} isAnimationActive={false}>
@@ -153,22 +197,25 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </ChartFreeze>
+          </div>
         </div>
 
         {/* Power Distribution */}
         <div
-          className="glass rounded-xl p-5"
-          style={{ willChange: 'transform' }}
+          className="glass rounded-xl p-3 sm:p-5"
         >
-          <h3 className="text-sm font-medium mb-4">{t('dash.powerDist')}</h3>
-          <ResponsiveContainer width="100%" height={220} debounce={0}>
+          <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.powerDist')}</h3>
+          <div className="pt-1 sm:pt-2">
+          <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
+          <ResponsiveContainer width="100%" height={220} debounce={16}>
             <PieChart>
               <Pie
                 data={stats.powerData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={80}
+                innerRadius={60}
+                outerRadius={100}
                 paddingAngle={4}
                 dataKey="value"
                 stroke="transparent"
@@ -181,12 +228,14 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
               <Tooltip
                 isAnimationActive={false}
                 cursor={{ fill: 'var(--color-accent-dim)' }}
-                contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-default)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-primary)' }}
-                itemStyle={{ color: 'var(--color-text-primary)' }}
+                contentStyle={tooltipStyle}
+                itemStyle={tooltipItemStyle}
                 formatter={(value) => [value, t('dash.items')]}
               />
             </PieChart>
           </ResponsiveContainer>
+          </ChartFreeze>
+          </div>
           <div className="flex flex-wrap gap-2 mt-2 justify-center">
             {stats.powerData.map((d, i) => (
               <div key={d.name} className="flex items-center gap-1.5 text-[11px] text-text-secondary">
@@ -202,10 +251,10 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Products */}
         <div
-          className="glass rounded-xl p-5"
+          className="glass rounded-xl p-3 sm:p-5"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium">{t('dash.recent')}</h3>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-xs sm:text-sm font-medium">{t('dash.recent')}</h3>
             <button
               onClick={() => onViewChange && onViewChange('matrix')}
               className="h-8 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer"
@@ -242,10 +291,12 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
 
         {/* Supplier Distribution + Alerts */}
         <div
-          className="glass rounded-xl p-5"
+          className="glass rounded-xl p-3 sm:p-5"
         >
-          <h3 className="text-sm font-medium mb-4">{t('dash.supplierDist')}</h3>
-          <ResponsiveContainer width="100%" height={160} debounce={0}>
+          <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.supplierDist')}</h3>
+          <div className="pt-1 sm:pt-2">
+          <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
+          <ResponsiveContainer width="100%" height={170} debounce={16}>
             <AreaChart data={stats.supplierStats}>
               <defs>
                 <linearGradient id="supplierGrad" x1="0" y1="0" x2="0" y2="1">
@@ -259,13 +310,15 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
               <Tooltip
                 isAnimationActive={false}
                 cursor={{ fill: 'var(--color-accent-dim)' }}
-                contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-default)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-primary)' }}
-                itemStyle={{ color: 'var(--color-text-primary)' }}
+                contentStyle={tooltipStyle}
+                itemStyle={tooltipItemStyle}
                 formatter={(value) => [value, t('dash.items')]}
               />
               <Area type="monotone" dataKey="count" stroke="var(--color-accent)" fill="url(#supplierGrad)" isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
+          </ChartFreeze>
+          </div>
 
           <div className="mt-4 space-y-2">
             <h4 className="text-xs font-medium text-text-secondary">{t('dash.alerts')}</h4>
