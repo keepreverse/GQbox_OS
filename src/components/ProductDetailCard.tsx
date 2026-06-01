@@ -94,7 +94,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
         className="absolute inset-0 flex items-center justify-center overflow-y-auto"
         onClick={isMobile ? handleClose : undefined}
         style={{
-          paddingTop: headerHeight + (isMobile ? 16 : 24),
+          paddingTop: isMobile ? 16 : 24,
           paddingBottom: isMobile ? 16 : 24,
           paddingLeft: isMobile ? 16 : sidebarWidth + 24,
           paddingRight: isMobile ? 16 : 24,
