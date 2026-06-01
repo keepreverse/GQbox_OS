@@ -101,9 +101,9 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
       .slice(0, 8);
     
     const supplierStats = [
-      { name: 'Angela', count: products.filter(p => p.supplier?.code === 'A').length, color: 'var(--color-accent)' },
-      { name: 'Wendy', count: products.filter(p => p.supplier?.code === 'W').length, color: 'var(--color-headphones)' },
-      { name: 'Angela+Wendy', count: products.filter(p => p.supplier?.code === 'AW').length, color: 'var(--color-success)' },
+      { name: 'Angela', count: products.filter(p => p.supplier?.code === 'A').length, color: 'var(--color-supplier-a)' },
+      { name: 'Wendy', count: products.filter(p => p.supplier?.code === 'W').length, color: 'var(--color-supplier-w)' },
+      { name: 'Angela+Wendy', count: products.filter(p => p.supplier?.code === 'AW').length, color: 'var(--color-supplier-aw)' },
       { name: '—', count: products.filter(p => !p.supplier || p.supplier.code === '-').length, color: 'var(--color-packaging)' },
     ];
     
@@ -299,9 +299,17 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           <ResponsiveContainer width="100%" height={170} debounce={16}>
             <AreaChart data={stats.supplierStats}>
               <defs>
-                <linearGradient id="supplierGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
+                <linearGradient id="supplierGrad" x1="0" y1="0" x2="1" y2="0">
+                  {stats.supplierStats.map((entry, i) => (
+                    <stop key={i} offset={`${(i / (stats.supplierStats.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={0.3} />
+                  ))}
+                  <stop offset="100%" stopColor={stats.supplierStats[stats.supplierStats.length - 1]?.color || 'var(--color-accent)'} stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="supplierStroke" x1="0" y1="0" x2="1" y2="0">
+                  {stats.supplierStats.map((entry, i) => (
+                    <stop key={i} offset={`${(i / (stats.supplierStats.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={1} />
+                  ))}
+                  <stop offset="100%" stopColor={stats.supplierStats[stats.supplierStats.length - 1]?.color || 'var(--color-accent)'} stopOpacity={1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
@@ -314,7 +322,7 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
                 itemStyle={tooltipItemStyle}
                 formatter={(value) => [value, t('dash.items')]}
               />
-              <Area type="monotone" dataKey="count" stroke="var(--color-accent)" fill="url(#supplierGrad)" isAnimationActive={false} />
+              <Area type="monotone" dataKey="count" stroke="url(#supplierStroke)" fill="url(#supplierGrad)" isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
           </ChartFreeze>

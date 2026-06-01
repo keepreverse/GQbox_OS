@@ -77,14 +77,6 @@ export default function ProductMatrix() {
     setTableKey(k => k + 1);
   };
 
-  const toggleModel = (code: string) => {
-    setSelectedModels(prev => 
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
-    );
-    setCurrentPage(1);
-    setTableKey(k => k + 1);
-  };
-
   const toggleColor = (code: string) => {
     setSelectedColors(prev => 
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
@@ -418,9 +410,9 @@ export default function ProductMatrix() {
                       </td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
-                          product.supplier?.code === 'A' ? 'bg-accent/10 text-accent' :
-                          product.supplier?.code === 'W' ? 'bg-wb-bg text-wb' :
-                          product.supplier?.code === 'AW' ? 'bg-success/10 text-success' :
+                          product.supplier?.code === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
+                          product.supplier?.code === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
+                          product.supplier?.code === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
                           'bg-bg-elevated text-text-muted'
                         }`}>
                           {product.supplier?.name || '—'}

@@ -40,6 +40,16 @@
   --color-packaging: var(--color-packaging);
   --color-blogo: var(--color-blogo);
 
+  --color-supplier-a: var(--color-supplier-a);
+  --color-supplier-a-bg: var(--color-supplier-a-bg);
+  --color-supplier-a-border: var(--color-supplier-a-border);
+  --color-supplier-w: var(--color-supplier-w);
+  --color-supplier-w-bg: var(--color-supplier-w-bg);
+  --color-supplier-w-border: var(--color-supplier-w-border);
+  --color-supplier-aw: var(--color-supplier-aw);
+  --color-supplier-aw-bg: var(--color-supplier-aw-bg);
+  --color-supplier-aw-border: var(--color-supplier-aw-border);
+
   --color-wb: var(--color-wb);
   --color-wb-bg: var(--color-wb-bg);
   --color-wb-border: var(--color-wb-border);

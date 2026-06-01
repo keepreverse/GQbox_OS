@@ -37,6 +37,16 @@
   --color-packaging: #6a8ca8;
   --color-blogo: #3ac4a8;
 
+  --color-supplier-a: #c084fc;
+  --color-supplier-a-bg: rgba(192, 132, 252, 0.12);
+  --color-supplier-a-border: rgba(192, 132, 252, 0.28);
+  --color-supplier-w: #5ba0f5;
+  --color-supplier-w-bg: rgba(91, 160, 245, 0.12);
+  --color-supplier-w-border: rgba(91, 160, 245, 0.28);
+  --color-supplier-aw: #8b8cf8;
+  --color-supplier-aw-bg: rgba(139, 140, 248, 0.12);
+  --color-supplier-aw-border: rgba(139, 140, 248, 0.28);
+
   --color-wb: #c084fc;
   --color-wb-bg: rgba(192, 132, 252, 0.12);
   --color-wb-border: rgba(192, 132, 252, 0.28);

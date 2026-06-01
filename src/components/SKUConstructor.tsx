@@ -479,9 +479,9 @@ export default function SKUConstructor() {
                         }`}
                       >
                         <div className={`w-7 sm:w-8 h-7 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                          sup.code === 'A' ? 'bg-accent/20 text-accent' :
-                          sup.code === 'W' ? 'bg-wb-bg text-wb' :
-                          sup.code === 'AW' ? 'bg-success/20 text-success' :
+                          sup.code === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
+                          sup.code === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
+                          sup.code === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
                           'bg-bg-elevated text-text-muted'
                         }`}>
                           {sup.code === '-' ? '—' : sup.code}
