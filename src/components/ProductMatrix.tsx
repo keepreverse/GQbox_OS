@@ -521,7 +521,7 @@ export default function ProductMatrix() {
             <p className="text-[10px] sm:text-xs text-text-tertiary text-center">
               {t('matrix.showing')} {(currentPage - 1) * pageSize + 1} {t('matrix.to')} {Math.min(currentPage * pageSize, filteredProducts.length)} {t('matrix.of')} {filteredProducts.length}
             </p>
-            <div className="flex items-center gap-1 flex-wrap justify-center">
+            <div className="flex items-center gap-1 flex-nowrap justify-center overflow-x-auto">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}

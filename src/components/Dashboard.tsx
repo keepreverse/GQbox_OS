@@ -169,15 +169,13 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           <div className="pt-1 sm:pt-2">
           <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
           <ResponsiveContainer width="100%" height={260} debounce={16}>
-            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
               <XAxis
                 dataKey="name"
                 tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                angle={20}
-                textAnchor="end"
                 height={60}
                 interval={0}
               />

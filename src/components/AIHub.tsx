@@ -201,18 +201,26 @@ This SKU represents a 2-meter black ZS-standard cable.`,
             </div>
           ))}
 
-          {/* Suggested prompts — as inline chips inside the chat */}
+          {/* Suggested prompts — as assistant-side messages */}
           {showSuggestions && (
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex flex-col gap-2 pt-2">
               {presetPrompts.map((preset) => (
-                <button
-                  key={preset.label}
-                  onClick={() => handleSend(preset.prompt)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-bg-secondary border border-border-subtle text-[11px] sm:text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default transition-all cursor-pointer"
-                >
-                  <preset.icon className="w-3 h-3 text-accent flex-shrink-0" />
-                  <span className="line-clamp-1">{preset.label}</span>
-                </button>
+                <div key={preset.label} className="flex gap-2 sm:gap-3">
+                  <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
+                  </div>
+                  <div className="max-w-[85%] sm:max-w-[80%]">
+                    <button
+                      onClick={() => handleSend(preset.prompt)}
+                      className="inline-block p-2.5 sm:p-3 rounded-xl bg-bg-tertiary border border-border-subtle hover:bg-bg-secondary hover:border-accent/30 transition-all cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-text-primary">
+                        <preset.icon className="w-3 h-3 text-accent flex-shrink-0" />
+                        <span>{preset.label}</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
