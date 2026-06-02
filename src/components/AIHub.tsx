@@ -142,145 +142,123 @@ This SKU represents a 2-meter black ZS-standard cable.`,
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const showSuggestions = messages.length <= 1;
+
   return (
-    <div className="space-y-4 sm:space-y-6 h-[calc(100dvh_-_80px)] flex flex-col">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
-        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('ai.subtitle')}</p>
+    <div className="space-y-3 sm:space-y-4 h-[calc(100dvh_-_80px)] flex flex-col">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
+          <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('ai.subtitle')}</p>
+        </div>
+        <div className="hidden sm:flex items-center gap-3 p-2 rounded-lg bg-bg-tertiary border border-border-subtle flex-shrink-0">
+          <Brain className="w-3.5 h-3.5 text-accent" />
+          <span className="text-[10px] text-text-secondary">GPT-4o</span>
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-0">
-        {/* Горизонтальный список пресетов на мобилках, вертикальный на десктопе */}
-        <div className="w-full lg:w-64 flex-shrink-0 space-y-2 lg:space-y-3">
-          <p className="text-xs text-text-tertiary tracking-wide px-1 hidden lg:block">
-            {t('ai.quick')}
-          </p>
-          
-          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-            {presetPrompts.map((preset) => (
-              <button
-                key={preset.label}
-                onClick={() => handleSend(preset.prompt)}
-                className="flex-1 lg:w-full min-w-[160px] flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-bg-secondary border border-border-subtle text-left hover:bg-bg-hover transition-all group cursor-pointer"
-              >
-                <preset.icon className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-tertiary group-hover:text-accent transition-colors flex-shrink-0" />
-                <span className="text-[11px] sm:text-xs text-text-secondary group-hover:text-text-primary line-clamp-2">
-                  {preset.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="p-3 sm:p-4 rounded-xl bg-bg-tertiary border border-border-default mt-2 lg:mt-4 hidden lg:block">
-            <div className="flex items-center gap-2 mb-2">
-              <Brain className="w-4 h-4 text-accent" />
-              <span className="text-xs font-medium text-accent">{t('ai.status')}</span>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-text-secondary">Модель</span>
-                <span className="text-text-primary">GPT-4o</span>
+      {/* Chat Area — fills remaining space */}
+      <div className="flex-1 flex flex-col glass rounded-xl overflow-hidden min-h-0">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+            >
+              <div className={`w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                msg.role === 'user'
+                  ? 'bg-accent/25 border border-accent/40'
+                  : 'bg-bg-elevated border border-border-subtle'
+              }`}>
+                {msg.role === 'user' ? (
+                  <MessageSquare className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />
+                ) : (
+                  <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
+                )}
               </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-text-secondary">Токенов</span>
-                <span className="text-text-primary">12,847</span>
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-text-secondary">Запросов</span>
-                <span className="text-text-primary">342</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col glass rounded-xl overflow-hidden min-h-0">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-              >
-                <div className={`w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  msg.role === 'user'
-                    ? 'bg-accent/25 border border-accent/40'
-                    : 'bg-bg-elevated border border-border-subtle'
+              <div className={`max-w-[85%] sm:max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
+                <div className={`inline-block p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm whitespace-pre-wrap text-left ${
+                msg.role === 'user'
+                  ? 'bg-accent/15 border border-accent/30 text-text-primary'
+                  : 'bg-bg-tertiary border border-border-subtle text-text-primary'
                 }`}>
-                  {msg.role === 'user' ? (
-                    <MessageSquare className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />
-                  ) : (
-                    <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
+                  {msg.content}
+                </div>
+                <div className="flex items-center gap-2 mt-1 justify-start">
+                  <span className="text-[9px] sm:text-[10px] text-text-muted">{msg.timestamp}</span>
+                  {msg.role === 'assistant' && (
+                    <button
+                      onClick={() => handleCopy(msg.id, msg.content)}
+                      className="text-[9px] sm:text-[10px] text-text-muted hover:bg-bg-hover hover:text-text-secondary flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      {copiedId === msg.id ? <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : <Copy className="w-2.5 sm:w-3 h-2.5 sm:h-3" />}
+                      {copiedId === msg.id ? (language === 'ru' ? 'Скопировано' : 'Copied') : (language === 'ru' ? 'Копировать' : 'Copy')}
+                    </button>
                   )}
                 </div>
-                <div className={`max-w-[85%] sm:max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                  <div className={`inline-block p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm whitespace-pre-wrap text-left ${
-                  msg.role === 'user'
-                    ? 'bg-accent/15 border border-accent/30 text-text-primary'
-                    : 'bg-bg-tertiary border border-border-subtle text-text-primary'
-                  }`}>
-                    {msg.content}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 justify-start">
-                    <span className="text-[9px] sm:text-[10px] text-text-muted">{msg.timestamp}</span>
-                    {msg.role === 'assistant' && (
-                      <button
-                        onClick={() => handleCopy(msg.id, msg.content)}
-                        className="text-[9px] sm:text-[10px] text-text-muted hover:bg-bg-hover hover:text-text-secondary flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        {copiedId === msg.id ? <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : <Copy className="w-2.5 sm:w-3 h-2.5 sm:h-3" />}
-                        {copiedId === msg.id ? (language === 'ru' ? 'Скопировано' : 'Copied') : (language === 'ru' ? 'Копировать' : 'Copy')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="flex gap-2 sm:gap-3">
-                <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center">
-                  <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent animate-pulse" />
-                </div>
-                <div className="bg-bg-tertiary border border-border-subtle rounded-xl p-2.5 sm:p-3">
-                  <div className="flex gap-1">
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="p-3 sm:p-4 border-t border-border-subtle">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSend()}
-                  placeholder={t('ai.placeholder')}
-                  className="w-full pr-14 sm:pr-14 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
-                />
-                <button
-                  onClick={() => handleSend()}
-                  disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
-                  aria-label={language === 'ru' ? 'Отправить' : 'Send'}
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </button>
               </div>
             </div>
-            <p className="text-[9px] sm:text-[10px] text-text-muted mt-1.5 sm:mt-2 text-center">
-              {language === 'ru' 
-                ? 'Ответы генерируются для демонстрации. Подключите API ключи OpenAI/Claude для реальной работы.'
-                : 'AI responses are generated for demonstration. Connect to OpenAI/Claude API for production use.'}
-            </p>
+          ))}
+
+          {/* Suggested prompts — as inline chips inside the chat */}
+          {showSuggestions && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {presetPrompts.map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() => handleSend(preset.prompt)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-bg-secondary border border-border-subtle text-[11px] sm:text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default transition-all cursor-pointer"
+                >
+                  <preset.icon className="w-3 h-3 text-accent flex-shrink-0" />
+                  <span className="line-clamp-1">{preset.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isTyping && (
+            <div className="flex gap-2 sm:gap-3">
+              <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center">
+                <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent animate-pulse" />
+              </div>
+              <div className="bg-bg-tertiary border border-border-subtle rounded-xl p-2.5 sm:p-3">
+                <div className="flex gap-1">
+                  <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input — send button as sibling, not absolute */}
+        <div className="p-3 sm:p-4 border-t border-border-subtle">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder={t('ai.placeholder')}
+              className="flex-1 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isTyping}
+              className="h-11 w-11 sm:h-10 sm:w-10 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
+              aria-label={language === 'ru' ? 'Отправить' : 'Send'}
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
+          <p className="text-[9px] sm:text-[10px] text-text-muted mt-1.5 sm:mt-2 text-center">
+            {language === 'ru' 
+              ? 'Ответы генерируются для демонстрации. Подключите API ключи OpenAI/Claude для реальной работы.'
+              : 'AI responses are generated for demonstration. Connect to OpenAI/Claude API for production use.'}
+          </p>
         </div>
       </div>
     </div>

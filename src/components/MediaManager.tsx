@@ -45,12 +45,16 @@ export default function MediaManager() {
   const MODAL_CLOSE_MS = 150;
 
   const closeUpload = useCallback(() => {
-    setUploadClosing(true);
-    setTimeout(() => {
+    if (isMobile) {
       setShowUpload(false);
-      setUploadClosing(false);
-    }, MODAL_CLOSE_MS);
-  }, []);
+    } else {
+      setUploadClosing(true);
+      setTimeout(() => {
+        setShowUpload(false);
+        setUploadClosing(false);
+      }, MODAL_CLOSE_MS);
+    }
+  }, [isMobile]);
 
   const openUpload = useCallback(() => {
     setUploadClosing(false);

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   Package, Plus, X, Search, ChevronRight, Zap,
   Hash, Layers, Check, ArrowLeft, Cable, Wifi, Car, Headphones,
@@ -106,22 +106,32 @@ interface ComponentItemProps {
 }
 
 function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemProps) {
+  const controls = useDragControls();
+
   return (
     <Reorder.Item
       value={comp}
-      whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 10 }}
+      dragListener={false}
+      dragControls={controls}
+      whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 50 }}
       className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle"
     >
-      <div className="text-text-muted flex-shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-1 touch-none">
-        <GripVertical className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs sm:text-sm font-medium truncate">
-          {language === 'ru' ? comp.product.fullNameRu : comp.product.fullName}
-        </p>
-        <p className="text-[10px] sm:text-[11px] text-text-tertiary truncate">
-          {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : '—'}
-        </p>
+      {/* Grip handle + product name = draggable zone */}
+      <div
+        onPointerDown={(e) => { controls.start(e); }}
+        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-grab active:cursor-grabbing touch-none"
+      >
+        <div className="text-text-muted flex-shrink-0 p-1 -ml-1">
+          <GripVertical className="w-4 h-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium truncate">
+            {language === 'ru' ? comp.product.fullNameRu : comp.product.fullName}
+          </p>
+          <p className="text-[10px] sm:text-[11px] text-text-tertiary truncate">
+            {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : '—'}
+          </p>
+        </div>
       </div>
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <button
