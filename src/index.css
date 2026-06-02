@@ -206,6 +206,19 @@ select {
   background-repeat: no-repeat;
   padding-right: 28px;
 }
+/* Remove focus outline on all recharts SVG elements */
+.recharts-surface,
+.recharts-surface *,
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-responsive-container svg,
+.recharts-responsive-container svg *,
+.recharts-wrapper svg:focus,
+.recharts-surface:focus,
+.recharts-surface *:focus {
+  outline: none !important;
+}
+
 /* iOS auto-zoom prevention: 16px minimum when input is focused on Safari */
 @supports (-webkit-touch-callout: none) {
   input, select, textarea { font-size: 16px; }

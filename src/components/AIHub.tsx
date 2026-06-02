@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, FileText, Image, Languages, BarChart3,
-  Send, Copy, Check, Brain, MessageSquare
+  Send, Copy, Check, Brain, User
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -145,7 +145,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
   const showSuggestions = messages.length <= 1;
 
   return (
-    <div className="space-y-3 sm:space-y-4 h-[calc(100dvh_-_80px)] flex flex-col">
+    <div className="space-y-3 sm:space-y-4 flex-1 min-h-0 flex flex-col">
       <div className="flex items-start justify-between gap-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
@@ -166,13 +166,9 @@ This SKU represents a 2-meter black ZS-standard cable.`,
               key={msg.id}
               className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
-              <div className={`w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.role === 'user'
-                  ? 'bg-accent/25 border border-accent/40'
-                  : 'bg-bg-elevated border border-border-subtle'
-              }`}>
+              <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-bg-elevated border border-border-subtle">
                 {msg.role === 'user' ? (
-                  <MessageSquare className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />
+                  <User className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
                 ) : (
                   <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
                 )}
@@ -201,25 +197,20 @@ This SKU represents a 2-meter black ZS-standard cable.`,
             </div>
           ))}
 
-          {/* Suggested prompts — as assistant-side messages */}
+          {/* Suggested prompts — as inline chips inside the chat */}
           {showSuggestions && (
-            <div className="flex flex-col gap-2 pt-2">
+            <div className="pt-2 space-y-2">
               {presetPrompts.map((preset) => (
-                <div key={preset.label} className="flex gap-2 sm:gap-3">
-                  <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
-                  </div>
-                  <div className="max-w-[85%] sm:max-w-[80%]">
-                    <button
-                      onClick={() => handleSend(preset.prompt)}
-                      className="inline-block p-2.5 sm:p-3 rounded-xl bg-bg-tertiary border border-border-subtle hover:bg-bg-secondary hover:border-accent/30 transition-all cursor-pointer text-left"
-                    >
-                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-text-primary">
-                        <preset.icon className="w-3 h-3 text-accent flex-shrink-0" />
-                        <span>{preset.label}</span>
-                      </div>
-                    </button>
-                  </div>
+                <div key={preset.label} className="flex justify-end">
+                  <button
+                    onClick={() => handleSend(preset.prompt)}
+                    className="inline-block p-2.5 sm:p-3 rounded-xl bg-accent/15 border border-accent/30 text-xs sm:text-sm text-left max-w-[85%] hover:bg-accent/25 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-start gap-1.5">
+                      <preset.icon className="w-3 h-3 text-accent mt-0.5 flex-shrink-0" />
+                      <span>{preset.label}</span>
+                    </div>
+                  </button>
                 </div>
               ))}
             </div>

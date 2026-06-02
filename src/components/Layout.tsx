@@ -26,16 +26,16 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsClosing, setSettingsClosing] = useState(false);
+  const savedLangRef = useRef<Language>(language);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
 
-  // Instant scroll to top on view change
-  useEffect(() => {
-    if (mainRef.current) {
+  const scrollResetRef = (el: HTMLDivElement | null) => {
+    if (el && mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
-  }, [currentView]);
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -63,6 +63,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
   const closeSettings = useCallback(() => {
     setSettingsClosing(true);
+    setLanguage(savedLangRef.current);
+    setTimeout(() => {
+      setSettingsOpen(false);
+      setSettingsClosing(false);
+    }, MODAL_CLOSE_MS);
+  }, [setLanguage]);
+
+  const saveSettings = useCallback(() => {
+    setSettingsClosing(true);
     setTimeout(() => {
       setSettingsOpen(false);
       setSettingsClosing(false);
@@ -72,7 +81,8 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const openSettings = useCallback(() => {
     setSettingsClosing(false);
     setSettingsOpen(true);
-  }, []);
+    savedLangRef.current = language;
+  }, [language]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -103,9 +113,9 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   ];
 
   const mockNotifications = [
-    { id: 1, title: 'SKU S19024-K сгенерирован', desc: 'Новый комплект добавлен в товарную матрицу', time: '5 мин назад', unread: true },
-    { id: 2, title: 'Обновление словаря', desc: 'Добавлен новый цвет: Античный белый (40)', time: '1 час назад', unread: true },
-    { id: 3, title: 'Анализ архитектуры завершен', desc: 'Все 10 сущностей успешно нормализованы', time: '3 часа назад', unread: false },
+    { id: 1, title: t('header.notifications.n1_title'), desc: t('header.notifications.n1_desc'), time: t('header.notifications.n1_time'), unread: true },
+    { id: 2, title: t('header.notifications.n2_title'), desc: t('header.notifications.n2_desc'), time: t('header.notifications.n2_time'), unread: true },
+    { id: 3, title: t('header.notifications.n3_title'), desc: t('header.notifications.n3_desc'), time: t('header.notifications.n3_time'), unread: false },
   ];
 
   const sidebarWidth = isMobile ? 244 : sidebarCollapsed ? 72 : 244;
@@ -320,7 +330,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               >
                 <div className="p-3 border-b border-border-subtle flex items-center justify-between bg-bg-secondary">
                   <span className="text-xs font-medium text-text-primary tracking-tight">{t('header.notifications')}</span>
-                  <span className="text-[10px] text-accent font-medium cursor-pointer hover:underline">Отметить все как прочитанные</span>
+                  <span className="text-[10px] text-accent font-medium cursor-pointer hover:underline">{t('header.notifications.mark_read')}</span>
                 </div>
                 <div className="max-h-80 overflow-y-auto divide-y divide-border-subtle">
                   {mockNotifications.map((n) => (
@@ -339,7 +349,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                     onClick={() => setNotificationsOpen(false)}
                     className="text-[11px] text-text-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
                   >
-                    Закрыть панель
+                    {t('header.notifications.close')}
                   </button>
                 </div>
               </div>
@@ -357,14 +367,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
         </header>
 
         <main ref={mainRef} id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden grid-pattern relative">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
+              ref={scrollResetRef}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
-              className="p-3 sm:p-6 max-w-[1600px] mx-auto"
+              className="p-3 sm:p-6 max-w-[1600px] mx-auto flex flex-col min-h-0"
             >
               {children}
             </motion.div>
@@ -375,7 +386,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       {isMobile ? (
         <BottomSheet
           open={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => { setLanguage(savedLangRef.current); setSettingsOpen(false); }}
           title={t('header.settings')}
           icon={<Settings className="w-4 h-4 text-accent flex-shrink-0" />}
           ariaLabel={t('header.settings')}
@@ -383,18 +394,18 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setSettingsOpen(false)}
+                onClick={() => { setLanguage(savedLangRef.current); setSettingsOpen(false); }}
                 className="flex-1 h-11 rounded-lg text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
               >
-                <LogOut className="w-3.5 h-3.5" /> {language === 'ru' ? 'Выйти' : 'Log out'}
+                <LogOut className="w-3.5 h-3.5" /> {t('header.settings.logout')}
               </button>
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(false)}
-                className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
-              >
-                {language === 'ru' ? 'Сохранить' : 'Save'}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen(false)}
+                  className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
+                >
+                  {t('header.settings.save')}
+                </button>
             </div>
           }
         >
@@ -414,12 +425,12 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
             <div className="space-y-3">
               <h4 className="text-xs font-medium text-text-tertiary">
-                {language === 'ru' ? 'Параметры системы' : 'System Parameters'}
+                {t('header.settings.system_params')}
               </h4>
 
               <div className="flex items-center justify-between text-sm gap-2">
                 <span className="text-text-secondary">
-                  {language === 'ru' ? 'Язык интерфейса' : 'Interface Language'}
+                  {t('header.settings.interface_lang')}
                 </span>
                 <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
                   <button
@@ -430,7 +441,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                         : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
                     }`}
                   >
-                    {language === 'ru' ? 'Русский' : 'Russian'}
+                    {t('header.settings.russian')}
                   </button>
                   <button
                     onClick={() => setLanguage('en')}
@@ -447,7 +458,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-text-secondary">
-                  {language === 'ru' ? 'Тема оформления' : 'Theme'}
+                  {t('header.settings.theme')}
                 </span>
                 <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
                   Futuristic Dark
@@ -456,7 +467,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-text-secondary">
-                  {language === 'ru' ? 'Версия БД' : 'DB Version'}
+                  {t('header.settings.db_version')}
                 </span>
                 <span className="text-xs text-accent">v2.4-normalized</span>
               </div>
@@ -464,7 +475,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-text-tertiary">
-                {language === 'ru' ? 'Интеграции' : 'Integrations'}
+                {t('header.settings.integrations')}
               </h4>
               <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
                 <span className="flex items-center gap-1.5 text-text-secondary">
@@ -509,41 +520,41 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-text-tertiary">Параметры системы</h4>
+                  <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.system_params')}</h4>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Язык интерфейса</span>
+                    <span className="text-text-secondary">{t('header.settings.interface_lang')}</span>
                     <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
                       <button
                         onClick={() => setLanguage('ru')}
                         className={`px-2 py-0.5 rounded text-xs ${language === 'ru' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'} cursor-pointer`}
                       >
-                        Русский
+                        {t('header.settings.russian')}
                       </button>
                       <button
                         onClick={() => setLanguage('en')}
                         className={`px-2 py-0.5 rounded text-xs cursor-pointer ${language === 'en' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary'}`}
                       >
-                        English
+                        {t('header.settings.english')}
                       </button>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Тема оформления</span>
+                    <span className="text-text-secondary">{t('header.settings.theme')}</span>
                     <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
                       Futuristic Dark
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Версия БД</span>
+                    <span className="text-text-secondary">{t('header.settings.db_version')}</span>
                     <span className="text-xs text-accent">v2.4-normalized</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-text-tertiary">Интеграции</h4>
+                  <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.integrations')}</h4>
                   <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
                     <span className="flex items-center gap-1.5 text-text-secondary">
                       <Key className="w-3.5 h-3.5 text-warning" /> Supabase API
@@ -558,13 +569,13 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                   onClick={closeSettings}
                   className="flex items-center gap-1 text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 px-2 py-1 rounded border border-danger/20"
                 >
-                  <LogOut className="w-3 h-3" /> Выйти из аккаунта
+                  <LogOut className="w-3 h-3" /> {t('header.settings.logout_full')}
                 </button>
                 <button
-                  onClick={closeSettings}
+                  onClick={saveSettings}
                   className="px-4 py-1.5 bg-accent/25 text-white rounded text-xs hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
                 >
-                  Сохранить
+                  {t('header.settings.save')}
                 </button>
               </div>
             </div>

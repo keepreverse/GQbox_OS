@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, Grid, List,
-  FileImage, FileVideo, MoreVertical, Trash2, Download,
+  FileImage, FileVideo, Trash2, Download,
   X, Check
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -31,7 +31,7 @@ const initialMockMedia: MediaItem[] = [
 ];
 
 export default function MediaManager() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { isMobile } = useLayout();
   const [mediaList, setMediaList] = useState<MediaItem[]>(initialMockMedia);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -99,17 +99,17 @@ export default function MediaManager() {
     closeUpload();
     setUploadSku('');
     setFileName('');
-    showToast(language === 'ru' ? `Файл "${defaultName}" успешно загружен!` : `File "${defaultName}" successfully uploaded!`);
+    showToast(t('media.toast.uploaded') + ` "${defaultName}"`);
   };
 
   const handleTrashSelected = () => {
     setMediaList(prev => prev.filter(m => !selectedItems.includes(m.id)));
-    showToast(language === 'ru' ? `Удалено файлов: ${selectedItems.length}` : `${selectedItems.length} files removed`);
+    showToast(t('media.toast.deleted') + ` ${selectedItems.length}`);
     setSelectedItems([]);
   };
 
   const handleDownloadSelected = () => {
-    showToast(language === 'ru' ? `Начато скачивание ${selectedItems.length} файлов...` : `Downloading ${selectedItems.length} files...`);
+    showToast(t('media.toast.downloading') + ` ${selectedItems.length}`);
   };
 
   return (
@@ -155,31 +155,31 @@ export default function MediaManager() {
             className="w-full px-4 h-11 sm:h-10 text-text-primary"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5">
-            {(['all', 'image', 'video'] as const).map(type => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`h-11 sm:h-9 px-3 rounded-md text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
-                  filterType === type ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
-                }`}
-              >
-                {type === 'all' ? t('media.all') : type === 'image' ? (language === 'ru' ? 'Фото' : 'Images') : (language === 'ru' ? 'Видео' : 'Videos')}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {(['all', 'image', 'video'] as const).map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={`h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+                filterType === type
+                  ? 'bg-accent/25 text-white border border-accent/40'
+                  : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+              }`}
+            >
+              {type === 'all' ? t('media.all') : type === 'image' ? t('media.photos') : t('media.videos_label')}
+            </button>
+          ))}
           <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'grid' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'grid' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'}`}
               aria-label="Grid view"
             >
               <Grid className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'list' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-tertiary'}`}
+              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'list' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'}`}
               aria-label="List view"
             >
               <List className="w-3.5 h-3.5" />
@@ -190,7 +190,7 @@ export default function MediaManager() {
 
       {/* Selection Bar — visible only when items selected, no space when empty */}
       {selectedItems.length > 0 && (
-        <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border border-accent/20">
           <span className="text-xs sm:text-sm text-accent font-medium">
             {selectedItems.length} {t('media.selected')}
           </span>
@@ -199,8 +199,8 @@ export default function MediaManager() {
               type="button"
               onClick={handleDownloadSelected}
               className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded hover:bg-accent/10 hover:text-text-primary text-accent transition-colors cursor-pointer flex items-center justify-center"
-              title={language === 'ru' ? 'Скачать выбранные' : 'Download selected'}
-              aria-label={language === 'ru' ? 'Скачать выбранные' : 'Download selected'}
+              title={t('media.download_selected')}
+              aria-label={t('media.download_selected')}
             >
               <Download className="w-4 h-4" />
             </button>
@@ -208,8 +208,8 @@ export default function MediaManager() {
               type="button"
               onClick={handleTrashSelected}
               className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded hover:bg-danger/10 hover:text-text-primary text-danger transition-colors cursor-pointer flex items-center justify-center"
-              title={language === 'ru' ? 'Удалить выбранные' : 'Delete selected'}
-              aria-label={language === 'ru' ? 'Удалить выбранные' : 'Delete selected'}
+              title={t('media.delete_selected')}
+              aria-label={t('media.delete_selected')}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -227,32 +227,33 @@ export default function MediaManager() {
       {/* Grid View */}
       {viewMode === 'grid' && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {filtered.map((item) => (
+          {filtered.map((item, i) => (
             <div
               key={item.id}
-              className={`group relative rounded-xl overflow-hidden border transition-all cursor-pointer ${
+              className={`glass group relative rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer animate-card-in ${
                       selectedItems.includes(item.id)
                         ? 'border-accent ring-1 ring-accent/30'
-                        : 'border-border-subtle hover:border-border-default'
+                        : 'border-border-subtle hover:border-border-default hover:-translate-y-0.5'
               }`}
+              style={{ animationDelay: `${i * 40}ms` }}
               onClick={() => toggleSelect(item.id)}
             >
               <div className="aspect-square bg-bg-tertiary flex items-center justify-center">
                 {item.type === 'image' ? (
-                  <FileImage className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform" />
+                  <FileImage className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                 ) : (
-                  <FileVideo className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform" />
+                  <FileVideo className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                 )}
               </div>
               <div className="p-2 sm:p-3">
                 <p className="text-xs font-medium truncate">{item.name}</p>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-[9px] sm:text-[10px] text-text-tertiary">{item.size}</span>
-                  <span className="text-[9px] sm:text-[10px] text-text-muted truncate max-w-[70px]">{item.productSku}</span>
+                  <span className="text-[10px] text-text-tertiary">{item.size}</span>
+                  <span className="text-[10px] text-text-muted truncate max-w-[80px]">{item.productSku}</span>
                 </div>
               </div>
               {selectedItems.includes(item.id) && (
-                <div className="absolute top-2 right-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center shadow-sm">
                   <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white" />
                 </div>
               )}
@@ -260,34 +261,34 @@ export default function MediaManager() {
           ))}
           {filtered.length === 0 && (
             <div className="col-span-full py-12 text-center text-xs text-text-tertiary">
-              {language === 'ru' ? 'Файлы не найдены' : 'No media files found'}
-            </div>
-          )}
-        </div>
-      )}
+              {t('media.not_found')}
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* List View */}
-      {viewMode === 'list' && (
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[500px] sm:min-w-[600px]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border-subtle">
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">File</th>
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Type</th>
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">SKU</th>
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Size</th>
-                    <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">Date</th>
-                    <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(item => (
+        {/* List View */}
+        {viewMode === 'list' && (
+          <div className="glass rounded-xl overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[500px] sm:min-w-[600px]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border-subtle">
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.file')}</th>
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.type')}</th>
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.sku')}</th>
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.size')}</th>
+                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.date')}</th>
+                      <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(item => (
                     <tr
                       key={item.id}
-                      className={`border-b border-border-subtle/50 table-row-hover cursor-pointer ${
+                      className={`border-b border-border-subtle/50 table-row-hover group cursor-pointer ${
                       selectedItems.includes(item.id) ? 'bg-bg-tertiary' : ''
                     }`}
                       onClick={() => toggleSelect(item.id)}
@@ -307,19 +308,19 @@ export default function MediaManager() {
                         <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
                           item.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
                         }`}>
-                          {item.type === 'image' ? 'Image' : 'Video'}
+                          {item.type === 'image' ? t('media.image_label') : t('media.video_label')}
                         </span>
                       </td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-accent">{item.productSku}</td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{item.size}</td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-tertiary">{item.uploadedAt}</td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(language === 'ru' ? `Скачивание "${item.name}"...` : `Downloading "${item.name}"...`); }}>
+                        <div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(t('media.toast.download_item') + ` "${item.name}"...`); }}>
                             <Download className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                           </button>
-                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(language === 'ru' ? `Удаление "${item.name}"...` : `Deleting "${item.name}"...`); }}>
-                            <MoreVertical className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                          <button className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); setMediaList(prev => prev.filter(m => m.id !== item.id)); showToast(t('media.toast.deleted') + ' 1'); }}>
+                            <Trash2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -328,7 +329,7 @@ export default function MediaManager() {
                   {filtered.length === 0 && (
                     <tr>
                       <td colSpan={7} className="px-3 sm:px-4 py-8 text-center text-xs text-text-tertiary">
-                        {language === 'ru' ? 'Файлы не найдены' : 'No media files found'}
+                        {t('media.not_found')}
                       </td>
                     </tr>
                   )}
@@ -344,16 +345,16 @@ export default function MediaManager() {
         <BottomSheet
           open={showUpload}
           onClose={closeUpload}
-          title={language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+          title={t('media.upload_title')}
           icon={<Upload className="w-4 h-4 text-accent flex-shrink-0" />}
-          ariaLabel={language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+          ariaLabel={t('media.upload_title')}
           footer={
             <button
               type="button"
               onClick={handleUpload}
               className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
             >
-              {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
+              {t('media.upload_button')}
             </button>
           }
         >
@@ -361,20 +362,17 @@ export default function MediaManager() {
             <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
               <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
               <p className="text-xs sm:text-sm text-text-secondary">
-                {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
+                {t('media.drop_here')}
               </p>
               <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-                {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
-              </p>
-              <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
-                {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
+                  {t('media.click_browse')}
               </p>
             </div>
 
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-text-tertiary mb-1 block">
-                  {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
+                  {t('media.file_name')}
                 </label>
                 <input
                   type="text"
@@ -386,7 +384,7 @@ export default function MediaManager() {
               </div>
               <div>
                 <label className="text-xs text-text-tertiary mb-1 block">
-                  {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
+                  {t('media.sku_link')}
                 </label>
                 <input
                   type="text"
@@ -410,7 +408,7 @@ export default function MediaManager() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">
-                  {language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+                  {t('media.upload_title')}
                 </h3>
                 <button onClick={closeUpload} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
                   <X className="w-4 h-4" />
@@ -420,24 +418,24 @@ export default function MediaManager() {
               <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
                 <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
                 <p className="text-xs sm:text-sm text-text-secondary">
-                  {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
+                  {t('media.drop_here')}
                 </p>
                 <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-                  {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
+                {t('media.click_browse')}
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
-                  {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
+                {t('media.supported_formats')}
                 </p>
               </div>
 
               <div className="mt-4 space-y-3">
                 <div>
                   <label className="text-xs text-text-tertiary mb-1 block">
-                    {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
+                  {t('media.file_name')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g., product_photo.jpg"
+                  placeholder={t('media.file_name_placeholder')}
                     value={fileName}
                     onChange={e => setFileName(e.target.value)}
                     className="w-full text-text-primary"
@@ -446,11 +444,11 @@ export default function MediaManager() {
 
                 <div>
                   <label className="text-xs text-text-tertiary mb-1 block">
-                    {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
+                    {t('media.sku_link')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g., S10002E/01"
+                    placeholder={t('media.sku_link_placeholder')}
                     value={uploadSku}
                     onChange={e => setUploadSku(e.target.value)}
                     className="w-full text-text-primary"
@@ -462,7 +460,7 @@ export default function MediaManager() {
                 onClick={handleUpload}
                 className="w-full mt-5 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
               >
-                {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
+                {t('media.upload_button')}
               </button>
             </div>
           </div>

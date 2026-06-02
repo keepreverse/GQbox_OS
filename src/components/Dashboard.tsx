@@ -113,9 +113,9 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
   const powerColors = ['var(--color-cable)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-success)'];
 
   const alerts = [
-    { message: language === 'ru' ? 'У 3 товаров не указана мощность' : '3 products missing power specifications', type: 'warning' },
-    { message: language === 'ru' ? '2 компонента комплектов требуют проверки' : '2 kit components need verification', type: 'info' },
-    { message: language === 'ru' ? 'Новый шаблон названий готов к ревью' : 'New naming template ready for review', type: 'success' },
+    { message: t('dash.alert.missing_power'), type: 'warning' },
+    { message: t('dash.alert.verify_components'), type: 'info' },
+    { message: t('dash.alert.template_review'), type: 'success' },
   ];
 
   return (
@@ -167,17 +167,21 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
         >
           <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.catDist')}</h3>
           <div className="pt-1 sm:pt-2">
+          <div style={{ transform: 'translateX(clamp(-1rem, -0.625vw - 0.5rem, -0.5rem))' }}>
           <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
           <ResponsiveContainer width="100%" height={260} debounce={16}>
-            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
+            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
               <XAxis
                 dataKey="name"
                 tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                height={60}
+                angle={20}
+                textAnchor="start"
+                height={70}
                 interval={0}
+                dx={-6}
               />
               <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
@@ -197,6 +201,7 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           </ResponsiveContainer>
           </ChartFreeze>
           </div>
+          </div>
         </div>
 
         {/* Power Distribution */}
@@ -212,9 +217,9 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
                 data={stats.powerData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                paddingAngle={4}
+                innerRadius="35%"
+                outerRadius="75%"
+                paddingAngle={0}
                 dataKey="value"
                 stroke="transparent"
                 isAnimationActive={false}

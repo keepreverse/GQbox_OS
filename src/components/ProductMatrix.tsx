@@ -521,11 +521,11 @@ export default function ProductMatrix() {
             <p className="text-[10px] sm:text-xs text-text-tertiary text-center">
               {t('matrix.showing')} {(currentPage - 1) * pageSize + 1} {t('matrix.to')} {Math.min(currentPage * pageSize, filteredProducts.length)} {t('matrix.of')} {filteredProducts.length}
             </p>
-            <div className="flex items-center gap-1 flex-nowrap justify-center overflow-x-auto">
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-nowrap justify-center overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
+                className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -543,7 +543,7 @@ export default function ProductMatrix() {
                   <button
                     key={`page-${page}`}
                     onClick={() => setCurrentPage(page as number)}
-                    className={`h-11 w-11 sm:h-9 sm:w-9 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer flex items-center justify-center ${
+                    className={`h-9 w-9 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer flex items-center justify-center ${
                       currentPage === page
                         ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                         : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
@@ -558,7 +558,7 @@ export default function ProductMatrix() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
+                className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />
