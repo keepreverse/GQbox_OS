@@ -40,7 +40,7 @@ export default function Architecture() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex h-10 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer flex-shrink-0 ${
+            className={`flex h-11 sm:h-10 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer flex-shrink-0 ${
               activeTab === tab.id
                 ? 'bg-bg-elevated text-text-primary shadow-sm font-medium'
                 : 'text-text-tertiary hover:bg-bg-hover hover:text-text-secondary'
@@ -76,10 +76,16 @@ export default function Architecture() {
               { icon: Type, label: t('arch.summary.name_templates'), value: '10', desc: t('arch.summary.auto_generation_rules') },
               { icon: Shield, label: t('arch.summary.validation_rules'), value: '8', desc: t('arch.summary.data_integrity') },
             ].map((item) => (
-              <div
-                key={item.label}
-                className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4"
-              >
+                <div
+                  key={entity.name}
+                  whileHover={{ scale: 1.02 }}
+                  className={`min-h-[44px] sm:min-h-0 p-3 rounded-lg border cursor-pointer transition-all ${
+                    expandedEntity === entity.name
+                      ? 'border-accent/50 bg-accent/15'
+                      : 'border-border-subtle bg-bg-tertiary/50 hover:border-border-default'
+                  }`}
+                  onClick={() => setExpandedEntity(expandedEntity === entity.name ? null : entity.name)}
+                >
                 <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
                   <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                 </div>
@@ -265,7 +271,7 @@ export default function Architecture() {
                   </h3>
                   <button
                     onClick={() => setExpandedEntity(null)}
-                    className="p-1 rounded text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-primary cursor-pointer"
+                    className="h-11 sm:h-9 px-3 rounded-lg text-xs text-text-tertiary hover:bg-bg-hover hover:text-text-primary cursor-pointer"
                   >
                     {t('arch.schema.close')}
                   </button>

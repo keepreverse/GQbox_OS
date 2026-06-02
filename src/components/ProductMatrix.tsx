@@ -35,7 +35,7 @@ export default function ProductMatrix() {
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.fullNameRu.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,13 +43,13 @@ export default function ProductMatrix() {
         (p.model?.nameEn?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (p.color?.nameRu?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (p.color?.nameEn?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-      
+
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(p.category.code);
       const matchesSupplier = selectedSuppliers.length === 0 || selectedSuppliers.includes(p.supplier?.code || '-');
       const matchesColor = selectedColors.length === 0 || (p.color && selectedColors.includes(p.color.code));
       const matchesPower = selectedPower.length === 0 || (p.powerW != null && selectedPower.includes(p.powerW));
       const matchesLength = selectedLength.length === 0 || (p.lengthM != null && selectedLength.includes(p.lengthM));
-      
+
       return matchesSearch && matchesCategory && matchesSupplier && matchesColor && matchesPower && matchesLength;
     });
   }, [searchQuery, selectedCategories, selectedSuppliers, selectedColors, selectedPower, selectedLength]);
@@ -62,7 +62,7 @@ export default function ProductMatrix() {
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
 
   const toggleCategory = (code: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories(prev =>
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
@@ -70,7 +70,7 @@ export default function ProductMatrix() {
   };
 
   const toggleSupplier = (code: string) => {
-    setSelectedSuppliers(prev => 
+    setSelectedSuppliers(prev =>
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
@@ -78,7 +78,7 @@ export default function ProductMatrix() {
   };
 
   const toggleColor = (code: string) => {
-    setSelectedColors(prev => 
+    setSelectedColors(prev =>
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
@@ -118,7 +118,6 @@ export default function ProductMatrix() {
 
   const activeFiltersCount = selectedCategories.length + selectedSuppliers.length + selectedColors.length + selectedPower.length + selectedLength.length;
 
-  // Экспорт данных в формате CSV
   const handleExport = () => {
     setExporting(true);
     setTimeout(() => {
@@ -136,27 +135,24 @@ export default function ProductMatrix() {
       ]);
 
       const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' }); // добавили BOM для Excel
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      
+
       const link = document.createElement('a');
       link.setAttribute('href', url);
       link.setAttribute('download', `gqbox_matrix_export_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       setExporting(false);
     }, 600);
   };
 
-  // Вычисление умного диапазона страниц с многоточиями
   const getPageNumbers = () => {
-    const pages = [];
+    const pages: (number | string)[] = [];
     if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       if (currentPage <= 4) {
         pages.push(1, 2, 3, 4, 5, '...', totalPages);
@@ -169,6 +165,28 @@ export default function ProductMatrix() {
     return pages;
   };
 
+  const supplierBadge = (code?: string) => {
+    const c = code || '-';
+    return (
+      <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
+        c === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
+        c === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
+        c === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
+        'bg-bg-elevated text-text-muted'
+      }`}>
+        {c === '-' ? '—' : c}
+      </span>
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+    setSelectedSuppliers([]);
+    setSelectedColors([]);
+    setSelectedPower([]);
+    setSelectedLength([]);
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -178,11 +196,11 @@ export default function ProductMatrix() {
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{filteredProducts.length} {t('matrix.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
-            <button
-              onClick={handleExport}
-              disabled={exporting || filteredProducts.length === 0}
-              className="h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 cursor-pointer"
-            >
+          <button
+            onClick={handleExport}
+            disabled={exporting || filteredProducts.length === 0}
+            className="h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 cursor-pointer"
+          >
             {exporting ? <Check className="w-3.5 h-3.5 text-success" /> : <Download className="w-3.5 h-3.5" />}
             {exporting ? (language === 'ru' ? 'Скачивание...' : 'Exporting...') : t('matrix.export')}
           </button>
@@ -197,12 +215,12 @@ export default function ProductMatrix() {
             placeholder={t('matrix.search')}
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); setTableKey(k => k + 1); }}
-            className="w-full px-4 py-2.5 text-text-primary transition-all duration-200"
+            className="w-full px-4 text-text-primary transition-all duration-200 h-11 sm:h-10"
           />
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-200 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+          className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-200 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
             showFilters || activeFiltersCount > 0
               ? 'bg-bg-elevated text-text-primary border border-border-strong'
               : 'bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary'
@@ -232,7 +250,7 @@ export default function ProductMatrix() {
               <h3 className="text-sm font-medium">{t('matrix.filters')}</h3>
               {activeFiltersCount > 0 && (
                 <button
-                  onClick={() => { setSelectedCategories([]); setSelectedSuppliers([]); setSelectedColors([]); setSelectedPower([]); setSelectedLength([]); }}
+                  onClick={clearAllFilters}
                   className="text-xs flex items-center gap-1 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 px-2 py-1 rounded transition-colors"
                 >
                   <X className="w-3 h-3" /> {t('matrix.clear')}
@@ -242,12 +260,12 @@ export default function ProductMatrix() {
 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.cat')}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {categories.map(cat => (
                   <button
                     key={cat.code}
                     onClick={() => toggleCategory(cat.code)}
-                    className={`flex h-10 min-w-[112px] items-center justify-center gap-1.5 px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+                    className={`flex h-11 sm:h-10 min-w-0 sm:min-w-[112px] items-center justify-center gap-1.5 px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
                       selectedCategories.includes(cat.code)
                         ? 'text-white border border-transparent'
                         : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
@@ -262,12 +280,12 @@ export default function ProductMatrix() {
 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.sup')}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {suppliers.map(sup => (
                   <button
                     key={sup.code}
                     onClick={() => toggleSupplier(sup.code)}
-                    className={`h-10 min-w-[112px] px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+                    className={`h-11 sm:h-10 min-w-0 sm:min-w-[112px] px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
                       selectedSuppliers.includes(sup.code)
                         ? 'bg-accent/25 text-white border border-accent/40'
                         : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
@@ -281,12 +299,12 @@ export default function ProductMatrix() {
 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.color')}</p>
-              <div className="flex flex-wrap gap-1.5 max-h-[116px] overflow-y-auto">
+              <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
                 {uniqueColors.map(c => (
                   <button
                     key={c.code}
                     onClick={() => toggleColor(c.code)}
-                    className={`flex items-center gap-1.5 h-8 px-2 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+                    className={`flex items-center gap-1.5 h-11 sm:h-9 px-2.5 sm:px-2 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer flex-shrink-0 ${
                       selectedColors.includes(c.code)
                         ? 'bg-accent/25 text-white border border-accent/40'
                         : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
@@ -303,50 +321,52 @@ export default function ProductMatrix() {
               </div>
             </div>
 
-            <div>
-              <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.power')}</p>
-              <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto">
-                {uniquePowerValues.map(val => (
-                  <button
-                    key={val}
-                    onClick={() => togglePower(val)}
-                    className={`h-8 px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap ${
-                      selectedPower.includes(val)
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
-                    }`}
-                  >
-                    {val}W
-                  </button>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.power')}</p>
+                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
+                  {uniquePowerValues.map(val => (
+                    <button
+                      key={val}
+                      onClick={() => togglePower(val)}
+                      className={`h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                        selectedPower.includes(val)
+                          ? 'bg-accent/25 text-white border border-accent/40'
+                          : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                      }`}
+                    >
+                      {val}W
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div>
-              <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.length')}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {uniqueLengthValues.map(val => (
-                  <button
-                    key={val}
-                    onClick={() => toggleLength(val)}
-                    className={`h-8 px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap ${
-                      selectedLength.includes(val)
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
-                    }`}
-                  >
-                    {val}{language === 'ru' ? 'м' : 'm'}
-                  </button>
-                ))}
+              <div>
+                <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.length')}</p>
+                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
+                  {uniqueLengthValues.map(val => (
+                    <button
+                      key={val}
+                      onClick={() => toggleLength(val)}
+                      className={`h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                        selectedLength.includes(val)
+                          ? 'bg-accent/25 text-white border border-accent/40'
+                          : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                      }`}
+                    >
+                      {val}{language === 'ru' ? 'м' : 'm'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Data — Table (≥sm) and Cards (<sm) */}
       <div className="glass rounded-xl overflow-hidden">
-        <div className="w-full overflow-x-auto">
+        {/* Table — desktop/tablet */}
+        <div className="hidden sm:block w-full overflow-x-auto">
           <div className="min-w-[750px]">
             <table className="w-full text-sm">
               <thead>
@@ -409,14 +429,7 @@ export default function ProductMatrix() {
                         )}
                       </td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3">
-                        <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
-                          product.supplier?.code === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
-                          product.supplier?.code === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
-                          product.supplier?.code === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
-                          'bg-bg-elevated text-text-muted'
-                        }`}>
-                          {product.supplier?.name || '—'}
-                        </span>
+                        {supplierBadge(product.supplier?.code)}
                       </td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />
@@ -436,7 +449,73 @@ export default function ProductMatrix() {
           </div>
         </div>
 
-        {/* Умная пагинация */}
+        {/* Cards — mobile */}
+        <div key={tableKey} className="sm:hidden p-2 space-y-2 animate-card-in">
+          {paginatedProducts.map((product) => {
+            const Icon = categoryIcons[product.category.code] || Archive;
+            return (
+              <button
+                key={product.id}
+                onClick={() => setSelectedProduct(product)}
+                aria-label={`${displayProductName(product, language)} ${product.sku}`}
+                className="w-full text-left glass rounded-xl p-3 active:scale-[0.99] transition-transform"
+              >
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(product.category.code) }} />
+                    <span className="text-[11px] font-medium truncate" style={{ color: getCategoryColorVar(product.category.code) }}>
+                      {displaySource(product.category, language)}
+                    </span>
+                  </div>
+                  {supplierBadge(product.supplier?.code)}
+                </div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <code className="text-[11px] text-accent truncate">{product.sku}</code>
+                  {product.isKit && (
+                    <span className="text-[9px] px-1 py-0.5 rounded bg-warning/10 text-warning flex-shrink-0">KIT</span>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-text-primary line-clamp-2 mb-2">
+                  {displayProductName(product, language)}
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle truncate max-w-[120px]">
+                    {displaySource(product.model, language)}
+                  </span>
+                  {product.powerW != null && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
+                      {product.powerW}W
+                    </span>
+                  )}
+                  {product.lengthM != null && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
+                      {product.lengthM}{language === 'ru' ? 'м' : 'm'}
+                    </span>
+                  )}
+                  {product.color && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-full border border-border-subtle shrink-0"
+                        style={{
+                          background: product.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : product.color.hexValue,
+                          border: product.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+                        }}
+                      />
+                      <span className="truncate max-w-[80px]">{displaySource(product.color, language)}</span>
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+          {paginatedProducts.length === 0 && (
+            <div className="py-8 text-center text-xs text-text-tertiary">
+              {language === 'ru' ? 'Товары не найдены' : 'No products found'}
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
         {totalPages > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 border-t border-border-subtle">
             <p className="text-[10px] sm:text-xs text-text-tertiary text-center">
@@ -446,12 +525,12 @@ export default function ProductMatrix() {
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer"
+                className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              
+
               {getPageNumbers().map((page, index) => {
                 if (page === '...') {
                   return (
@@ -464,7 +543,7 @@ export default function ProductMatrix() {
                   <button
                     key={`page-${page}`}
                     onClick={() => setCurrentPage(page as number)}
-                    className={`w-9 h-9 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+                    className={`h-11 w-11 sm:h-9 sm:w-9 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer flex items-center justify-center ${
                       currentPage === page
                         ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                         : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
@@ -479,7 +558,7 @@ export default function ProductMatrix() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer"
+                className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />

@@ -256,14 +256,15 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
                   placeholder={t('ai.placeholder')}
-                  className="w-full pr-10 sm:pr-12 text-xs sm:text-sm text-text-primary"
+                  className="w-full pr-12 sm:pr-12 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40"
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
+                  aria-label={language === 'ru' ? 'Отправить' : 'Send'}
                 >
-                  <Send className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

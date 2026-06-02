@@ -257,7 +257,7 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
             <h3 className="text-xs sm:text-sm font-medium">{t('dash.recent')}</h3>
             <button
               onClick={() => onViewChange && onViewChange('matrix')}
-              className="h-8 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer"
+              className="h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer"
             >
               {t('dash.viewAll')} <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -269,7 +269,7 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
                 <div
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}
-                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-bg-hover transition-colors group cursor-pointer"
+                  className="flex items-center gap-3 min-h-[44px] sm:min-h-0 p-2.5 rounded-lg hover:bg-bg-hover active:bg-bg-hover transition-colors group cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `color-mix(in srgb, ${product.category.color} 8%, transparent)` }}>
                     <Icon className="w-4 h-4" style={{ color: getCategoryColorVar(product.category.code) }} />
@@ -331,7 +331,7 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           <div className="mt-4 space-y-2">
             <h4 className="text-xs font-medium text-text-secondary">{t('dash.alerts')}</h4>
             {alerts.map((alert, i) => (
-              <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50">
+              <div key={i} className="flex items-center gap-2 min-h-[44px] sm:min-h-0 p-2.5 rounded-lg bg-bg-tertiary/50">
                 <AlertCircle className={`w-3.5 h-3.5 flex-shrink-0 ${alert.type === 'warning' ? 'text-warning' : alert.type === 'info' ? 'text-info' : 'text-success'}`} />
                 <span className="text-xs text-text-secondary">{alert.message}</span>
               </div>

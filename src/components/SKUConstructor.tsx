@@ -151,7 +151,7 @@ export default function SKUConstructor() {
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {steps.map((s, i) => (
           <Fragment key={s.id}>
-                <div className={`flex h-10 min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all ${
+                <div className={`flex h-11 sm:h-10 min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all ${
               step === s.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : step > s.id
@@ -196,7 +196,7 @@ export default function SKUConstructor() {
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
-                        className={`p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                        className={`min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                           form.categoryId === cat.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
@@ -224,7 +224,7 @@ export default function SKUConstructor() {
                         <button
                           key={model.id}
                           onClick={() => toggleModel(model.id)}
-                          className={`p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                          className={`min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                             form.modelId === model.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
@@ -263,7 +263,7 @@ export default function SKUConstructor() {
                     value={form.baseNumber}
                     onChange={e => updateForm('baseNumber', e.target.value.replace(/\D/g, '').slice(0, 5))}
                     placeholder="10000"
-                    className="w-full text-text-primary"
+                    className="w-full text-text-primary h-11 sm:h-10"
                     maxLength={5}
                   />
                   <p className="text-[10px] text-text-tertiary mt-1">
@@ -280,7 +280,7 @@ export default function SKUConstructor() {
                     value={form.variantCode}
                     onChange={e => updateForm('variantCode', e.target.value.toUpperCase())}
                     placeholder="ST, PR, ORG, E"
-                    className="w-full text-text-primary"
+                    className="w-full text-text-primary h-11 sm:h-10"
                   />
                   <p className="text-[10px] text-text-tertiary mt-1">
                     {language === 'ru' ? 'Дифференциатор модификации' : 'Model differentiation suffix'}
@@ -296,7 +296,7 @@ export default function SKUConstructor() {
                     value={form.lengthVariant}
                     onChange={e => updateForm('lengthVariant', e.target.value)}
                     placeholder="2, 3, 025"
-                    className="w-full text-text-primary"
+                    className="w-full text-text-primary h-11 sm:h-10"
                   />
                   <p className="text-[10px] text-text-tertiary mt-1">
                     {language === 'ru' ? 'Например, -2 для 2 метров' : 'Length override (e.g., -2 for 2m)'}
@@ -304,7 +304,7 @@ export default function SKUConstructor() {
                 </div>
 
                 <div className="sm:col-span-2 pt-2">
-                  <label className="flex items-center gap-3 text-xs sm:text-sm text-text-secondary cursor-pointer" onClick={() => {}}>
+                  <label className="flex items-center gap-3 min-h-[44px] sm:min-h-0 text-xs sm:text-sm text-text-secondary cursor-pointer" onClick={() => {}}>
                     <input
                       type="checkbox"
                       checked={form.isKit}
@@ -343,19 +343,19 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Мощность (W)' : 'Power (W)'}
                   </label>
-                  <input type="text" value={form.powerW} onChange={e => updateForm('powerW', e.target.value)} placeholder="20" className="w-full text-text-primary" />
+                  <input type="text" value={form.powerW} onChange={e => updateForm('powerW', e.target.value)} placeholder="20" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Сила тока (A)' : 'Current (A)'}
                   </label>
-                  <input type="text" value={form.currentA} onChange={e => updateForm('currentA', e.target.value)} placeholder="3" className="w-full text-text-primary" />
+                  <input type="text" value={form.currentA} onChange={e => updateForm('currentA', e.target.value)} placeholder="3" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Напряжение (V)' : 'Voltage (V)'}
                   </label>
-                  <input type="text" value={form.voltageV} onChange={e => updateForm('voltageV', e.target.value)} placeholder="5" className="w-full text-text-primary" />
+                  <input type="text" value={form.voltageV} onChange={e => updateForm('voltageV', e.target.value)} placeholder="5" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
               </div>
 
@@ -364,7 +364,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Входной разъем (Мама)' : 'Female Connector'}
                   </label>
-                  <select value={form.connectorFemaleId} onChange={e => updateForm('connectorFemaleId', e.target.value)} className="w-full text-text-primary">
+                  <select value={form.connectorFemaleId} onChange={e => updateForm('connectorFemaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
                     <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
                     {connectors.map(c => (
                       <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
@@ -375,7 +375,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Выходной разъем (Папа)' : 'Male Connector'}
                   </label>
-                  <select value={form.connectorMaleId} onChange={e => updateForm('connectorMaleId', e.target.value)} className="w-full text-text-primary">
+                  <select value={form.connectorMaleId} onChange={e => updateForm('connectorMaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
                     <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
                     {connectors.map(c => (
                       <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
@@ -386,7 +386,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Протокол зарядки' : 'Charging Protocol'}
                   </label>
-                  <select value={form.protocolId} onChange={e => updateForm('protocolId', e.target.value)} className="w-full text-text-primary">
+                  <select value={form.protocolId} onChange={e => updateForm('protocolId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
                     <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
                     {chargingProtocols.map(p => (
                       <option key={p.id} value={p.id}>{displaySource(p, language)}</option>
@@ -397,7 +397,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Материал корпуса' : 'Body Material'}
                   </label>
-                  <select value={form.bodyMaterialId} onChange={e => updateForm('bodyMaterialId', e.target.value)} className="w-full text-text-primary">
+                  <select value={form.bodyMaterialId} onChange={e => updateForm('bodyMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
                     <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
@@ -408,7 +408,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Материал провода' : 'Wire Material'}
                   </label>
-                  <select value={form.wireMaterialId} onChange={e => updateForm('wireMaterialId', e.target.value)} className="w-full text-text-primary">
+                  <select value={form.wireMaterialId} onChange={e => updateForm('wireMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
                     <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
@@ -419,7 +419,7 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {language === 'ru' ? 'Длина (м)' : 'Length (m)'}
                   </label>
-                  <input type="text" value={form.lengthM} onChange={e => updateForm('lengthM', e.target.value)} placeholder="1" className="w-full text-text-primary" />
+                  <input type="text" value={form.lengthM} onChange={e => updateForm('lengthM', e.target.value)} placeholder="1" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
               </div>
             </motion.div>
@@ -445,7 +445,7 @@ export default function SKUConstructor() {
                       <button
                         key={color.id}
                         onClick={() => updateForm('colorId', color.id)}
-                        className={`p-2 rounded-lg border text-center transition-all cursor-pointer ${
+                        className={`min-h-[44px] sm:min-h-0 p-2 rounded-lg border text-center transition-all cursor-pointer ${
                           form.colorId === color.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
@@ -472,7 +472,7 @@ export default function SKUConstructor() {
                       <button
                         key={sup.id}
                         onClick={() => updateForm('supplierId', sup.id)}
-                        className={`w-full flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                        className={`w-full flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2.5 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                           form.supplierId === sup.id
                             ? 'border-accent/50 bg-accent/20'
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
@@ -594,7 +594,7 @@ export default function SKUConstructor() {
         <button
           onClick={() => setStep(s => Math.max(1, s - 1))}
           disabled={step === 1}
-          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
         >
           <ChevronLeft className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.prev')}
         </button>
@@ -603,7 +603,7 @@ export default function SKUConstructor() {
           <button
             onClick={() => setStep(s => s + 1)}
             disabled={!isStepValid()}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium border border-accent/40 cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium border border-accent/40 cursor-pointer"
           >
             {t('sku.next')} <ChevronRight className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
           </button>
@@ -611,13 +611,13 @@ export default function SKUConstructor() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); }}
-              className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all cursor-pointer"
+              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.reset')}
             </button>
             <button
               onClick={handleGenerate}
-              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all font-medium border border-accent/40 cursor-pointer"
+              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all font-medium border border-accent/40 cursor-pointer"
             >
               <Sparkles className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.generate')}
             </button>

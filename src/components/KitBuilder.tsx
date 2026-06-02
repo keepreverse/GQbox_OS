@@ -226,7 +226,7 @@ export default function KitBuilder() {
                   value={kitSku}
                   onChange={e => setKitSku(e.target.value)}
                   placeholder={language === 'ru' ? 'Введите артикул вручную' : 'Enter article manually'}
-                  className={`w-full text-text-primary ${skuExists ? 'border-danger focus:border-danger' : ''}`}
+                  className={`w-full text-text-primary h-11 sm:h-10 ${skuExists ? 'border-danger focus:border-danger' : ''}`}
                 />
                 {kitSku && skuExists && (
                   <p className="text-[10px] text-danger mt-1">
@@ -241,7 +241,7 @@ export default function KitBuilder() {
                   value={kitName}
                   onChange={e => setKitName(e.target.value)}
                   placeholder={language === 'ru' ? 'Сгенерируется автоматически' : 'Generated automatically'}
-                  className="w-full text-text-primary"
+                  className="w-full text-text-primary h-11 sm:h-10"
                 />
               </div>
               <div>
@@ -251,7 +251,7 @@ export default function KitBuilder() {
                   value={kitNameRu}
                   onChange={e => setKitNameRu(e.target.value)}
                   placeholder={language === 'ru' ? 'Сгенерируется автоматически' : 'Generated automatically'}
-                  className="w-full text-text-primary"
+                  className="w-full text-text-primary h-11 sm:h-10"
                 />
               </div>
             </div>
@@ -283,14 +283,14 @@ export default function KitBuilder() {
                 {components.length > 0 && (
                   <button
                     onClick={() => setComponents([])}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
+                    className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
                   >
                     <X className="w-3 h-3" /> {language === 'ru' ? 'Очистить' : 'Clear'}
                   </button>
                 )}
                 <button
                   onClick={openPicker}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/25 text-white text-xs hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+                  className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg bg-accent/25 text-white text-xs hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
                 >
                   <Plus className="w-3 h-3" /> {language === 'ru' ? 'Добавить' : 'Add'}
                 </button>
@@ -313,7 +313,7 @@ export default function KitBuilder() {
                   <Reorder.Item
                     key={comp.product.id}
                     value={comp}
-                    className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle cursor-grab active:cursor-grabbing"
+                    className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle cursor-grab active:cursor-grabbing"
                   >
                     <div className="text-text-muted hover:text-text-primary transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing">
                       <GripVertical className="w-4 h-4" />
@@ -327,21 +327,24 @@ export default function KitBuilder() {
                     <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(comp.product.id, comp.quantity - 1)}
-                        className="w-5 sm:w-6 h-5 sm:h-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        className="h-11 w-11 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        aria-label={language === 'ru' ? 'Уменьшить' : 'Decrease'}
                       >
                         -
                       </button>
-                      <span className="text-xs sm:text-sm w-4 sm:w-6 text-center">{comp.quantity}</span>
+                      <span className="text-xs sm:text-sm w-6 sm:w-6 text-center">{comp.quantity}</span>
                       <button
                         onClick={() => updateQuantity(comp.product.id, comp.quantity + 1)}
-                        className="w-5 sm:w-6 h-5 sm:h-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        className="h-11 w-11 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        aria-label={language === 'ru' ? 'Увеличить' : 'Increase'}
                       >
                         +
                       </button>
                     </div>
                     <button
                       onClick={() => removeComponent(comp.product.id)}
-                      className="p-1 rounded hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors flex-shrink-0 cursor-pointer"
+                      className="h-11 w-11 sm:h-7 sm:w-7 rounded hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors flex-shrink-0 cursor-pointer flex items-center justify-center"
+                      aria-label={language === 'ru' ? 'Удалить' : 'Remove'}
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -398,7 +401,7 @@ export default function KitBuilder() {
               <button
                 onClick={handleCreateKit}
                 disabled={components.length === 0 || !kitNameRu || !kitSku || skuExists}
-                className="w-full py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40"
+                className="w-full min-h-[44px] sm:min-h-0 py-2.5 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40"
               >
                 {t('kit.create')}
               </button>
@@ -431,7 +434,7 @@ export default function KitBuilder() {
                   placeholder={language === 'ru' ? (pickerView === 'categories' ? 'Поиск категории...' : 'Поиск товаров...') : (pickerView === 'categories' ? 'Search category...' : 'Search products...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent border-none p-0 text-sm focus:ring-0 text-text-primary placeholder:text-text-muted"
+                  className="flex-1 bg-transparent border-none p-0 h-11 sm:h-auto text-sm focus:ring-0 text-text-primary placeholder:text-text-muted"
                 />
                 <button onClick={closePicker} className="p-1.5 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer">
                   <X className="w-4 h-4" />
@@ -446,7 +449,7 @@ export default function KitBuilder() {
                         <button
                           key={cat.id}
                           onClick={() => { setSelectedCategoryCode(cat.code); setPickerView('products'); setSearchQuery(''); }}
-className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                          className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                         >
                           <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                             {(() => {
@@ -477,7 +480,7 @@ className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-al
                       <button
                         key={product.id}
                         onClick={() => addComponent(product)}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                        className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                       >
                         <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                           <Hash className="w-5 h-5" style={{ color: getCategoryColorVar(product.category.code) }} />
