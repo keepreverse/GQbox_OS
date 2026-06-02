@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, FileText, Image, Languages, BarChart3,
   Send, Copy, Check, Brain, MessageSquare
@@ -80,6 +80,12 @@ This SKU represents a 2-meter black ZS-standard cable.`,
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, [messages]);
 
   // Инициализация приветственного сообщения с учетом текущего языка
   useEffect(() => {
@@ -137,7 +143,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 h-[calc(100dvh-120px)] sm:h-[calc(100dvh-140px)] flex flex-col">
+    <div className="space-y-4 sm:space-y-6 h-[calc(100dvh_-_80px)] flex flex-col">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('ai.title')}</h2>
         <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('ai.subtitle')}</p>
@@ -165,7 +171,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
             ))}
           </div>
 
-          <div className="p-3 sm:p-4 rounded-xl bg-bg-tertiary border border-border-default mt-2 lg:mt-4 hidden sm:block">
+          <div className="p-3 sm:p-4 rounded-xl bg-bg-tertiary border border-border-default mt-2 lg:mt-4 hidden lg:block">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="w-4 h-4 text-accent" />
               <span className="text-xs font-medium text-accent">{t('ai.status')}</span>
@@ -244,6 +250,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}
@@ -256,7 +263,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
                   placeholder={t('ai.placeholder')}
-                  className="w-full pr-12 sm:pr-12 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
+                  className="w-full pr-14 sm:pr-14 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
                 />
                 <button
                   onClick={() => handleSend()}

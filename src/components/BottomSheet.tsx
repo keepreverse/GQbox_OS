@@ -62,7 +62,7 @@ export default function BottomSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={closeOnBackdropClick ? onClose : undefined}
-            className="fixed inset-0 z-[99] bg-black/60 cursor-pointer"
+            className="fixed inset-0 z-[99] bg-black/40 cursor-pointer"
             aria-hidden="true"
           />
           <motion.div

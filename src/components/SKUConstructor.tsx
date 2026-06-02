@@ -155,7 +155,7 @@ export default function SKUConstructor() {
               step === s.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : step > s.id
-                ? 'bg-success/10 text-success'
+                ? 'bg-success/10 text-success border border-success/30'
                 : 'bg-bg-secondary text-text-tertiary border border-border-subtle'
             }`}>
               <div className={`w-4 sm:w-5 h-4 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold flex-shrink-0 ${

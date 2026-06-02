@@ -128,7 +128,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm cursor-pointer"
+            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm cursor-pointer"
           />
         )}
       </AnimatePresence>
@@ -478,7 +478,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       ) : settingsOpen && (
         <div
           onClick={closeSettings}
-          className={`fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm t-backdrop${settingsClosing ? ' is-closing' : ''}`}
+          className={`fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm t-backdrop${settingsClosing ? ' is-closing' : ''}`}
         >
             <div
               onClick={(e) => e.stopPropagation()}

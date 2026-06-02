@@ -15,13 +15,12 @@ const connectionTypeTranslations: Record<string, string> = {
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;
-  isOpen?: boolean;
   onClose: () => void;
 }
 
 export default function ProductDetailCard({ product, onClose }: ProductDetailCardProps) {
   const { language } = useLanguage();
-  const { sidebarWidth, headerHeight, isMobile } = useLayout();
+  const { sidebarWidth, isMobile } = useLayout();
   const [closing, setClosing] = useState(false);
 
   useEffect(() => {
@@ -89,15 +88,15 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
 
   return (
     <div className="fixed inset-0 z-[100]" onClick={handleClose}>
-      <div className={`absolute inset-0 bg-black/70 backdrop-blur-sm t-backdrop${closing ? ' is-closing' : ''}`} />
+      <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm t-backdrop${closing ? ' is-closing' : ''}`} />
       {isMobile ? (
         // Mobile: full-screen bottom sheet that slides up
         <div
-          className="absolute inset-x-0 bottom-0 top-0 flex flex-col"
+          className="absolute inset-x-0 bottom-0 top-0 flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           onClick={handleClose}
         >
           <div
-            className={`t-modal glass-strong rounded-t-2xl w-full border-t border-border-strong shadow-2xl mx-auto flex flex-col max-h-[100dvh] mt-auto overflow-hidden animate-card-in${closing ? ' is-closing' : ' is-open'}`}
+            className={`t-modal glass-strong rounded-t-2xl w-full border-t border-border-strong shadow-2xl mx-auto flex flex-col max-h-[calc(100dvh_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom))] mt-auto overflow-hidden animate-card-in${closing ? ' is-closing' : ' is-open'}`}
             onClick={e => e.stopPropagation()}
           >
           <div className="flex items-start justify-between p-3 border-b border-border-subtle bg-bg-secondary/50 sticky top-0 z-10">

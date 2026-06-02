@@ -168,17 +168,17 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.catDist')}</h3>
           <div className="pt-1 sm:pt-2">
           <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
-          <ResponsiveContainer width="100%" height={260} debounce={16}>
-            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2}>
+          <ResponsiveContainer width="100%" height={260} debounce={8}>
+            <BarChart data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
               <XAxis
                 dataKey="name"
                 tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                angle={25}
-                textAnchor="start"
-                height={70}
+                angle={15}
+                textAnchor="end"
+                height={50}
                 interval={0}
               />
               <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -208,14 +208,14 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
           <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.powerDist')}</h3>
           <div className="pt-1 sm:pt-2">
           <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
-          <ResponsiveContainer width="100%" height={220} debounce={16}>
-            <PieChart>
+          <ResponsiveContainer width="100%" height={260} debounce={8}>
+            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
               <Pie
                 data={stats.powerData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
+                innerRadius="25%"
+                outerRadius="50%"
                 paddingAngle={4}
                 dataKey="value"
                 stroke="transparent"

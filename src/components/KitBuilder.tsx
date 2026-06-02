@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import {
   Package, Plus, X, Search, ChevronRight, Zap,
   Hash, Layers, Check, ArrowLeft, Cable, Wifi, Car, Headphones,
@@ -106,31 +106,21 @@ interface ComponentItemProps {
 }
 
 function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemProps) {
-  const controls = useDragControls();
-
   return (
     <Reorder.Item
       value={comp}
-      dragListener={false}
-      dragControls={controls}
       whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 10 }}
       className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle"
     >
-      <button
-        type="button"
-        onPointerDown={(e) => controls.start(e)}
-        className="text-text-muted hover:text-text-primary active:text-text-primary transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-1 touch-none"
-        aria-label={language === 'ru' ? 'Перетащить' : 'Drag to reorder'}
-        title={language === 'ru' ? 'Перетащить' : 'Drag to reorder'}
-      >
+      <div className="text-text-muted flex-shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-1 touch-none">
         <GripVertical className="w-4 h-4" />
-      </button>
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs sm:text-sm font-medium truncate">
           {language === 'ru' ? comp.product.fullNameRu : comp.product.fullName}
         </p>
         <p className="text-[10px] sm:text-[11px] text-text-tertiary truncate">
-          {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : 'N/A'}
+          {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : '—'}
         </p>
       </div>
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -447,11 +437,11 @@ export default function KitBuilder() {
       {/* Product Picker Modal */}
       {showPicker && (
         <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${pickerClosing ? ' is-closing' : ''}`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm t-backdrop${pickerClosing ? ' is-closing' : ''}`}
           onClick={closePicker}
         >
           <div
-            className={`t-modal glass-strong rounded-xl w-full max-w-lg max-h-[70dvh] flex flex-col border border-border-strong shadow-2xl overflow-hidden${!pickerClosing ? ' is-open' : ' is-closing'}`}
+            className={`t-modal glass-strong rounded-xl w-full max-w-lg max-h-[80dvh] flex flex-col border border-border-strong shadow-2xl overflow-hidden${!pickerClosing ? ' is-open' : ' is-closing'}`}
             onClick={e => e.stopPropagation()}
           >
               <div className="p-4 border-b border-border-subtle flex items-center gap-3 bg-bg-secondary">
@@ -464,7 +454,6 @@ export default function KitBuilder() {
                 )}
                 <input
                   type="text"
-                  autoFocus
                   placeholder={language === 'ru' ? (pickerView === 'categories' ? 'Поиск категории...' : 'Поиск товаров...') : (pickerView === 'categories' ? 'Search category...' : 'Search products...')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}

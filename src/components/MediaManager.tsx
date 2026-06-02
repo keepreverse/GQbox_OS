@@ -397,7 +397,7 @@ export default function MediaManager() {
         </BottomSheet>
       ) : showUpload && (
         <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
           onClick={closeUpload}
         >
             <div
