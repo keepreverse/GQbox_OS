@@ -258,7 +258,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             {isMobile && !sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
+                className="h-9 w-9 p-0 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
                 title={language === 'ru' ? 'Открыть меню' : 'Open menu'}
                 aria-label={language === 'ru' ? 'Открыть меню' : 'Open menu'}
               >
@@ -271,7 +271,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             <div className="flex items-center rounded-lg bg-bg-tertiary border border-border-subtle p-0.5">
               <button
                 onClick={() => setLanguage('ru')}
-                className={`flex items-center gap-1 h-11 sm:h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
+                className={`flex items-center gap-1 h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
                   language === 'ru' ? 'bg-bg-elevated text-text-primary' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
                 }`}
               >
@@ -280,7 +280,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               </button>
               <button
                 onClick={() => setLanguage('en')}
-                className={`flex items-center gap-1 h-11 sm:h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
+                className={`flex items-center gap-1 h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
                   language === 'en' ? 'bg-bg-elevated text-text-primary' : 'text-text-tertiary hover:text-text-secondary'
                 }`}
               >
@@ -292,7 +292,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setNotificationsOpen(prev => !prev)}
-                className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+                className={`h-9 w-9 p-0 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
                   notificationsOpen ? 'bg-bg-hover text-text-primary' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
                 }`}
                 title={t('header.notifications')}
@@ -338,7 +338,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
             <button
               onClick={openSettings}
-              className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg text-text-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
+              className="h-9 w-9 p-0 rounded-lg text-text-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
               title={t('header.settings')}
               aria-label={t('header.settings')}
             >
@@ -366,100 +366,112 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       {settingsOpen && (
         isMobile ? (
           <AnimatePresence>
-            <motion.div
-              key="settings-sheet"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-0 z-[100] bg-bg-primary flex flex-col"
-            >
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-2 p-3 border-b border-border-subtle bg-bg-secondary">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Settings className="w-4 h-4 text-accent flex-shrink-0" />
-                  <h3 className="text-sm font-medium truncate">{t('header.settings')}</h3>
-                </div>
-                <button
-                  onClick={closeSettings}
-                  className="h-11 w-11 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
-                  aria-label={language === 'ru' ? 'Закрыть' : 'Close'}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary border border-border-subtle">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-sm font-bold text-white ring-1 ring-accent/30 flex-shrink-0">
-                    GQ
+            <>
+              <motion.div
+                key="settings-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={closeSettings}
+                className="fixed inset-0 z-[99] bg-black/60 cursor-pointer"
+              />
+              <motion.div
+                key="settings-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-x-0 bottom-0 z-[100] bg-bg-primary rounded-t-2xl flex flex-col overflow-hidden border-t border-border-subtle shadow-2xl"
+                style={{ maxHeight: '85dvh' }}
+              >
+                <div className="flex items-center justify-between gap-2 p-3 border-b border-border-subtle bg-bg-secondary">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Settings className="w-4 h-4 text-accent flex-shrink-0" />
+                    <h3 className="text-sm font-medium truncate">{t('header.settings')}</h3>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{t('header.team')}</p>
-                    <p className="text-xs text-text-secondary truncate">product@gqbox.com</p>
-                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded bg-success/10 text-success">
-                      <Shield className="w-2.5 h-2.5" /> {t('header.admin')}
-                    </span>
-                  </div>
+                  <button
+                    onClick={closeSettings}
+                    className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
+                    aria-label={language === 'ru' ? 'Закрыть' : 'Close'}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-text-tertiary">Параметры системы</h4>
-
-                  <div className="flex items-center justify-between text-sm gap-2">
-                    <span className="text-text-secondary">Язык интерфейса</span>
-                    <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
-                      <button
-                        onClick={() => setLanguage('ru')}
-                        className={`h-11 sm:h-9 px-3 rounded text-xs flex items-center ${language === 'ru' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'} cursor-pointer`}
-                      >
-                        Русский
-                      </button>
-                      <button
-                        onClick={() => setLanguage('en')}
-                        className={`h-11 sm:h-9 px-3 rounded text-xs flex items-center cursor-pointer ${language === 'en' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary'}`}
-                      >
-                        English
-                      </button>
+                <div className="overflow-y-auto p-4 space-y-4">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary border border-border-subtle">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-sm font-bold text-white ring-1 ring-accent/30 flex-shrink-0">
+                      GQ
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{t('header.team')}</p>
+                      <p className="text-xs text-text-secondary truncate">product@gqbox.com</p>
+                      <span className="inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded bg-success/10 text-success">
+                        <Shield className="w-2.5 h-2.5" /> {t('header.admin')}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Тема оформления</span>
-                    <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
-                      Futuristic Dark
-                    </span>
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-medium text-text-tertiary">Параметры системы</h4>
+
+                    <div className="flex items-center justify-between text-sm gap-2">
+                      <span className="text-text-secondary">Язык интерфейса</span>
+                      <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
+                        <button
+                          onClick={() => setLanguage('ru')}
+                          className={`h-9 px-3 rounded text-xs flex items-center ${language === 'ru' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'} cursor-pointer`}
+                        >
+                          Русский
+                        </button>
+                        <button
+                          onClick={() => setLanguage('en')}
+                          className={`h-9 px-3 rounded text-xs flex items-center cursor-pointer ${language === 'en' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary'}`}
+                        >
+                          English
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Тема оформления</span>
+                      <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
+                        Futuristic Dark
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Версия БД</span>
+                      <span className="text-xs text-accent">v2.4-normalized</span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Версия БД</span>
-                    <span className="text-xs text-accent">v2.4-normalized</span>
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-text-tertiary">Интеграции</h4>
+                    <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
+                      <span className="flex items-center gap-1.5 text-text-secondary">
+                        <Key className="w-3.5 h-3.5 text-warning" /> Supabase API
+                      </span>
+                      <span className="text-text-tertiary">sbp_live_8f92...</span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-text-tertiary">Интеграции</h4>
-                  <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
-                    <span className="flex items-center gap-1.5 text-text-secondary">
-                      <Key className="w-3.5 h-3.5 text-warning" /> Supabase API
-                    </span>
-                    <span className="text-text-tertiary">sbp_live_8f92...</span>
-                  </div>
+                <div className="p-3 border-t border-border-subtle bg-bg-secondary flex gap-2">
+                  <button
+                    onClick={closeSettings}
+                    className="flex-1 h-11 rounded-lg text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Выйти
+                  </button>
+                  <button
+                    onClick={closeSettings}
+                    className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
+                  >
+                    Сохранить
+                  </button>
                 </div>
-              </div>
-              <div className="p-3 border-t border-border-subtle bg-bg-secondary flex gap-2">
-                <button
-                  onClick={closeSettings}
-                  className="flex-1 h-11 rounded-lg text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
-                >
-                  <LogOut className="w-3.5 h-3.5" /> Выйти
-                </button>
-                <button
-                  onClick={closeSettings}
-                  className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
-                >
-                  Сохранить
-                </button>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           </AnimatePresence>
         ) : (
           <div

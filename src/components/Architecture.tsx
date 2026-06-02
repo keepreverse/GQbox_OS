@@ -77,25 +77,19 @@ export default function Architecture() {
               { icon: Shield, label: t('arch.summary.validation_rules'), value: '8', desc: t('arch.summary.data_integrity') },
             ].map((item) => (
                 <div
-                  key={entity.name}
-                  whileHover={{ scale: 1.02 }}
-                  className={`min-h-[44px] sm:min-h-0 p-3 rounded-lg border cursor-pointer transition-all ${
-                    expandedEntity === entity.name
-                      ? 'border-accent/50 bg-accent/15'
-                      : 'border-border-subtle bg-bg-tertiary/50 hover:border-border-default'
-                  }`}
-                  onClick={() => setExpandedEntity(expandedEntity === entity.name ? null : entity.name)}
+                  key={item.label}
+                  className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 min-h-[44px] sm:min-h-0"
                 >
-                <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl font-bold">{item.value}</p>
+                    <p className="text-[11px] sm:text-xs text-text-tertiary truncate">{item.label}</p>
+                    <p className="text-[9px] sm:text-[10px] text-text-muted truncate">{item.desc}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-lg sm:text-xl font-bold">{item.value}</p>
-                  <p className="text-[11px] sm:text-xs text-text-tertiary truncate">{item.label}</p>
-                  <p className="text-[9px] sm:text-[10px] text-text-muted truncate">{item.desc}</p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       )}
@@ -216,7 +210,7 @@ export default function Architecture() {
                 <motion.div
                   key={entity.name}
                   whileHover={{ scale: 1.02 }}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`min-h-[44px] sm:min-h-0 p-3 rounded-lg border cursor-pointer transition-all ${
                     expandedEntity === entity.name
                       ? 'border-accent/50 bg-accent/15'
                       : 'border-border-subtle bg-bg-tertiary/50 hover:border-border-default'

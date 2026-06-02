@@ -333,80 +333,92 @@ export default function MediaManager() {
         </div>
       )}
 
-      {/* Upload Modal — mobile: full-screen sheet; desktop: centered modal */}
+      {/* Upload Modal — mobile: compact bottom sheet; desktop: centered modal */}
       {showUpload && (
         isMobile ? (
           <AnimatePresence>
-            <motion.div
-              key="upload-sheet"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-0 z-[100] bg-bg-primary flex flex-col"
-            >
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-2 p-3 border-b border-border-subtle bg-bg-secondary">
-                <h3 className="text-sm font-medium">
-                  {language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
-                </h3>
-                <button
-                  onClick={closeUpload}
-                  className="h-11 w-11 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
-                  aria-label={language === 'ru' ? 'Закрыть' : 'Close'}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
-                  <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
-                  <p className="text-xs sm:text-sm text-text-secondary">
-                    {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-                    {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
-                    {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
-                  </p>
+            <>
+              <motion.div
+                key="upload-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={closeUpload}
+                className="fixed inset-0 z-[99] bg-black/60 cursor-pointer"
+              />
+              <motion.div
+                key="upload-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-x-0 bottom-0 z-[100] bg-bg-primary rounded-t-2xl flex flex-col overflow-hidden border-t border-border-subtle shadow-2xl"
+                style={{ maxHeight: '85dvh' }}
+              >
+                <div className="flex items-center justify-between gap-2 p-3 border-b border-border-subtle bg-bg-secondary">
+                  <h3 className="text-sm font-medium">
+                    {language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+                  </h3>
+                  <button
+                    onClick={closeUpload}
+                    className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
+                    aria-label={language === 'ru' ? 'Закрыть' : 'Close'}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
+                <div className="overflow-y-auto p-4 space-y-4">
+                  <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
+                    <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
+                    <p className="text-xs sm:text-sm text-text-secondary">
+                      {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
+                      {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
+                      {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
+                    </p>
+                  </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">
-                      {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., product_photo.jpg"
-                      value={fileName}
-                      onChange={e => setFileName(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">
-                      {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., S10002E/01"
-                      value={uploadSku}
-                      onChange={e => setUploadSku(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-text-tertiary mb-1 block">
+                        {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., product_photo.jpg"
+                        value={fileName}
+                        onChange={e => setFileName(e.target.value)}
+                        className="w-full text-text-primary h-11"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-tertiary mb-1 block">
+                        {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., S10002E/01"
+                        value={uploadSku}
+                        onChange={e => setUploadSku(e.target.value)}
+                        className="w-full text-text-primary h-11"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-3 border-t border-border-subtle bg-bg-secondary">
-                <button
-                  onClick={handleUpload}
-                  className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
-                >
-                  {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
-                </button>
-              </div>
-            </motion.div>
+                <div className="p-3 border-t border-border-subtle bg-bg-secondary">
+                  <button
+                    onClick={handleUpload}
+                    className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+                  >
+                    {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
+                  </button>
+                </div>
+              </motion.div>
+            </>
           </AnimatePresence>
         ) : (
           <div

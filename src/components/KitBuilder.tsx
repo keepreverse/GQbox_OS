@@ -327,7 +327,7 @@ export default function KitBuilder() {
                     <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(comp.product.id, comp.quantity - 1)}
-                        className="h-11 w-11 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
                         aria-label={language === 'ru' ? 'Уменьшить' : 'Decrease'}
                       >
                         -
@@ -335,7 +335,7 @@ export default function KitBuilder() {
                       <span className="text-xs sm:text-sm w-6 sm:w-6 text-center">{comp.quantity}</span>
                       <button
                         onClick={() => updateQuantity(comp.product.id, comp.quantity + 1)}
-                        className="h-11 w-11 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+                        className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
                         aria-label={language === 'ru' ? 'Увеличить' : 'Increase'}
                       >
                         +
@@ -343,7 +343,7 @@ export default function KitBuilder() {
                     </div>
                     <button
                       onClick={() => removeComponent(comp.product.id)}
-                      className="h-11 w-11 sm:h-7 sm:w-7 rounded hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors flex-shrink-0 cursor-pointer flex items-center justify-center"
+                      className="h-9 w-9 sm:h-7 sm:w-7 rounded hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors flex-shrink-0 cursor-pointer flex items-center justify-center"
                       aria-label={language === 'ru' ? 'Удалить' : 'Remove'}
                     >
                       <X className="w-3.5 h-3.5" />
