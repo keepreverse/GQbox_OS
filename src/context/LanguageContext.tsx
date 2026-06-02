@@ -212,7 +212,11 @@ const translations: Record<Language, Translations> = {
     'ai.subtitle': 'Генерация описаний, перевод и автоматизация работы с контентом',
     'ai.quick': 'Быстрые действия',
     'ai.status': 'Статус AI',
-    'ai.placeholder': 'Спросите AI сгенерировать контент, проанализировать SKU...',
+    'ai.placeholder': 'Введите запрос...',
+    'ai.send': 'Отправить',
+    'ai.copy': 'Копировать',
+    'ai.copied': 'Скопировано',
+    'ai.disclaimer': 'Ответы генерируются для демонстрации. Подключите API ключи OpenAI/Claude для реальной работы.',
   },
   en: {
     // Navigation
@@ -419,7 +423,11 @@ const translations: Record<Language, Translations> = {
     'ai.subtitle': 'Generate content, analyze data, and automate product workflows',
     'ai.quick': 'Quick Actions',
     'ai.status': 'AI Status',
-    'ai.placeholder': 'Ask AI to generate content, analyze SKUs, translate...',
+    'ai.placeholder': 'Type your request...',
+    'ai.send': 'Send',
+    'ai.copy': 'Copy',
+    'ai.copied': 'Copied',
+    'ai.disclaimer': 'AI responses are generated for demonstration. Connect to OpenAI/Claude API for production use.',
   },
 };
 

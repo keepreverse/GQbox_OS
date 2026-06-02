@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
+import type { Language } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
 import BottomSheet from './BottomSheet';
 

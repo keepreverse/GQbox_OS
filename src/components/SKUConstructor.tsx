@@ -141,17 +141,17 @@ export default function SKUConstructor() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 w-full">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('sku.title')}</h2>
         <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('sku.subtitle')}</p>
       </div>
 
       {/* Stepper */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2">
         {steps.map((s, i) => (
           <Fragment key={s.id}>
-                <div className={`flex h-11 sm:h-10 min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all ${
+                <div className={`flex h-11 sm:h-10 min-w-[100px] sm:min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-all ${
               step === s.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : step > s.id
@@ -174,7 +174,7 @@ export default function SKUConstructor() {
       </div>
 
       {/* Form Content */}
-      <div className="glass rounded-xl p-3 sm:p-6 min-h-[300px] sm:min-h-[400px]">
+      <div className="glass rounded-xl p-3 sm:p-6 min-h-0">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div

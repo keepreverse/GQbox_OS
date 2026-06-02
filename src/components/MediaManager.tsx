@@ -129,7 +129,7 @@ export default function MediaManager() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('media.title')}</h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
@@ -138,15 +138,15 @@ export default function MediaManager() {
         </div>
         <button
           onClick={openUpload}
-          className="flex items-center gap-2 min-h-[44px] sm:min-h-0 px-4 py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40"
+          className="flex items-center gap-2 min-h-[44px] sm:min-h-0 px-4 py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
           <Upload className="w-4 h-4" /> {t('media.upload')}
         </button>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex-1 order-2 sm:order-1">
           <input
             type="text"
             placeholder={t('media.search')}
@@ -155,12 +155,12 @@ export default function MediaManager() {
             className="w-full px-4 h-11 sm:h-10 text-text-primary"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto order-1 sm:order-2 pb-1 sm:pb-0">
           {(['all', 'image', 'video'] as const).map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+              className={`h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap ${
                 filterType === type
                   ? 'bg-accent/25 text-white border border-accent/40'
                   : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
@@ -169,7 +169,7 @@ export default function MediaManager() {
               {type === 'all' ? t('media.all') : type === 'image' ? t('media.photos') : t('media.videos_label')}
             </button>
           ))}
-          <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5">
+          <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5 flex-shrink-0">
             <button
               onClick={() => setViewMode('grid')}
               className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${viewMode === 'grid' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'}`}
@@ -226,7 +226,7 @@ export default function MediaManager() {
 
       {/* Grid View */}
       {viewMode === 'grid' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
           {filtered.map((item, i) => (
             <div
               key={item.id}
@@ -240,50 +240,51 @@ export default function MediaManager() {
             >
               <div className="aspect-square bg-bg-tertiary flex items-center justify-center">
                 {item.type === 'image' ? (
-                  <FileImage className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
+                  <FileImage className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                 ) : (
-                  <FileVideo className="w-8 sm:w-10 h-8 sm:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
+                  <FileVideo className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                 )}
               </div>
-              <div className="p-2 sm:p-3">
-                <p className="text-xs font-medium truncate">{item.name}</p>
+              <div className="p-2 sm:p-2.5 md:p-3">
+                <p className="text-[11px] sm:text-xs font-medium truncate">{item.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[10px] text-text-tertiary">{item.size}</span>
                   <span className="text-[10px] text-text-muted truncate max-w-[80px]">{item.productSku}</span>
                 </div>
               </div>
               {selectedItems.includes(item.id) && (
-                <div className="absolute top-2 right-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center shadow-sm">
+                <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center shadow-sm">
                   <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white" />
                 </div>
               )}
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-full py-12 text-center text-xs text-text-tertiary">
-              {t('media.not_found')}
-              </div>
-            )}
-          </div>
-        )}
+            <div className="col-span-full py-16 flex flex-col items-center justify-center gap-3">
+              <FileImage className="w-10 h-10 text-text-muted" />
+              <span className="text-xs sm:text-sm text-text-tertiary">{t('media.not_found')}</span>
+            </div>
+          )}
+        </div>
+      )}
 
-        {/* List View */}
-        {viewMode === 'list' && (
-          <div className="glass rounded-xl overflow-hidden">
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[500px] sm:min-w-[600px]">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border-subtle">
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.file')}</th>
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.type')}</th>
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.sku')}</th>
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.size')}</th>
-                      <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.date')}</th>
-                      <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.actions')}</th>
-                    </tr>
-                  </thead>
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[480px] sm:min-w-[600px]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border-subtle">
+                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-10"></th>
+                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.file')}</th>
+                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.type')}</th>
+                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.sku')}</th>
+                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.size')}</th>
+                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.date')}</th>
+                    <th className="text-right px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.actions')}</th>
+                  </tr>
+                </thead>
                   <tbody>
                     {filtered.map(item => (
                     <tr
@@ -293,28 +294,28 @@ export default function MediaManager() {
                     }`}
                       onClick={() => toggleSelect(item.id)}
                     >
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
                         <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedItems.includes(item.id) ? 'bg-accent border-accent' : 'border-border-default'}`}>
                           {selectedItems.includes(item.id) && <Check className="w-3 h-3 text-white" />}
                         </div>
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           {item.type === 'image' ? <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" /> : <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />}
-                          <span className="text-[11px] sm:text-sm truncate max-w-[120px] sm:max-w-[200px]">{item.name}</span>
+                          <span className="text-[11px] sm:text-sm truncate max-w-[100px] sm:max-w-[200px]">{item.name}</span>
                         </div>
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3">
                         <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
                           item.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
                         }`}>
                           {item.type === 'image' ? t('media.image_label') : t('media.video_label')}
                         </span>
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-accent">{item.productSku}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{item.size}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-tertiary">{item.uploadedAt}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-right">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-accent">{item.productSku}</td>
+                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{item.size}</td>
+                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-tertiary">{item.uploadedAt}</td>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-right">
                         <div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
                           <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(t('media.toast.download_item') + ` "${item.name}"...`); }}>
                             <Download className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
@@ -328,8 +329,11 @@ export default function MediaManager() {
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-3 sm:px-4 py-8 text-center text-xs text-text-tertiary">
-                        {t('media.not_found')}
+                      <td colSpan={7} className="px-2 sm:px-4 py-10 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <FileImage className="w-8 h-8 text-text-muted" />
+                          <span className="text-xs text-text-tertiary">{t('media.not_found')}</span>
+                        </div>
                       </td>
                     </tr>
                   )}
