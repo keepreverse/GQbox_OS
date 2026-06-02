@@ -195,14 +195,20 @@ input, select, textarea {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
-/* Prevent iOS Safari from auto-zooming on input focus
-   (Safari zooms if computed font-size < 16px). Desktop is unaffected because
-   it only applies at the `min-width: 640px` (Tailwind `sm`) breakpoint and up. */
-@media (max-width: 639.98px) {
-  input, select, textarea {
-    font-size: 16px;
-  }
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-tertiary) 50%),
+                    linear-gradient(135deg, var(--color-text-tertiary) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+/* iOS auto-zoom prevention: 16px minimum when input is focused on Safari */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px; }
 }
 input:focus, select:focus, textarea:focus {
   border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);

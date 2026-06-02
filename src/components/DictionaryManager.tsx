@@ -399,26 +399,25 @@ export default function DictionaryManager() {
         ))}
       </div>
 
-      {/* Add Form — mobile: bottom sheet; desktop: inline collapse */}
+      {/* Add Form — mobile: BottomSheet; desktop: inline collapse */}
       {isMobile ? (
         <BottomSheet
           open={showAddForm}
           onClose={() => setShowAddForm(false)}
-          title={
-            <h3 className="text-sm font-medium truncate">
-              {language === 'ru' ? 'Добавить: ' : 'Add: '}{dictConfig.find(d => d.id === activeDict)?.label}
-            </h3>
-          }
-          showGrabHandle
+          title={`${language === 'ru' ? 'Добавить: ' : 'Add: '}${dictConfig.find(d => d.id === activeDict)?.label ?? ''}`}
+          icon={<Plus className="w-4 h-4 text-accent flex-shrink-0" />}
+          ariaLabel={language === 'ru' ? 'Добавить запись' : 'Add entry'}
           footer={
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setShowAddForm(false)}
                 className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
               >
                 {language === 'ru' ? 'Отмена' : 'Cancel'}
               </button>
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={!code || !nameRu}
                 className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"

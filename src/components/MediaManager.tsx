@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, Grid, List,
   FileImage, FileVideo, MoreVertical, Trash2, Download,
-  Check
+  X, Check
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
@@ -39,10 +39,23 @@ export default function MediaManager() {
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showUpload, setShowUpload] = useState(false);
+  const [uploadClosing, setUploadClosing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const closeUpload = () => setShowUpload(false);
-  const openUpload = () => setShowUpload(true);
+  const MODAL_CLOSE_MS = 150;
+
+  const closeUpload = useCallback(() => {
+    setUploadClosing(true);
+    setTimeout(() => {
+      setShowUpload(false);
+      setUploadClosing(false);
+    }, MODAL_CLOSE_MS);
+  }, []);
+
+  const openUpload = useCallback(() => {
+    setUploadClosing(false);
+    setShowUpload(true);
+  }, []);
 
   // Форма загрузки
   const [uploadSku, setUploadSku] = useState('');
@@ -171,17 +184,15 @@ export default function MediaManager() {
         </div>
       </div>
 
-      {/* Selection Bar */}
-      <div
-        className={`flex items-center justify-between p-3 rounded-lg bg-accent/10 transition-all duration-200 ${
-          selectedItems.length > 0 ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
-        }`}
-      >
+      {/* Selection Bar — visible only when items selected, no space when empty */}
+      {selectedItems.length > 0 && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10">
           <span className="text-xs sm:text-sm text-accent font-medium">
             {selectedItems.length} {t('media.selected')}
           </span>
           <div className="flex items-center gap-1 sm:gap-2">
             <button
+              type="button"
               onClick={handleDownloadSelected}
               className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded hover:bg-accent/10 hover:text-text-primary text-accent transition-colors cursor-pointer flex items-center justify-center"
               title={language === 'ru' ? 'Скачать выбранные' : 'Download selected'}
@@ -190,6 +201,7 @@ export default function MediaManager() {
               <Download className="w-4 h-4" />
             </button>
             <button
+              type="button"
               onClick={handleTrashSelected}
               className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded hover:bg-danger/10 hover:text-text-primary text-danger transition-colors cursor-pointer flex items-center justify-center"
               title={language === 'ru' ? 'Удалить выбранные' : 'Delete selected'}
@@ -198,6 +210,7 @@ export default function MediaManager() {
               <Trash2 className="w-4 h-4" />
             </button>
             <button
+              type="button"
               onClick={() => setSelectedItems([])}
               className="h-11 sm:h-9 text-xs text-accent hover:bg-bg-hover hover:text-text-primary px-3 rounded transition-colors cursor-pointer"
             >
@@ -205,6 +218,7 @@ export default function MediaManager() {
             </button>
           </div>
         </div>
+      )}
 
       {/* Grid View */}
       {viewMode === 'grid' && (
@@ -321,63 +335,134 @@ export default function MediaManager() {
         </div>
       )}
 
-      {/* Upload Modal — BottomSheet auto-adapts (sheet on mobile, centered modal on desktop) */}
-      <BottomSheet
-        open={showUpload}
-        onClose={closeUpload}
-        title={language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
-        showGrabHandle={isMobile}
-        footer={
-          <button
-            onClick={handleUpload}
-            className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
-          >
-            {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
-          </button>
-        }
-      >
-        <div className="space-y-4">
-          <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
-            <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
-            <p className="text-xs sm:text-sm text-text-secondary">
-              {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
-            </p>
-            <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-              {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
-            </p>
-            <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
-              {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
-            </p>
-          </div>
+      {/* Upload Modal — mobile: BottomSheet; desktop: centered modal (untouched) */}
+      {isMobile ? (
+        <BottomSheet
+          open={showUpload}
+          onClose={closeUpload}
+          title={language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+          icon={<Upload className="w-4 h-4 text-accent flex-shrink-0" />}
+          ariaLabel={language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+          footer={
+            <button
+              type="button"
+              onClick={handleUpload}
+              className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+            >
+              {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
+            </button>
+          }
+        >
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
+              <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
+              <p className="text-xs sm:text-sm text-text-secondary">
+                {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
+              </p>
+              <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
+                {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
+              </p>
+              <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
+                {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
+              </p>
+            </div>
 
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-text-tertiary mb-1 block">
-                {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., product_photo.jpg"
-                value={fileName}
-                onChange={e => setFileName(e.target.value)}
-                className={`w-full text-text-primary ${isMobile ? 'h-11' : ''}`}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-text-tertiary mb-1 block">
-                {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., S10002E/01"
-                value={uploadSku}
-                onChange={e => setUploadSku(e.target.value)}
-                className={`w-full text-text-primary ${isMobile ? 'h-11' : ''}`}
-              />
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-text-tertiary mb-1 block">
+                  {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., product_photo.jpg"
+                  value={fileName}
+                  onChange={e => setFileName(e.target.value)}
+                  className="w-full text-text-primary h-11"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-text-tertiary mb-1 block">
+                  {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., S10002E/01"
+                  value={uploadSku}
+                  onChange={e => setUploadSku(e.target.value)}
+                  className="w-full text-text-primary h-11"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </BottomSheet>
+        </BottomSheet>
+      ) : showUpload && (
+        <div
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
+          onClick={closeUpload}
+        >
+            <div
+              className={`t-modal glass-strong rounded-xl w-full max-w-md p-4 sm:p-6 border border-border-strong shadow-2xl${!uploadClosing ? ' is-open' : ' is-closing'}`}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">
+                  {language === 'ru' ? 'Загрузка файлов' : 'Upload Media'}
+                </h3>
+                <button onClick={closeUpload} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
+                <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
+                <p className="text-xs sm:text-sm text-text-secondary">
+                  {language === 'ru' ? 'Перетащите файлы сюда' : 'Drag & drop files here'}
+                </p>
+                <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
+                  {language === 'ru' ? 'или нажмите для выбора' : 'or click to browse'}
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
+                  {language === 'ru' ? 'Поддерживаются JPG, PNG, MP4 до 100MB' : 'Supports JPG, PNG, MP4 up to 100MB'}
+                </p>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="text-xs text-text-tertiary mb-1 block">
+                    {language === 'ru' ? 'Имя файла (для симуляции)' : 'File Name'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., product_photo.jpg"
+                    value={fileName}
+                    onChange={e => setFileName(e.target.value)}
+                    className="w-full text-text-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-text-tertiary mb-1 block">
+                    {language === 'ru' ? 'Привязка к SKU товара' : 'Link to Product SKU'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., S10002E/01"
+                    value={uploadSku}
+                    onChange={e => setUploadSku(e.target.value)}
+                    className="w-full text-text-primary"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleUpload}
+                className="w-full mt-5 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+              >
+                {language === 'ru' ? 'Загрузить в систему' : 'Upload Files'}
+              </button>
+            </div>
+          </div>
+      )}
     </div>
   );
 }
