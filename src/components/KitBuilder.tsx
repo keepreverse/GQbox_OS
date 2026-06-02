@@ -113,13 +113,12 @@ function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemP
       value={comp}
       dragListener={false}
       dragControls={controls}
-      whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 50 }}
-      className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle"
+      whileDrag={{ boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 50 }}
+      className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle select-none"
     >
-      {/* Grip handle + product name = draggable zone */}
       <div
         onPointerDown={(e) => { controls.start(e); }}
-        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-grab active:cursor-grabbing touch-none"
+        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <div className="text-text-muted flex-shrink-0 p-1 -ml-1">
           <GripVertical className="w-4 h-4" />
@@ -132,25 +131,27 @@ function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemP
             {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : '—'}
           </p>
         </div>
-      </div>
-      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        <button
-          type="button"
-          onClick={() => onUpdateQty(comp.product.id, comp.quantity - 1)}
-          className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
-          aria-label={language === 'ru' ? 'Уменьшить' : 'Decrease'}
-        >
-          -
-        </button>
-        <span className="text-xs sm:text-sm w-6 sm:w-6 text-center">{comp.quantity}</span>
-        <button
-          type="button"
-          onClick={() => onUpdateQty(comp.product.id, comp.quantity + 1)}
-          className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
-          aria-label={language === 'ru' ? 'Увеличить' : 'Increase'}
-        >
-          +
-        </button>
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onUpdateQty(comp.product.id, comp.quantity - 1); }}
+            className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+            aria-label={language === 'ru' ? 'Уменьшить' : 'Decrease'}
+          >
+            -
+          </button>
+          <span className="text-xs sm:text-sm w-6 sm:w-6 text-center">{comp.quantity}</span>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onUpdateQty(comp.product.id, comp.quantity + 1); }}
+            className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
+            aria-label={language === 'ru' ? 'Увеличить' : 'Increase'}
+          >
+            +
+          </button>
+        </div>
       </div>
       <button
         type="button"
@@ -252,7 +253,7 @@ export default function KitBuilder() {
   const totalPower = components.reduce((sum, c) => sum + (c.product.powerW || 0), 0);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
