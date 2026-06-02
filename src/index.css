@@ -195,6 +195,15 @@ input, select, textarea {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+/* Prevent iOS Safari from auto-zooming on input focus
+   (Safari zooms if computed font-size < 16px). Desktop is unaffected because
+   it only applies at the `min-width: 640px` (Tailwind `sm`) breakpoint and up. */
+@media (max-width: 639.98px) {
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
 input:focus, select:focus, textarea:focus {
   border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 10%, transparent);

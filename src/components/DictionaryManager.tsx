@@ -10,6 +10,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
+import BottomSheet from './BottomSheet';
 
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'protocols' | 'materials';
 
@@ -398,92 +399,68 @@ export default function DictionaryManager() {
         ))}
       </div>
 
-      {/* Add Form — mobile: compact bottom sheet; desktop: inline collapse */}
+      {/* Add Form — mobile: bottom sheet; desktop: inline collapse */}
       {isMobile ? (
-        <AnimatePresence>
-          {showAddForm && (
-            <>
-              <motion.div
-                key="add-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+        <BottomSheet
+          open={showAddForm}
+          onClose={() => setShowAddForm(false)}
+          title={
+            <h3 className="text-sm font-medium truncate">
+              {language === 'ru' ? 'Добавить: ' : 'Add: '}{dictConfig.find(d => d.id === activeDict)?.label}
+            </h3>
+          }
+          showGrabHandle
+          footer={
+            <div className="flex gap-2">
+              <button
                 onClick={() => setShowAddForm(false)}
-                className="fixed inset-0 z-[99] bg-black/60 cursor-pointer"
-              />
-              <motion.div
-                key="add-sheet"
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed inset-x-0 bottom-0 z-[100] bg-bg-primary rounded-t-2xl flex flex-col overflow-hidden border-t border-border-subtle shadow-2xl"
-                style={{ maxHeight: '85dvh' }}
+                className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
               >
-                <div className="flex items-center justify-between gap-2 p-3 border-b border-border-subtle bg-bg-secondary">
-                  <h3 className="text-sm font-medium truncate">
-                    {language === 'ru' ? 'Добавить: ' : 'Add: '}{dictConfig.find(d => d.id === activeDict)?.label}
-                  </h3>
-                  <button
-                    onClick={() => setShowAddForm(false)}
-                    className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
-                    aria-label={language === 'ru' ? 'Закрыть' : 'Close'}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="overflow-y-auto p-4 space-y-3">
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
-                    <input
-                      type="text"
-                      placeholder={language === 'ru' ? 'Уникальный код' : 'Unique code'}
-                      value={code}
-                      onChange={e => setCode(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
-                    <input
-                      type="text"
-                      placeholder={language === 'ru' ? 'Название-источник (как в словаре)' : 'Source name (as in dictionary)'}
-                      value={nameEn}
-                      onChange={e => setNameEn(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
-                    <input
-                      type="text"
-                      placeholder={language === 'ru' ? 'Товарное название' : 'Product name'}
-                      value={nameRu}
-                      onChange={e => setNameRu(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                </div>
-                <div className="p-3 border-t border-border-subtle bg-bg-secondary flex gap-2">
-                  <button
-                    onClick={() => setShowAddForm(false)}
-                    className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                  >
-                    {language === 'ru' ? 'Отмена' : 'Cancel'}
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={!code || !nameRu}
-                    className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
-                  >
-                    <Check className="w-4 h-4" /> {language === 'ru' ? 'Сохранить' : 'Save'}
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+                {language === 'ru' ? 'Отмена' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!code || !nameRu}
+                className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
+              >
+                <Check className="w-4 h-4" /> {language === 'ru' ? 'Сохранить' : 'Save'}
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
+              <input
+                type="text"
+                placeholder={language === 'ru' ? 'Уникальный код' : 'Unique code'}
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                className="w-full text-text-primary h-11"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
+              <input
+                type="text"
+                placeholder={language === 'ru' ? 'Название-источник (как в словаре)' : 'Source name (as in dictionary)'}
+                value={nameEn}
+                onChange={e => setNameEn(e.target.value)}
+                className="w-full text-text-primary h-11"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
+              <input
+                type="text"
+                placeholder={language === 'ru' ? 'Товарное название' : 'Product name'}
+                value={nameRu}
+                onChange={e => setNameRu(e.target.value)}
+                className="w-full text-text-primary h-11"
+              />
+            </div>
+          </div>
+        </BottomSheet>
       ) : (
         <div
           style={{
