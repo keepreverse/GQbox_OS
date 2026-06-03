@@ -202,7 +202,7 @@ export default function ProductMatrix() {
             className="h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 cursor-pointer"
           >
             {exporting ? <Check className="w-3.5 h-3.5 text-success" /> : <Download className="w-3.5 h-3.5" />}
-            {exporting ? (language === 'ru' ? 'Скачивание...' : 'Exporting...') : t('matrix.export')}
+            {exporting ? t('matrix.exporting') : t('matrix.export')}
           </button>
         </div>
       </div>
@@ -353,7 +353,7 @@ export default function ProductMatrix() {
                           : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
                       }`}
                     >
-                      {val}{language === 'ru' ? 'м' : 'm'}
+                      {val}{t('matrix.unit_m')}
                     </button>
                   ))}
                 </div>
@@ -414,7 +414,7 @@ export default function ProductMatrix() {
                         {displaySource(product.model, language)}
                       </td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{product.powerW ? `${product.powerW}W` : '—'}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{product.lengthM ? `${product.lengthM}${language === 'ru' ? 'м' : 'm'}` : '—'}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{product.lengthM ? `${product.lengthM}${t('matrix.unit_m')}` : '—'}</td>
                       <td className="px-3 sm:px-4 py-2 sm:py-3">
                         {product.color && (
                           <div className="flex items-center gap-1 sm:gap-1.5">
@@ -440,7 +440,7 @@ export default function ProductMatrix() {
                 {paginatedProducts.length === 0 && (
                   <tr>
                     <td colSpan={9} className="px-3 sm:px-4 py-8 text-center text-xs text-text-tertiary">
-                      {language === 'ru' ? 'Товары не найдены' : 'No products found'}
+                      {t('matrix.empty')}
                     </td>
                   </tr>
                 )}
@@ -489,7 +489,7 @@ export default function ProductMatrix() {
                   )}
                   {product.lengthM != null && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
-                      {product.lengthM}{language === 'ru' ? 'м' : 'm'}
+                      {product.lengthM}{t('matrix.unit_m')}
                     </span>
                   )}
                   {product.color && (
@@ -510,7 +510,7 @@ export default function ProductMatrix() {
           })}
           {paginatedProducts.length === 0 && (
             <div className="py-8 text-center text-xs text-text-tertiary">
-              {language === 'ru' ? 'Товары не найдены' : 'No products found'}
+              {t('matrix.empty')}
             </div>
           )}
         </div>

@@ -26,21 +26,25 @@ export default function DictionaryManager() {
   const [nameRu, setNameRu] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const dictLabels: Record<DictType, string> = {
+    categories: t('dict.tab.categories'), models: t('dict.tab.models'), colors: t('dict.tab.colors'),
+    suppliers: t('dict.tab.suppliers'), connectors: t('dict.tab.connectors'), protocols: t('dict.tab.protocols'), materials: t('dict.tab.materials'),
+  };
   const dictConfig: { id: DictType; label: string; icon: React.ElementType; count: number }[] = [
-    { id: 'categories', label: language === 'ru' ? 'Категории' : 'Categories', icon: Layers, count: categories.length },
-    { id: 'models', label: language === 'ru' ? 'Модели' : 'Models', icon: Tag, count: models.length },
-    { id: 'colors', label: language === 'ru' ? 'Цвета' : 'Colors', icon: Palette, count: colors.length },
-    { id: 'suppliers', label: language === 'ru' ? 'Поставщики' : 'Suppliers', icon: Truck, count: suppliers.length },
-    { id: 'connectors', label: language === 'ru' ? 'Разъемы' : 'Connectors', icon: Plug, count: connectors.length },
-    { id: 'protocols', label: language === 'ru' ? 'Протоколы' : 'Protocols', icon: Zap, count: chargingProtocols.length },
-    { id: 'materials', label: language === 'ru' ? 'Материалы' : 'Materials', icon: Box, count: materials.length },
+    { id: 'categories', label: dictLabels.categories, icon: Layers, count: categories.length },
+    { id: 'models', label: dictLabels.models, icon: Tag, count: models.length },
+    { id: 'colors', label: dictLabels.colors, icon: Palette, count: colors.length },
+    { id: 'suppliers', label: dictLabels.suppliers, icon: Truck, count: suppliers.length },
+    { id: 'connectors', label: dictLabels.connectors, icon: Plug, count: connectors.length },
+    { id: 'protocols', label: dictLabels.protocols, icon: Zap, count: chargingProtocols.length },
+    { id: 'materials', label: dictLabels.materials, icon: Box, count: materials.length },
   ];
 
   const handleSave = () => {
     if (!code || !nameRu) return;
     
     // Имитация успешного сохранения
-    setToastMessage(language === 'ru' ? `Запись "${nameRu}" успешно добавлена в справочник!` : `Entry "${nameEn || nameRu}" successfully added!`);
+    setToastMessage(t('dict.toast_added').replace('{name}', nameRu));
     setCode('');
     setNameEn('');
     setNameRu('');
@@ -130,7 +134,7 @@ export default function DictionaryManager() {
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-subtle">
               <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{language === 'ru' ? 'Название' : 'Name'}</th>
+              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.name')}</th>
               <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('dict.col.actions')}</th>
             </tr></thead>
             <tbody>
@@ -404,9 +408,9 @@ export default function DictionaryManager() {
         <BottomSheet
           open={showAddForm}
           onClose={() => setShowAddForm(false)}
-          title={`${language === 'ru' ? 'Добавить: ' : 'Add: '}${dictConfig.find(d => d.id === activeDict)?.label ?? ''}`}
+          title={`${t('dict.add_title')}${dictConfig.find(d => d.id === activeDict)?.label ?? ''}`}
           icon={<Plus className="w-4 h-4 text-accent flex-shrink-0" />}
-          ariaLabel={language === 'ru' ? 'Добавить запись' : 'Add entry'}
+          ariaLabel={t('dict.add')}
           footer={
             <div className="flex gap-2">
               <button
@@ -414,7 +418,7 @@ export default function DictionaryManager() {
                 onClick={() => setShowAddForm(false)}
                 className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
               >
-                {language === 'ru' ? 'Отмена' : 'Cancel'}
+                {t('dict.cancel')}
               </button>
               <button
                 type="button"
@@ -422,7 +426,7 @@ export default function DictionaryManager() {
                 disabled={!code || !nameRu}
                 className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
               >
-                <Check className="w-4 h-4" /> {language === 'ru' ? 'Сохранить' : 'Save'}
+                <Check className="w-4 h-4" /> {t('dict.save')}
               </button>
             </div>
           }
@@ -432,7 +436,7 @@ export default function DictionaryManager() {
               <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
               <input
                 type="text"
-                placeholder={language === 'ru' ? 'Уникальный код' : 'Unique code'}
+                placeholder={t('dict.form.code_placeholder')}
                 value={code}
                 onChange={e => setCode(e.target.value)}
                 className="w-full text-text-primary h-11"
@@ -442,7 +446,7 @@ export default function DictionaryManager() {
               <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
               <input
                 type="text"
-                placeholder={language === 'ru' ? 'Название-источник (как в словаре)' : 'Source name (as in dictionary)'}
+                placeholder={t('dict.form.source_placeholder')}
                 value={nameEn}
                 onChange={e => setNameEn(e.target.value)}
                 className="w-full text-text-primary h-11"
@@ -452,7 +456,7 @@ export default function DictionaryManager() {
               <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
               <input
                 type="text"
-                placeholder={language === 'ru' ? 'Товарное название' : 'Product name'}
+                placeholder={t('dict.form.product_placeholder')}
                 value={nameRu}
                 onChange={e => setNameRu(e.target.value)}
                 className="w-full text-text-primary h-11"
@@ -473,7 +477,7 @@ export default function DictionaryManager() {
             <div className="glass rounded-xl p-4 sm:p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium">
-                  {language === 'ru' ? 'Добавление записи:' : 'Add New'} {dictConfig.find(d => d.id === activeDict)?.label}
+                  {t('dict.add_title')}{dictConfig.find(d => d.id === activeDict)?.label}
                 </h3>
                 <button onClick={() => setShowAddForm(false)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
                   <X className="w-4 h-4" />
@@ -484,7 +488,7 @@ export default function DictionaryManager() {
                   <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
                   <input
                     type="text"
-                    placeholder={language === 'ru' ? 'Уникальный код' : 'Unique code'}
+                    placeholder={t('dict.form.code_placeholder')}
                     value={code}
                     onChange={e => setCode(e.target.value)}
                     className="w-full text-text-primary"
@@ -494,7 +498,7 @@ export default function DictionaryManager() {
                   <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
                   <input
                     type="text"
-                    placeholder={language === 'ru' ? 'Название-источник (как в словаре)' : 'Source name (as in dictionary)'}
+                    placeholder={t('dict.form.source_placeholder')}
                     value={nameEn}
                     onChange={e => setNameEn(e.target.value)}
                     className="w-full text-text-primary"
@@ -504,7 +508,7 @@ export default function DictionaryManager() {
                   <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
                   <input
                     type="text"
-                    placeholder={language === 'ru' ? 'Товарное название' : 'Product name'}
+                    placeholder={t('dict.form.product_placeholder')}
                     value={nameRu}
                     onChange={e => setNameRu(e.target.value)}
                     className="w-full text-text-primary"
@@ -516,14 +520,14 @@ export default function DictionaryManager() {
                   onClick={() => setShowAddForm(false)}
                   className="px-3 py-1.5 rounded-lg text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
                 >
-                  {language === 'ru' ? 'Отмена' : 'Cancel'}
+                  {t('dict.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={!code || !nameRu}
                   className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
                 >
-                  <Check className="w-3.5 h-3.5" /> {language === 'ru' ? 'Сохранить' : 'Save'}
+                  <Check className="w-3.5 h-3.5" /> {t('dict.save')}
                 </button>
               </div>
             </div>

@@ -304,19 +304,19 @@ export default function Architecture() {
               <div className="space-y-3 text-sm text-text-secondary">
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Next.js 15 App Router</p>
-                  <p className="text-xs">{language === 'ru' ? 'Серверные компоненты для загрузки данных, клиентские для интерактивности' : 'Server Components for data fetching, Client Components for interactivity'}</p>
+                  <p className="text-xs">{t('arch.system.fe_nextjs_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">shadcn/ui + Tailwind CSS</p>
-                  <p className="text-xs">{language === 'ru' ? 'Библиотека компонентов с кастомной темой для тёмного премиум интерфейса' : 'Component library with custom theming for dark premium UI'}</p>
+                  <p className="text-xs">{t('arch.system.fe_shadcn_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">TanStack Query</p>
-                  <p className="text-xs">{language === 'ru' ? 'Управление серверным состоянием с кешированием и оптимистичными обновлениями' : 'Server state management with caching and optimistic updates'}</p>
+                  <p className="text-xs">{t('arch.system.fe_tanstack_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Zustand</p>
-                  <p className="text-xs">{language === 'ru' ? 'Лёгкое клиентское состояние для настроек интерфейса и фильтров' : 'Lightweight client state for UI preferences and filters'}</p>
+                  <p className="text-xs">{t('arch.system.fe_zustand_desc')}</p>
                 </div>
               </div>
             </div>
@@ -329,19 +329,19 @@ export default function Architecture() {
               <div className="space-y-3 text-sm text-text-secondary">
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Supabase + PostgreSQL</p>
-                  <p className="text-xs">{language === 'ru' ? 'Управляемый Postgres с real-time подписками и RLS' : 'Managed Postgres with real-time subscriptions and RLS'}</p>
+                  <p className="text-xs">{t('arch.system.be_supabase_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Database Functions</p>
-                  <p className="text-xs">{language === 'ru' ? 'Триггеры PL/pgSQL для автогенерации SKU и шаблонов названий' : 'PL/pgSQL triggers for SKU auto-generation and name templating'}</p>
+                  <p className="text-xs">{t('arch.system.be_db_functions_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Edge Functions</p>
-                  <p className="text-xs">{language === 'ru' ? 'Serverless на Deno для генерации AI-контента и внешних API' : 'Deno-based serverless for AI content generation and external APIs'}</p>
+                  <p className="text-xs">{t('arch.system.be_edge_functions_desc')}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-bg-tertiary/50">
                   <p className="font-medium text-text-primary mb-1">Storage Buckets</p>
-                  <p className="text-xs">{language === 'ru' ? 'Организованное хранение медиа с CDN-доставкой для изображений товаров' : 'Organized media storage with CDN delivery for product images'}</p>
+                  <p className="text-xs">{t('arch.system.be_storage_desc')}</p>
                 </div>
               </div>
             </div>
@@ -354,12 +354,12 @@ export default function Architecture() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { title: t('arch.system.vector_embeddings'), desc: language === 'ru' ? 'Описания товаров и атрибуты хранятся как векторные вложения pgvector для семантического поиска' : 'Product descriptions and attributes stored as pgvector embeddings for semantic search', icon: Database },
-                { title: t('arch.system.structured_metadata'), desc: language === 'ru' ? 'Каждый товар имеет нормализованную схему JSON-LD для потребления AI' : 'Every product has normalized JSON-LD schema for AI consumption', icon: FileCode },
-                { title: t('arch.system.content_templates'), desc: language === 'ru' ? 'Шаблоны промптов AI для генерации описаний, заголовков и маркетингового текста' : 'AI prompt templates for generating descriptions, titles, and marketing copy', icon: Type },
-                { title: t('arch.system.attribute_graph'), desc: language === 'ru' ? 'Связи товаров закодированы как граф данных для рекомендательных систем' : 'Product relationships encoded as graph data for recommendation engines', icon: GitBranch },
-                { title: t('arch.system.media_analysis'), desc: language === 'ru' ? 'Конвейер компьютерного зрения для автоматической тегизации изображений товаров' : 'Computer vision pipeline for auto-tagging product images', icon: Search },
-                { title: t('arch.system.multi_language'), desc: language === 'ru' ? 'Структура, готовая к i18n, с русским как основным и английским для экспорта' : 'i18n-ready structure with Russian as primary, English for export', icon: Layers },
+                { title: t('arch.system.vector_embeddings'), desc: t('arch.system.ai_vector_desc'), icon: Database },
+                { title: t('arch.system.structured_metadata'), desc: t('arch.system.ai_metadata_desc'), icon: FileCode },
+                { title: t('arch.system.content_templates'), desc: t('arch.system.ai_templates_desc'), icon: Type },
+                { title: t('arch.system.attribute_graph'), desc: t('arch.system.ai_graph_desc'), icon: GitBranch },
+                { title: t('arch.system.media_analysis'), desc: t('arch.system.ai_media_desc'), icon: Search },
+                { title: t('arch.system.multi_language'), desc: t('arch.system.ai_i18n_desc'), icon: Layers },
               ].map((item) => (
                 <div
                   key={item.title}

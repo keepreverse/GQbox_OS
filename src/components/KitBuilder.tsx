@@ -98,14 +98,12 @@ function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
   return commonColor ? `${prefix} ${parts.join(' + ')} ${commonColor}` : `${prefix} ${parts.join(' + ')}`;
 }
 
-interface ComponentItemProps {
+function ComponentItem({ comp, onUpdateQty, onRemove }: {
   comp: KitComponent;
   onUpdateQty: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
-  language: 'ru' | 'en';
-}
-
-function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemProps) {
+}) {
+  const { t, language } = useLanguage();
   const controls = useDragControls();
 
   return (
@@ -137,7 +135,7 @@ function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemP
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onUpdateQty(comp.product.id, comp.quantity - 1); }}
             className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
-            aria-label={language === 'ru' ? 'Уменьшить' : 'Decrease'}
+            aria-label={t('kit.decrease')}
           >
             -
           </button>
@@ -147,7 +145,7 @@ function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemP
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onUpdateQty(comp.product.id, comp.quantity + 1); }}
             className="h-9 w-9 sm:h-6 sm:w-6 rounded bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary flex items-center justify-center text-xs cursor-pointer"
-            aria-label={language === 'ru' ? 'Увеличить' : 'Increase'}
+            aria-label={t('kit.increase')}
           >
             +
           </button>
@@ -157,7 +155,7 @@ function ComponentItem({ comp, onUpdateQty, onRemove, language }: ComponentItemP
         type="button"
         onClick={() => onRemove(comp.product.id)}
         className="h-9 w-9 sm:h-7 sm:w-7 rounded hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors flex-shrink-0 cursor-pointer flex items-center justify-center"
-        aria-label={language === 'ru' ? 'Удалить' : 'Remove'}
+        aria-label={t('kit.remove')}
       >
         <X className="w-3.5 h-3.5" />
       </button>
@@ -239,7 +237,7 @@ export default function KitBuilder() {
   const handleCreateKit = () => {
     if (components.length === 0 || !kitNameRu || !kitSku || skuExists) return;
 
-    setToastMessage(language === 'ru' ? `Комплект "${kitNameRu}" успешно сформирован и сохранен!` : `Kit "${kitName || kitNameRu}" successfully created!`);
+    setToastMessage(t('kit.toast_created').replace('{name}', language === 'ru' ? kitNameRu : (kitName || kitNameRu)));
     setKitName('');
     setKitNameRu('');
     setKitSku('');
@@ -286,18 +284,18 @@ export default function KitBuilder() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="md:col-span-2">
                 <label className="text-xs text-text-tertiary mb-1 block">
-                  {language === 'ru' ? 'Артикул комплекта' : 'Kit Article'}
+                  {t('kit.article')}
                 </label>
                 <input
                   type="text"
                   value={kitSku}
                   onChange={e => setKitSku(e.target.value)}
-                  placeholder={language === 'ru' ? 'Введите артикул вручную' : 'Enter article manually'}
+                  placeholder={t('kit.article_placeholder')}
                   className={`w-full text-text-primary h-11 sm:h-10 ${skuExists ? 'border-danger focus:border-danger' : ''}`}
                 />
                 {kitSku && skuExists && (
                   <p className="text-[10px] text-danger mt-1">
-                    {language === 'ru' ? 'Такой артикул уже занят в базе' : 'This article already exists'}
+                    {t('kit.article_exists')}
                   </p>
                 )}
               </div>
@@ -307,7 +305,7 @@ export default function KitBuilder() {
                   type="text"
                   value={kitName}
                   onChange={e => setKitName(e.target.value)}
-                  placeholder={language === 'ru' ? 'Сгенерируется автоматически' : 'Generated automatically'}
+                  placeholder={t('kit.auto_placeholder')}
                   className="w-full text-text-primary h-11 sm:h-10"
                 />
               </div>
@@ -317,7 +315,7 @@ export default function KitBuilder() {
                   type="text"
                   value={kitNameRu}
                   onChange={e => setKitNameRu(e.target.value)}
-                  placeholder={language === 'ru' ? 'Сгенерируется автоматически' : 'Generated automatically'}
+                  placeholder={t('kit.auto_placeholder')}
                   className="w-full text-text-primary h-11 sm:h-10"
                 />
               </div>
@@ -327,7 +325,7 @@ export default function KitBuilder() {
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-warning flex-shrink-0" />
                 <span className="text-xs sm:text-sm text-text-secondary">
-                  {language === 'ru' ? 'Общая мощность:' : 'Total Power:'}
+                  {t('kit.total_power')}
                 </span>
                 <span className="text-xs sm:text-sm font-medium">{totalPower}W</span>
               </div>
@@ -352,14 +350,14 @@ export default function KitBuilder() {
                     onClick={() => setComponents([])}
                     className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
                   >
-                    <X className="w-3 h-3" /> {language === 'ru' ? 'Очистить' : 'Clear'}
+                    <X className="w-3 h-3" /> {t('kit.clear')}
                   </button>
                 )}
                 <button
                   onClick={openPicker}
                   className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg bg-accent/25 text-white text-xs hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
                 >
-                  <Plus className="w-3 h-3" /> {language === 'ru' ? 'Добавить' : 'Add'}
+                  <Plus className="w-3 h-3" /> {t('kit.add')}
                 </button>
               </div>
             </div>
@@ -368,10 +366,10 @@ export default function KitBuilder() {
               <div className="text-center py-8 text-text-tertiary">
                 <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-xs sm:text-sm">
-                  {language === 'ru' ? 'В комплект пока не добавлено сырьё' : 'No raw materials added yet'}
+                  {t('kit.empty_components')}
                 </p>
                 <p className="text-[10px] sm:text-xs mt-1">
-                  {language === 'ru' ? 'Нажмите "Добавить" для формирования набора' : 'Click "Add" to build your kit'}
+                  {t('kit.add_hint')}
                 </p>
               </div>
             ) : (
@@ -382,7 +380,6 @@ export default function KitBuilder() {
                     comp={comp}
                     onUpdateQty={updateQuantity}
                     onRemove={removeComponent}
-                    language={language}
                   />
                 ))}
               </Reorder.Group>
@@ -398,7 +395,7 @@ export default function KitBuilder() {
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle">
                 <p className="text-[10px] text-text-tertiary uppercase mb-1">
-                  {language === 'ru' ? 'Артикул комплекта' : 'Kit Article'}
+                  {t('kit.article')}
                 </p>
                 <code className={`text-xs sm:text-sm ${skuExists ? 'text-danger' : 'text-accent'}`}>
                   {kitSku || '—'}
@@ -407,7 +404,7 @@ export default function KitBuilder() {
               
               <div className="p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle">
                 <p className="text-[10px] text-text-tertiary uppercase mb-1">
-                  {language === 'ru' ? 'Сгенерированное название' : 'Generated Name'}
+                  {t('kit.generated_name')}
                 </p>
                 <p className={`text-xs sm:text-sm ${kitNameRu ? '' : 'text-text-muted'}`}>
                   {kitNameRu || '—'}
@@ -416,7 +413,7 @@ export default function KitBuilder() {
 
               <div className="space-y-2">
                 <p className="text-[10px] text-text-tertiary uppercase">
-                  {language === 'ru' ? 'Сводка компонентов' : 'Components Summary'}
+                  {t('kit.components_summary')}
                 </p>
                 {components.map(comp => (
                   <div key={comp.product.id} className="flex items-center justify-between text-xs">
@@ -428,7 +425,7 @@ export default function KitBuilder() {
                 ))}
                 {components.length === 0 && (
                   <p className="text-xs text-text-muted">
-                    {language === 'ru' ? 'Нет компонентов' : 'No components'}
+                    {t('kit.no_components')}
                   </p>
                 )}
               </div>
@@ -465,7 +462,7 @@ export default function KitBuilder() {
                 )}
                 <input
                   type="text"
-                  placeholder={language === 'ru' ? (pickerView === 'categories' ? 'Поиск категории...' : 'Поиск товаров...') : (pickerView === 'categories' ? 'Search category...' : 'Search products...')}
+                  placeholder={pickerView === 'categories' ? t('kit.search_categories') : t('kit.search_products')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent border-none p-0 h-11 sm:h-auto text-sm focus:ring-0 text-text-primary placeholder:text-text-muted"
@@ -496,7 +493,7 @@ export default function KitBuilder() {
                               {displaySource(cat, language)}
                             </p>
                             <p className="text-[10px] text-text-tertiary truncate mt-0.5">
-                              {language === 'ru' ? 'Выбрать компоненты' : 'Select components'}
+                              {t('kit.select_components')}
                             </p>
                           </div>
                           <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-text-primary transition-colors flex-shrink-0" />
@@ -504,7 +501,7 @@ export default function KitBuilder() {
                       ))}
                     {categories.filter(c => c.nameRu.toLowerCase().includes(searchQuery.toLowerCase()) || c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                        <p className="text-center py-12 text-xs text-text-tertiary">
-                         {language === 'ru' ? 'Категории не найдены' : 'No categories found'}
+                         {t('kit.no_categories')}
                        </p>
                     )}
                   </div>
@@ -535,7 +532,7 @@ export default function KitBuilder() {
                     ))}
                     {availableProducts.length === 0 && (
                       <p className="text-center py-12 text-xs text-text-tertiary">
-                        {language === 'ru' ? 'Товары не найдены' : 'No products found'}
+                        {t('kit.no_products')}
                       </p>
                     )}
                   </div>

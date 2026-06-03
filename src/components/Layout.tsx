@@ -193,7 +193,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             }}
             className="absolute right-0 top-0 h-full w-11 sm:w-10 border-l border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
             style={{ pointerEvents: sidebarCollapsed ? 'none' : 'auto' }}
-            title={language === 'ru' ? 'Свернуть меню' : 'Collapse menu'}
+            title={t('layout.collapse_menu')}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </motion.button>
@@ -206,7 +206,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             onClick={() => setSidebarCollapsed(false)}
             className="absolute bottom-0 left-0 w-[72px] h-11 sm:h-6 border-t border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
             style={{ pointerEvents: sidebarCollapsed ? 'auto' : 'none' }}
-            title={language === 'ru' ? 'Развернуть меню' : 'Expand menu'}
+            title={t('layout.expand_menu')}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </motion.button>
@@ -279,8 +279,8 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="h-9 w-9 p-0 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
-                title={language === 'ru' ? 'Открыть меню' : 'Open menu'}
-                aria-label={language === 'ru' ? 'Открыть меню' : 'Open menu'}
+                title={t('layout.open_menu')}
+                aria-label={t('layout.open_menu')}
               >
                 <Menu className="w-4 h-4" />
               </button>

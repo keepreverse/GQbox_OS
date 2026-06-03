@@ -16,34 +16,10 @@ export default function AIHub() {
   const { t, language } = useLanguage();
 
   const presetPrompts = [
-    {
-      icon: FileText,
-      label: language === 'ru' ? 'Сгенерировать описание товара' : 'Generate Product Description',
-      prompt: language === 'ru'
-        ? 'Напиши продающее описание товара для сетевого зарядного устройства 20W PD с выходом USB-C, белого цвета, в премиальном алюминиевом корпусе'
-        : 'Write a compelling product description for a 20W PD wall charger with USB-C output, white color, premium aluminum body'
-    },
-    {
-      icon: BarChart3,
-      label: language === 'ru' ? 'Проанализировать паттерн SKU' : 'Analyze SKU Pattern',
-      prompt: language === 'ru'
-        ? 'Проанализируй структуру SKU S10002E-2/01 и объясни каждый сегмент'
-        : 'Analyze the SKU pattern S10002E-2/01 and explain each segment'
-    },
-    {
-      icon: Image,
-      label: language === 'ru' ? 'Промпт для генерации фото' : 'Generate Image Prompt',
-      prompt: language === 'ru'
-        ? 'Создай детализированный промпт для нейросети для генерации студийной фотографии белой беспроводной зарядной станции 3-в-1'
-        : 'Create a detailed AI image generation prompt for a product photo of a white wireless charging station'
-    },
-    {
-      icon: Languages,
-      label: language === 'ru' ? 'Перевести на английский' : 'Translate to Russian',
-      prompt: language === 'ru'
-        ? 'Переведи это название товара на английский язык: "Премиальный плетеный кабель USB-C — Lightning, 1 м, черный, 20 Вт PD"'
-        : 'Translate this product title to Russian: "Premium Braided USB-C to Lightning Cable, 1m, Black, 20W PD"'
-    },
+    { icon: FileText, label: t('ai.preset1_label'), prompt: t('ai.preset1_prompt') },
+    { icon: BarChart3, label: t('ai.preset2_label'), prompt: t('ai.preset2_prompt') },
+    { icon: Image, label: t('ai.preset3_label'), prompt: t('ai.preset3_prompt') },
+    { icon: Languages, label: t('ai.preset4_label'), prompt: t('ai.preset4_prompt') },
   ];
 
   const mockResponsesRu: Record<string, string> = {
@@ -91,9 +67,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
       {
         id: '1',
         role: 'assistant',
-        content: language === 'ru'
-          ? 'Привет! Я помогу с описаниями, переводами и анализом данных. Что нужно сделать?'
-          : 'Hi! I can help with descriptions, translations, and data analysis. What do you need?',
+        content: t('ai.welcome'),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       },
     ]);
@@ -115,9 +89,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
 
     setTimeout(() => {
       const responses = language === 'ru' ? mockResponsesRu : mockResponsesEn;
-      const defaultResponse = language === 'ru'
-        ? `Я проанализировал ваш запрос: "${text.slice(0, 50)}...". Это демонстрационный ответ — в рабочей среде система свяжется с вашей нейросетью (OpenAI или Claude) через Supabase Edge Functions.`
-        : `I've analyzed your request about "${text.slice(0, 50)}...". This is a placeholder response — in production, this would connect to your AI model (OpenAI, Claude, or local LLM) via Supabase Edge Functions.`;
+      const defaultResponse = t('ai.default_response').replace('{query}', text.slice(0, 50));
 
       const response = responses[text] || defaultResponse;
 

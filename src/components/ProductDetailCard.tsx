@@ -18,7 +18,7 @@ interface ProductDetailCardProps {
 }
 
 export default function ProductDetailCard({ product, onClose }: ProductDetailCardProps) {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const [closing, setClosing] = useState(false);
   const [isNarrow, setIsNarrow] = useState(true);
 
@@ -39,26 +39,25 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
     setTimeout(() => onClose(), MODAL_CLOSE_MS);
   }, [onClose]);
 
-  const t = (ru: string, en: string) => language === 'ru' ? ru : en;
   const desc = language === 'ru' ? (product.description || product.descriptionEn) : (product.descriptionEn || product.description);
   const usp = language === 'ru' ? (product.usp || product.uspEn) : (product.uspEn || product.usp);
   const tags = product.tags || [];
 
   const specs = [
-    { icon: Zap, label: t('Мощность', 'Power'), value: product.powerW ? `${product.powerW}W` : '—' },
-    { icon: Battery, label: t('Ток', 'Current'), value: product.currentA ? `${product.currentA}A` : '—' },
-    { icon: Zap, label: t('Напряжение', 'Voltage'), value: product.voltageV ? `${product.voltageV}V` : '—' },
-    { icon: Ruler, label: t('Длина', 'Length'), value: product.lengthM ? `${product.lengthM}${language === 'ru' ? 'м' : 'm'}` : '—' },
-    { icon: Users, label: t('Устройств', 'Devices'), value: product.deviceCount || '—' },
-    { icon: LinkIcon, label: t('Скорость', 'Speed'), value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—' },
+    { icon: Zap, label: t('detail.power'), value: product.powerW ? `${product.powerW}W` : '—' },
+    { icon: Battery, label: t('detail.current'), value: product.currentA ? `${product.currentA}A` : '—' },
+    { icon: Zap, label: t('detail.voltage'), value: product.voltageV ? `${product.voltageV}V` : '—' },
+    { icon: Ruler, label: t('detail.length'), value: product.lengthM ? `${product.lengthM}${t('detail.unit_m')}` : '—' },
+    { icon: Users, label: t('detail.devices'), value: product.deviceCount || '—' },
+    { icon: LinkIcon, label: t('detail.speed'), value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—' },
   ];
 
   const connections = [
-    { label: t('Вход', 'Input'), value: product.connectorFemale ? displaySource(product.connectorFemale, language) : '—' },
-    { label: t('Выход', 'Output'), value: product.connectorMale ? displaySource(product.connectorMale, language) : '—' },
-    { label: t('Протокол', 'Protocol'), value: product.chargingProtocol ? displaySource(product.chargingProtocol, language) : '—' },
+    { label: t('detail.input'), value: product.connectorFemale ? displaySource(product.connectorFemale, language) : '—' },
+    { label: t('detail.output'), value: product.connectorMale ? displaySource(product.connectorMale, language) : '—' },
+    { label: t('detail.protocol'), value: product.chargingProtocol ? displaySource(product.chargingProtocol, language) : '—' },
     {
-      label: t('Подключение', 'Connection'),
+      label: t('detail.connection'),
       value: product.connectionType
         ? (language === 'ru' ? product.connectionType : (connectionTypeTranslations[product.connectionType] || product.connectionType))
         : '—',
@@ -66,8 +65,8 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
   ];
 
   const materials = [
-    { label: t('Корпус', 'Body'), value: product.bodyMaterial ? displayName(product.bodyMaterial, language) : '—' },
-    { label: t('Кабель', 'Wire'), value: product.wireMaterial ? displayName(product.wireMaterial, language) : '—' },
+    { label: t('detail.body'), value: product.bodyMaterial ? displayName(product.bodyMaterial, language) : '—' },
+    { label: t('detail.wire'), value: product.wireMaterial ? displayName(product.wireMaterial, language) : '—' },
   ];
 
   const media = product.media || [];
@@ -130,7 +129,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
             <div className="space-y-2">
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('Медиа', 'Media')}
+                {t('detail.media')}
               </h3>
               {primaryMedia ? (
                 <div className="rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden">
@@ -144,7 +143,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                 </div>
               ) : (
                 <div className="aspect-video rounded-xl bg-bg-tertiary/50 border border-border-subtle border-dashed flex items-center justify-center">
-                  <span className="text-[10px] sm:text-xs text-text-tertiary">{t('Нет медиа', 'No media')}</span>
+                  <span className="text-[10px] sm:text-xs text-text-tertiary">{t('detail.no_media')}</span>
                 </div>
               )}
               {media.length > 1 && (
@@ -162,7 +161,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <div className="space-y-1.5">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('Описание', 'Description')}
+                  {t('detail.description')}
                 </h3>
                 <p className="text-[11px] sm:text-xs text-text-secondary leading-relaxed">{desc}</p>
               </div>
@@ -172,7 +171,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <div className="space-y-1.5">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('Преимущества', 'Key Benefits')}
+                  {t('detail.benefits')}
                 </h3>
                 <p className="text-[11px] sm:text-xs text-text-secondary leading-relaxed">{usp}</p>
               </div>
@@ -182,7 +181,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <div className="space-y-1.5">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <Tag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('Теги', 'Tags')}
+                  {t('detail.tags')}
                 </h3>
                 <div className="flex flex-wrap gap-1">
                   {tags.map((tag, i) => (
@@ -198,12 +197,12 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <div className="space-y-2">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('Маркетплейсы', 'Marketplaces')}
+                  {t('detail.marketplaces')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {singleListings.length > 0 && (
                     <div className="space-y-1.5">
-                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('Выставлен как товар', 'Listed as product')}</p>
+                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.listed_as_product')}</p>
                       <div className="space-y-1">
                         {singleListings.map((listing, i) => (
                           <a key={`single-${i}`} href={listing.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
@@ -219,7 +218,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                   )}
                   {bundleListings.length > 0 && (
                     <div className="space-y-1.5">
-                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('Входит в состав комплектов', 'Included in bundles')}</p>
+                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.included_in_bundles')}</p>
                       <div className="space-y-1">
                         {bundleListings.map((listing, i) => (
                           <a key={`bundle-${i}`} href={listing.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
@@ -242,7 +241,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
             <div className="space-y-2">
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('Характеристики', 'Specifications')}
+                {t('detail.specifications')}
               </h3>
               <div className="grid grid-cols-2 gap-1.5">
                 {specs.map((spec, i) => (
@@ -260,7 +259,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
             <div className="space-y-2">
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <Plug className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('Подключения', 'Connections')}
+                {t('detail.connections')}
               </h3>
               <div className="space-y-1">
                 {connections.map((conn, i) => (
@@ -275,7 +274,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
             <div className="space-y-2">
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('Материалы', 'Materials')}
+                {t('detail.materials')}
               </h3>
               <div className="space-y-1">
                 {materials.map((mat, i) => (
@@ -291,7 +290,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <div className="space-y-2">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('Поставщик', 'Supplier')}
+                  {t('detail.supplier')}
                 </h3>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle">
                   <p className="text-[10px] sm:text-xs font-medium text-text-primary">{product.supplier.name}</p>

@@ -78,7 +78,7 @@ export default function SKUConstructor() {
       if (conn) parts.push('-' + conn.code);
     }
     if (selectedModel) parts.push(displayName(selectedModel, language));
-    if (form.lengthM) parts.push(form.lengthM + (language === 'ru' ? 'м' : 'm'));
+    if (form.lengthM) parts.push(form.lengthM + t('sku.unit_m'));
     if (selectedColor) parts.push(displayName(selectedColor, language).toUpperCase());
     if (form.powerW) parts.push(form.powerW + 'W');
     
@@ -189,7 +189,7 @@ export default function SKUConstructor() {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-2 block">
-                    {language === 'ru' ? 'Категория товара' : 'Product Category'}
+                    {t('sku.category_label')}
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
                     {categories.map(cat => (
@@ -217,7 +217,7 @@ export default function SKUConstructor() {
                 {form.categoryId && (
                   <div>
                     <label className="text-xs sm:text-sm text-text-secondary mb-2 block">
-                      {language === 'ru' ? 'Модель / Линейка' : 'Model / Line'}
+                      {t('sku.model_label')}
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
                       {availableModels.map(model => (
@@ -256,7 +256,7 @@ export default function SKUConstructor() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Базовый номер (5 цифр)' : 'Base Number (5 digits)'}
+                    {t('sku.base_number_label')}
                   </label>
                   <input
                     type="text"
@@ -273,7 +273,7 @@ export default function SKUConstructor() {
 
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Суффикс модели' : 'Variant Code'}
+                    {t('sku.variant_code_label')}
                   </label>
                   <input
                     type="text"
@@ -283,13 +283,13 @@ export default function SKUConstructor() {
                     className="w-full text-text-primary h-11 sm:h-10"
                   />
                   <p className="text-[10px] text-text-tertiary mt-1">
-                    {language === 'ru' ? 'Дифференциатор модификации' : 'Model differentiation suffix'}
+                    {t('sku.variant_code_hint')}
                   </p>
                 </div>
 
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Переопределение длины' : 'Length Variant'}
+                    {t('sku.length_variant_label')}
                   </label>
                   <input
                     type="text"
@@ -299,7 +299,7 @@ export default function SKUConstructor() {
                     className="w-full text-text-primary h-11 sm:h-10"
                   />
                   <p className="text-[10px] text-text-tertiary mt-1">
-                    {language === 'ru' ? 'Например, -2 для 2 метров' : 'Length override (e.g., -2 for 2m)'}
+                    {t('sku.length_variant_hint')}
                   </p>
                 </div>
 
@@ -311,7 +311,7 @@ export default function SKUConstructor() {
                       onChange={e => updateForm('isKit', e.target.checked)}
                       className="w-4 h-4 rounded accent-accent"
                     />
-                    {language === 'ru' ? 'Это комплект (Kit / Combo)' : 'This is a Kit / Combo product'}
+                    {t('sku.is_kit_label')}
                   </label>
                 </div>
               </div>
@@ -319,7 +319,7 @@ export default function SKUConstructor() {
               {/* Preview */}
               <div className="p-4 rounded-lg bg-bg-tertiary/50 border border-border-subtle overflow-x-auto">
                 <p className="text-[10px] text-text-tertiary tracking-wide mb-2">
-                  {language === 'ru' ? 'Предпросмотр SKU' : 'SKU Preview'}
+                  {t('sku.preview_label')}
                 </p>
                 <code className="text-lg sm:text-xl text-accent">
                   S{form.baseNumber || 'XXXXX'}{form.variantCode ? '-' + form.variantCode : ''}{form.lengthVariant && !form.variantCode ? '-' + form.lengthVariant : ''}
@@ -341,19 +341,19 @@ export default function SKUConstructor() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Мощность (W)' : 'Power (W)'}
+                    {t('sku.power_label')}
                   </label>
                   <input type="text" value={form.powerW} onChange={e => updateForm('powerW', e.target.value)} placeholder="20" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Сила тока (A)' : 'Current (A)'}
+                    {t('sku.current_label')}
                   </label>
                   <input type="text" value={form.currentA} onChange={e => updateForm('currentA', e.target.value)} placeholder="3" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Напряжение (V)' : 'Voltage (V)'}
+                    {t('sku.voltage_label')}
                   </label>
                   <input type="text" value={form.voltageV} onChange={e => updateForm('voltageV', e.target.value)} placeholder="5" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
@@ -362,10 +362,10 @@ export default function SKUConstructor() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Входной разъем (Мама)' : 'Female Connector'}
+                    {t('sku.connector_female_label')}
                   </label>
                   <select value={form.connectorFemaleId} onChange={e => updateForm('connectorFemaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
-                    <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
+                    <option value="">{t('sku.select_placeholder')}</option>
                     {connectors.map(c => (
                       <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
                     ))}
@@ -373,10 +373,10 @@ export default function SKUConstructor() {
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Выходной разъем (Папа)' : 'Male Connector'}
+                    {t('sku.connector_male_label')}
                   </label>
                   <select value={form.connectorMaleId} onChange={e => updateForm('connectorMaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
-                    <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
+                    <option value="">{t('sku.select_placeholder')}</option>
                     {connectors.map(c => (
                       <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
                     ))}
@@ -384,10 +384,10 @@ export default function SKUConstructor() {
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Протокол зарядки' : 'Charging Protocol'}
+                    {t('sku.protocol_label')}
                   </label>
                   <select value={form.protocolId} onChange={e => updateForm('protocolId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
-                    <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
+                    <option value="">{t('sku.select_placeholder')}</option>
                     {chargingProtocols.map(p => (
                       <option key={p.id} value={p.id}>{displaySource(p, language)}</option>
                     ))}
@@ -395,10 +395,10 @@ export default function SKUConstructor() {
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Материал корпуса' : 'Body Material'}
+                    {t('sku.body_material_label')}
                   </label>
                   <select value={form.bodyMaterialId} onChange={e => updateForm('bodyMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
-                    <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
+                    <option value="">{t('sku.select_placeholder')}</option>
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
                     ))}
@@ -406,10 +406,10 @@ export default function SKUConstructor() {
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Материал провода' : 'Wire Material'}
+                    {t('sku.wire_material_label')}
                   </label>
                   <select value={form.wireMaterialId} onChange={e => updateForm('wireMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
-                    <option value="">— {language === 'ru' ? 'Выбрать' : 'Select'} —</option>
+                    <option value="">{t('sku.select_placeholder')}</option>
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
                     ))}
@@ -417,7 +417,7 @@ export default function SKUConstructor() {
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {language === 'ru' ? 'Длина (м)' : 'Length (m)'}
+                    {t('sku.length_label')}
                   </label>
                   <input type="text" value={form.lengthM} onChange={e => updateForm('lengthM', e.target.value)} placeholder="1" className="w-full text-text-primary h-11 sm:h-10" />
                 </div>
@@ -438,7 +438,7 @@ export default function SKUConstructor() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3 block">
-                    {language === 'ru' ? 'Цвет' : 'Color'}
+                    {t('sku.color_label')}
                   </label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                     {colors.map(color => (
@@ -465,7 +465,7 @@ export default function SKUConstructor() {
 
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-3 block">
-                    {language === 'ru' ? 'Поставщик' : 'Supplier'}
+                    {t('sku.supplier_label')}
                   </label>
                   <div className="space-y-2">
                     {suppliers.map(sup => (
@@ -514,7 +514,7 @@ export default function SKUConstructor() {
                 <div className="text-center py-12">
                   <Sparkles className="w-8 h-8 text-accent mx-auto mb-3 animate-pulse" />
                   <p className="text-text-secondary text-sm">
-                    {language === 'ru' ? 'Нажмите "Сгенерировать" для создания финального SKU и названия' : 'Click generate to create the SKU and product name'}
+                    {t('sku.generate_hint')}
                   </p>
                 </div>
               ) : (
@@ -534,7 +534,7 @@ export default function SKUConstructor() {
                         className="flex items-center gap-1 sm:gap-1.5 text-xs text-accent hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
                       >
                         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                        {copied ? (language === 'ru' ? 'Скопировано' : 'Copied') : (language === 'ru' ? 'Копировать' : 'Copy')}
+                        {copied ? t('sku.copied') : t('sku.copy')}
                       </button>
                     </div>
                     <code className="text-xl sm:text-2xl text-accent block overflow-x-auto">{generatedSKU}</code>
@@ -544,7 +544,7 @@ export default function SKUConstructor() {
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <Type className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-success flex-shrink-0" />
                       <span className="text-[10px] sm:text-xs text-text-tertiary tracking-wide">
-                        {language === 'ru' ? 'Название товара' : 'Product Name'}
+                        {t('sku.generated_name_label')}
                       </span>
                     </div>
                     <p className="text-base sm:text-lg font-medium">{generatedName}</p>
@@ -553,7 +553,7 @@ export default function SKUConstructor() {
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary uppercase truncate">
-                        {language === 'ru' ? 'Категория' : 'Category'}
+                        {t('sku.generated_category_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
                         {selectedCategory ? displaySource(selectedCategory, language) : ''}
@@ -561,7 +561,7 @@ export default function SKUConstructor() {
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary uppercase truncate">
-                        {language === 'ru' ? 'Модель' : 'Model'}
+                        {t('sku.generated_model_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
                         {selectedModel ? displaySource(selectedModel, language) : ''}
@@ -569,7 +569,7 @@ export default function SKUConstructor() {
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary uppercase truncate">
-                        {language === 'ru' ? 'Цвет' : 'Color'}
+                    {t('sku.color_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
                         {selectedColor ? displaySource(selectedColor, language) : ''}
@@ -577,7 +577,7 @@ export default function SKUConstructor() {
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary uppercase truncate">
-                        {language === 'ru' ? 'Поставщик' : 'Supplier'}
+                        {t('sku.generated_supplier_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">{selectedSupplier?.name}</p>
                     </div>
