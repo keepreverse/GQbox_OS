@@ -64,6 +64,13 @@ html, body {
 #root {
   min-height: 100dvh;
 }
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/Geist-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 html, body, #root {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
@@ -497,4 +504,7 @@ html {
   overflow: visible;
   clip: auto;
   white-space: normal;
+}
+input, textarea {
+  overflow-wrap: break-word;
 }

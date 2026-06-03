@@ -1,13 +1,15 @@
-import { Fragment, useState, useMemo } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight, ChevronLeft, Check, Hash, Type,
-  Copy, Sparkles, RotateCcw
+  Copy, Sparkles, RotateCcw, AlertCircle, Table2
 } from 'lucide-react';
 import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '../data/dictionaries';
 import { getModelsByCategory } from '../data/dictionaries';
+import { products, addProduct } from '../data/products';
 import { useLanguage } from '../context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
+import { productsApi } from '../api/products';
 
 interface SKUFormData {
   categoryId: string;
@@ -44,6 +46,15 @@ export default function SKUConstructor() {
   const [generatedSKU, setGeneratedSKU] = useState('');
   const [generatedName, setGeneratedName] = useState('');
   const [copied, setCopied] = useState(false);
+  const [skuDuplicate, setSkuDuplicate] = useState(false);
+  const [skuSuggestion, setSkuSuggestion] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (step === 5 && !generatedSKU) {
+      handleGenerate();
+    }
+  }, [step]);
 
   const availableModels = useMemo(() => {
     return form.categoryId ? getModelsByCategory(form.categoryId) : [];
@@ -86,8 +97,36 @@ export default function SKUConstructor() {
   };
 
   const handleGenerate = () => {
-    setGeneratedSKU(generateSKU());
-    setGeneratedName(generateName());
+    const sku = generateSKU();
+    const name = generateName();
+    const existingSkus = new Set(products.map(p => p.sku));
+
+    if (existingSkus.has(sku)) {
+      setSkuDuplicate(true);
+      // Try to find next available base number
+      const baseNum = parseInt(form.baseNumber || '0', 10);
+      let suggestion = '';
+      for (let offset = 1; offset <= 99; offset++) {
+        const altNum = String(baseNum + offset).padStart(5, '0');
+        let altSku = 'S' + altNum;
+        if (form.variantCode) altSku += '-' + form.variantCode;
+        if (form.lengthVariant && !form.variantCode) altSku += '-' + form.lengthVariant;
+        if (selectedColor) altSku += '/' + selectedColor.code;
+        if (selectedSupplier && selectedSupplier.code !== '-') altSku += '-' + selectedSupplier.code;
+        if (form.isKit) altSku += '-K';
+        if (!existingSkus.has(altSku)) {
+          suggestion = altSku;
+          break;
+        }
+      }
+      setSkuSuggestion(suggestion);
+      setGeneratedSKU(sku);
+    } else {
+      setSkuDuplicate(false);
+      setSkuSuggestion('');
+      setGeneratedSKU(sku);
+    }
+    setGeneratedName(name);
   };
 
   const handleCopy = () => {
@@ -96,8 +135,47 @@ export default function SKUConstructor() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleAddToMatrix = async () => {
+    const maxId = products.reduce((max, p) => {
+      const num = parseInt(p.id.replace('p', ''), 10);
+      return num > max ? num : max;
+    }, 0);
+    const newId = `p${maxId + 1}`;
+    const newProduct = {
+      id: newId,
+      sku: generatedSKU,
+      skuBase: 'S' + form.baseNumber,
+      categoryId: form.categoryId,
+      modelId: form.modelId,
+      colorId: form.colorId || undefined,
+      supplierId: form.supplierId || undefined,
+      bodyMaterialId: form.bodyMaterialId || undefined,
+      wireMaterialId: form.wireMaterialId || undefined,
+      currentA: form.currentA ? parseFloat(form.currentA) : undefined,
+      voltageV: form.voltageV ? parseFloat(form.voltageV) : undefined,
+      powerW: form.powerW ? parseFloat(form.powerW) : undefined,
+      lengthM: form.lengthM ? parseFloat(form.lengthM) : undefined,
+      deviceCount: 1,
+      connectorFemaleId: form.connectorFemaleId || undefined,
+      connectorMaleId: form.connectorMaleId || undefined,
+      variantCode: form.variantCode || undefined,
+      lengthVariant: form.lengthVariant || undefined,
+      isKit: form.isKit || undefined,
+    };
+    try {
+      await productsApi.create(newProduct);
+    } catch {
+      addProduct(newProduct);
+    }
+    const name = generatedName || generatedSKU;
+    setToastMessage(t('sku.added_to_matrix').replace('{name}', name));
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const updateForm = (key: keyof SKUFormData, value: string | boolean) => {
     setForm(prev => ({ ...prev, [key]: value }));
+    setSkuDuplicate(false);
+    setSkuSuggestion('');
   };
 
   const toggleCategory = (catId: string) => {
@@ -514,7 +592,7 @@ export default function SKUConstructor() {
                 <div className="text-center py-12">
                   <Sparkles className="w-8 h-8 text-accent mx-auto mb-3 animate-pulse" />
                   <p className="text-text-secondary text-sm">
-                    {t('sku.generate_hint')}
+                    {t('sku.auto_generated_hint')}
                   </p>
                 </div>
               ) : (
@@ -537,7 +615,31 @@ export default function SKUConstructor() {
                         {copied ? t('sku.copied') : t('sku.copy')}
                       </button>
                     </div>
-                    <code className="text-xl sm:text-2xl text-accent block overflow-x-auto">{generatedSKU}</code>
+                    <code className={`text-xl sm:text-2xl block overflow-x-auto ${skuDuplicate ? 'text-danger' : 'text-accent'}`}>{generatedSKU}</code>
+                    {skuDuplicate && (
+                      <div className="space-y-2">
+                        <p className="text-[11px] sm:text-xs text-danger flex items-center gap-1.5">
+                          <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                          {t('sku.duplicate_warning')}
+                        </p>
+                        {skuSuggestion && (
+                          <button
+                            onClick={() => {
+                              setGeneratedSKU(skuSuggestion);
+                              const match = skuSuggestion.match(/S(\d+)/);
+                              if (match) updateForm('baseNumber', match[1]);
+                              setSkuDuplicate(false);
+                              setSkuSuggestion('');
+                              setCopied(false);
+                            }}
+                            className="flex items-center gap-1.5 text-xs text-accent hover:bg-accent/10 px-2 py-1 rounded-lg transition-colors cursor-pointer border border-accent/20"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            {t('sku.use_suggestion')}: <code className="font-medium">{skuSuggestion}</code>
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-4 sm:p-5 rounded-xl bg-bg-tertiary border border-border-subtle space-y-2 sm:space-y-3">
@@ -610,20 +712,28 @@ export default function SKUConstructor() {
         ) : (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); }}
+              onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); setSkuDuplicate(false); setSkuSuggestion(''); }}
               className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.reset')}
             </button>
             <button
-              onClick={handleGenerate}
-              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all font-medium border border-accent/40 cursor-pointer"
+              onClick={handleAddToMatrix}
+              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-success/25 text-white text-xs sm:text-sm hover:bg-success/35 transition-all font-medium border border-success/40 cursor-pointer"
             >
-              <Sparkles className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.generate')}
+              <Table2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.add_to_matrix')}
             </button>
           </div>
         )}
       </div>
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-bg-tertiary border border-border-default shadow-lg backdrop-blur-md text-xs sm:text-sm">
+            <Check className="w-4 h-4 text-success" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -39,10 +39,10 @@ export default function ProductMatrix() {
         p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.fullNameRu.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.model?.nameRu?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.model?.nameEn?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.color?.nameRu?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.color?.nameEn?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        (p.model?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (p.model?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (p.color?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (p.color?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(p.category.code);
       const matchesSupplier = selectedSuppliers.length === 0 || selectedSuppliers.includes(p.supplier?.code || '-');
@@ -215,21 +215,21 @@ export default function ProductMatrix() {
             placeholder={t('matrix.search')}
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); setTableKey(k => k + 1); }}
-            className="w-full px-4 text-text-primary transition-all duration-200 h-11 sm:h-10"
+            className="w-full px-4 text-text-primary transition-all duration-150 h-11 sm:h-10"
           />
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-200 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+          className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
             showFilters || activeFiltersCount > 0
               ? 'bg-bg-elevated text-text-primary border border-border-strong'
               : 'bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary'
           }`}
         >
-          <SlidersHorizontal className={`w-3.5 h-3.5 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
+          <SlidersHorizontal className={`w-3.5 h-3.5 transition-transform duration-150 ${showFilters ? 'rotate-180' : ''}`} />
           {t('matrix.filters')}
           {activeFiltersCount > 0 && (
-            <span className="ml-1 w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center transition-all duration-200 scale-in">
+            <span className="ml-1 w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center transition-all duration-150 scale-in">
               {activeFiltersCount}
             </span>
           )}
@@ -315,7 +315,7 @@ export default function ProductMatrix() {
                       className="inline-block w-4 h-4 rounded-full border border-border-subtle shrink-0"
                       style={{ background: c.hexValue || '#888' }}
                     />
-                    <span className="truncate max-w-[80px]">{c.nameRu}</span>
+                    <span className="truncate max-w-[80px]">{c.name_source}</span>
                   </button>
                 ))}
               </div>
@@ -371,15 +371,15 @@ export default function ProductMatrix() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-subtle">
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.sku')}</th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.sku')}</th>
                   <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.product')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.cat')}</th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.cat')}</th>
                   <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.model')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.power')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.length')}</th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.power')}</th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.length')}</th>
                   <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.color')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.sup')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide"></th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.sup')}</th>
+                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap w-0"></th>
                 </tr>
               </thead>
               <tbody key={tableKey} className="table-fade-in">
@@ -391,47 +391,47 @@ export default function ProductMatrix() {
                       className="border-b border-border-subtle/50 table-row-hover cursor-pointer"
                       onClick={() => setSelectedProduct(product)}
                     >
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap">
                         <code className="text-[11px] sm:text-xs text-accent">{product.sku}</code>
                         {product.isKit && (
                           <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning">KIT</span>
                         )}
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(product.category.code) }} />
-                          <span className="truncate max-w-[140px] sm:max-w-[280px] text-xs sm:text-sm">
+                          <span className="truncate text-xs sm:text-sm">
                             {displayProductName(product, language)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap">
                         <span className="text-[11px] sm:text-xs" style={{ color: getCategoryColorVar(product.category.code) }}>
                           {displaySource(product.category, language)}
                         </span>
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate text-[11px] sm:text-xs text-text-secondary">
                         {displaySource(product.model, language)}
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{product.powerW ? `${product.powerW}W` : '—'}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs text-text-secondary">{product.lengthM ? `${product.lengthM}${t('matrix.unit_m')}` : '—'}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap text-[11px] sm:text-xs text-text-secondary">{product.powerW ? `${product.powerW}W` : '—'}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap text-[11px] sm:text-xs text-text-secondary">{product.lengthM ? `${product.lengthM}${t('matrix.unit_m')}` : '—'}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">
                         {product.color && (
                           <div className="flex items-center gap-1 sm:gap-1.5">
                             <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0" style={{
                               background: product.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : product.color.hexValue,
                               border: product.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
                             }} />
-                            <span className="text-[11px] sm:text-xs text-text-secondary truncate hidden sm:inline">
+                            <span className="truncate text-[11px] sm:text-xs text-text-secondary">
                               {displaySource(product.color, language)}
                             </span>
                           </div>
                         )}
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
                         {supplierBadge(product.supplier?.code)}
                       </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap w-0">
                         <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />
                       </td>
                     </tr>

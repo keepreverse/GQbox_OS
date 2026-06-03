@@ -5,6 +5,7 @@ import {
 } from './dictionaries';
 import { getMarketplaceListingsBySku } from './marketplaces';
 import { displaySource } from '../utils/display';
+import { loadFromStore, saveToStore } from './store';
 
 /**
  * Сырьё (таблица матрицы).
@@ -15,7 +16,7 @@ import { displaySource } from '../utils/display';
  * Поля fullName / fullNameRu сюда НЕ записываются.
  * Если нужно — они должны генерироваться по шаблону из словаря.
  */
-interface RawProduct {
+export interface RawProduct {
   id: string;
   sku: string;
   skuBase: string;
@@ -196,6 +197,27 @@ const rawProducts: RawProduct[] = [
 ];
 
 /**
+ * Дефолтные данные (хардкод). Используются при первом запуске
+ * или при сбросе к дефолту.
+ */
+const defaultRawProducts: RawProduct[] = rawProducts;
+
+/**
+ * Загружает данные из localStorage, если есть — использует их,
+ * иначе — дефолтные.
+ */
+function loadRawProducts(): RawProduct[] {
+  const stored = loadFromStore<RawProduct[]>('products');
+  return stored && Array.isArray(stored) ? stored : defaultRawProducts;
+}
+
+function saveRawProducts(data: RawProduct[]): void {
+  saveToStore('products', data);
+}
+
+let _rawProducts = loadRawProducts();
+
+/**
  * Сборка ProductWithRelations из сырых данных:
  * все имена, переводы, форматирование берутся ИЗ СЛОВАРЯ через id.
  *
@@ -212,28 +234,25 @@ function hydrate(raw: RawProduct): ProductWithRelations {
   const connectorMale = raw.connectorMaleId ? getConnectorById(raw.connectorMaleId) : undefined;
   const chargingProtocol = raw.chargingProtocolId ? getProtocolById(raw.chargingProtocolId) : undefined;
 
-  // Шаблон товарного названия: [категория.] [мама-папа] [модель] [длина]м [ЦВЕТ]
-  const buildName = (lang: 'ru' | 'en'): string => {
+  const buildName = (): string => {
     const parts: string[] = [];
-    const cat = lang === 'ru' ? category.nameRu : (category.nameEn || category.nameRu);
-    parts.push(cat + '.');
+    parts.push(category.name_product + '.');
 
     if (connectorFemale && connectorMale) {
-      parts.push(`${connectorFemale.name}-${connectorMale.name}`);
+      parts.push(`${connectorFemale.name_source}-${connectorMale.name_source}`);
     } else if (connectorFemale) {
-      parts.push(connectorFemale.name);
+      parts.push(connectorFemale.name_source);
     } else if (connectorMale) {
-      parts.push(connectorMale.name);
+      parts.push(connectorMale.name_source);
     }
 
-    if (model && model.name) parts.push(model.name);
+    if (model && model.name_source) parts.push(model.name_source);
 
     if (typeof raw.powerW === 'number') parts.push(`${raw.powerW}W`);
-    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}${lang === 'ru' ? 'м' : 'm'}`);
+    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}м`);
 
     if (color) {
-      const colorLabel = lang === 'ru' ? color.nameRu : (color.nameEn || color.nameRu);
-      parts.push(colorLabel);
+      parts.push(color.name_product);
     }
 
     return parts.join(' ');
@@ -241,7 +260,7 @@ function hydrate(raw: RawProduct): ProductWithRelations {
 
   // Генерация описания и УТП на основе характеристик
   const generateDescription = (lang: 'ru' | 'en'): string => {
-    const cat = lang === 'ru' ? category.nameRu : (category.nameEn || category.nameRu);
+    const cat = category.name_product;
     const modelSrc = displaySource(model, lang);
     const power = raw.powerW ? `${raw.powerW}W` : '';
     const length = raw.lengthM ? `${raw.lengthM}${lang === 'ru' ? 'м' : 'm'}` : '';
@@ -279,8 +298,8 @@ function hydrate(raw: RawProduct): ProductWithRelations {
     model,
     color,
     supplier,
-    fullName: buildName('en'),
-    fullNameRu: buildName('ru'),
+    fullName: buildName(),
+    fullNameRu: buildName(),
     bodyMaterial,
     wireMaterial,
     currentA: raw.currentA,
@@ -309,23 +328,39 @@ function hydrate(raw: RawProduct): ProductWithRelations {
   };
 }
 
-export const products: ProductWithRelations[] = rawProducts.map(hydrate);
+/**
+ * Гидратация всех данных. Вызывается при загрузке и после изменений.
+ */
+function hydrateAll(): ProductWithRelations[] {
+  return _rawProducts.map(hydrate);
+}
+
+let _products = hydrateAll();
+
+/**
+ * Перестроение массива products после изменений.
+ */
+function rebuildProducts(): void {
+  _products = hydrateAll();
+}
+
+export { _products as products };
 
 export function getProductsByCategory(categoryCode: string): ProductWithRelations[] {
-  return products.filter(p => p.category.code === categoryCode);
+  return _products.filter(p => p.category.code === categoryCode);
 }
 
 export function getProductById(id: string): ProductWithRelations | undefined {
-  return products.find(p => p.id === id);
+  return _products.find(p => p.id === id);
 }
 
 export function getProductBySku(sku: string): ProductWithRelations | undefined {
-  return products.find(p => p.sku === sku);
+  return _products.find(p => p.sku === sku);
 }
 
 export function searchProducts(query: string): ProductWithRelations[] {
   const q = query.toLowerCase();
-  return products.filter(p =>
+  return _products.filter(p =>
     p.sku.toLowerCase().includes(q) ||
     p.fullName.toLowerCase().includes(q) ||
     p.fullNameRu.toLowerCase().includes(q) ||
@@ -333,3 +368,34 @@ export function searchProducts(query: string): ProductWithRelations[] {
     p.model.name.toLowerCase().includes(q),
   );
 }
+
+// ─── CRUD-операции ─────────────────────────────────────────────────────────
+
+export function addProduct(raw: RawProduct): void {
+  _rawProducts.push(raw);
+  saveRawProducts(_rawProducts);
+  rebuildProducts();
+}
+
+export function updateProduct(id: string, updates: Partial<RawProduct>): void {
+  const idx = _rawProducts.findIndex(p => p.id === id);
+  if (idx === -1) return;
+  _rawProducts[idx] = { ..._rawProducts[idx], ...updates };
+  saveRawProducts(_rawProducts);
+  rebuildProducts();
+}
+
+export function deleteProduct(id: string): void {
+  _rawProducts = _rawProducts.filter(p => p.id !== id);
+  saveRawProducts(_rawProducts);
+  rebuildProducts();
+}
+
+export function resetProducts(): void {
+  _rawProducts = [...defaultRawProducts];
+  saveRawProducts(_rawProducts);
+  rebuildProducts();
+}
+
+// Экспорт дефолтных данных для seed-скрипта сервера
+export const _defaultRawProducts = [...rawProducts];

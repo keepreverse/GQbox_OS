@@ -1,0 +1,554 @@
+[
+  {
+    "id": "mod-zs",
+    "categoryId": "cat-cable",
+    "code": "ZS",
+    "name": "ZS",
+    "nameRu": "ZS",
+    "nameEn": "ZS"
+  },
+  {
+    "id": "mod-pr",
+    "categoryId": "cat-cable",
+    "code": "PR",
+    "name": "PR",
+    "nameRu": "PR",
+    "nameEn": "PR"
+  },
+  {
+    "id": "mod-st",
+    "categoryId": "cat-cable",
+    "code": "ST",
+    "name": "ST",
+    "nameRu": "ST",
+    "nameEn": "ST"
+  },
+  {
+    "id": "mod-org",
+    "categoryId": "cat-cable",
+    "code": "ORG",
+    "name": "ORG",
+    "nameRu": "Orig",
+    "nameEn": "Orig"
+  },
+  {
+    "id": "mod-old",
+    "categoryId": "cat-cable",
+    "code": "OLD",
+    "name": "OLD",
+    "nameRu": "Старый",
+    "nameEn": "Old"
+  },
+  {
+    "id": "mod-braided",
+    "categoryId": "cat-cable",
+    "code": "braided",
+    "name": "braided",
+    "nameRu": "плетеный",
+    "nameEn": "braided"
+  },
+  {
+    "id": "mod-braided-pr",
+    "categoryId": "cat-cable",
+    "code": "braided PR",
+    "name": "braided PR",
+    "nameRu": "плетеный PR",
+    "nameEn": "braided PR"
+  },
+  {
+    "id": "mod-braided-org",
+    "categoryId": "cat-cable",
+    "code": "braided ORG",
+    "name": "braided ORG",
+    "nameRu": "плетеный Orig",
+    "nameEn": "braided Orig"
+  },
+  {
+    "id": "mod-55w",
+    "categoryId": "cat-cable",
+    "code": "55W",
+    "name": "55W",
+    "nameRu": "ST",
+    "nameEn": "ST"
+  },
+  {
+    "id": "mod-carbon",
+    "categoryId": "cat-cable",
+    "code": "Carbon",
+    "name": "Carbon",
+    "nameRu": "карбоновый",
+    "nameEn": "carbon"
+  },
+  {
+    "id": "mod-carbon-spiral",
+    "categoryId": "cat-cable",
+    "code": "Carbon Spiral",
+    "name": "Carbon Spiral",
+    "nameRu": "карбоновая спираль",
+    "nameEn": "Carbon Spiral"
+  },
+  {
+    "id": "mod-carbon-3in1",
+    "categoryId": "cat-cable",
+    "code": "Carbon 3in1",
+    "name": "Carbon 3in1",
+    "nameRu": "карбоновый 3в1",
+    "nameEn": "Carbon 3in1"
+  },
+  {
+    "id": "mod-360",
+    "categoryId": "cat-cable",
+    "code": "360",
+    "name": "360",
+    "nameRu": "360",
+    "nameEn": "360"
+  },
+  {
+    "id": "mod-magnet",
+    "categoryId": "cat-cable",
+    "code": "Magnet",
+    "name": "Magnet",
+    "nameRu": "магнитный",
+    "nameEn": "Magnet"
+  },
+  {
+    "id": "mod-magnet-st",
+    "categoryId": "cat-cable",
+    "code": "Magnet ST",
+    "name": "Magnet ST",
+    "nameRu": "магнитный",
+    "nameEn": "Magnet ST"
+  },
+  {
+    "id": "mod-male",
+    "categoryId": "cat-cable",
+    "code": "Male",
+    "name": "Male",
+    "nameRu": "Мужской",
+    "nameEn": "Male"
+  },
+  {
+    "id": "mod-neck",
+    "categoryId": "cat-cable",
+    "code": "Neck",
+    "name": "Neck",
+    "nameRu": "ремешок",
+    "nameEn": "Neck"
+  },
+  {
+    "id": "mod-cute",
+    "categoryId": "cat-cable",
+    "code": "Cute",
+    "name": "Cute",
+    "nameRu": "Женский",
+    "nameEn": "Cute"
+  },
+  {
+    "id": "mod-pr-spiral",
+    "categoryId": "cat-cable",
+    "code": "PR Spiral",
+    "name": "PR Spiral",
+    "nameRu": "премиальный спиральный",
+    "nameEn": "Premium Spiral"
+  },
+  {
+    "id": "mod-silicone",
+    "categoryId": "cat-cable",
+    "code": "Silicone",
+    "name": "Silicone",
+    "nameRu": "силиконовый",
+    "nameEn": "Silicone"
+  },
+  {
+    "id": "mod-game",
+    "categoryId": "cat-cable",
+    "code": "Game",
+    "name": "Game",
+    "nameRu": "угловой геймерский",
+    "nameEn": "Gaming"
+  },
+  {
+    "id": "mod-pl-thick",
+    "categoryId": "cat-cable",
+    "code": "PL Thick",
+    "name": "PL Thick",
+    "nameRu": "толстый плетеный",
+    "nameEn": "Thick braided"
+  },
+  {
+    "id": "mod-colour-zs",
+    "categoryId": "cat-cable",
+    "code": "Colour ZS",
+    "name": "Colour ZS",
+    "nameRu": "цветной ZS",
+    "nameEn": "Color ZS"
+  },
+  {
+    "id": "mod-colour-braided",
+    "categoryId": "cat-cable",
+    "code": "Colour braided",
+    "name": "Colour braided",
+    "nameRu": "плетеный",
+    "nameEn": "braided"
+  },
+  {
+    "id": "mod-watch",
+    "categoryId": "cat-cable",
+    "code": "WATCH",
+    "name": "WATCH",
+    "nameRu": "для зарядки Apple Watch",
+    "nameEn": "Apple Watch charging"
+  },
+  {
+    "id": "mod-watch-up",
+    "categoryId": "cat-cable",
+    "code": "WATCH UP",
+    "name": "WATCH UP",
+    "nameRu": "для Apple Watch плетеный",
+    "nameEn": "Apple Watch braided"
+  },
+  {
+    "id": "mod-1a",
+    "categoryId": "cat-szu",
+    "code": "1A",
+    "name": "1A",
+    "nameRu": "1A",
+    "nameEn": "1A"
+  },
+  {
+    "id": "mod-pd",
+    "categoryId": "cat-szu",
+    "code": "PD",
+    "name": "PD",
+    "nameRu": "PD",
+    "nameEn": "PD"
+  },
+  {
+    "id": "mod-qc3",
+    "categoryId": "cat-szu",
+    "code": "QC3",
+    "name": "QC3",
+    "nameRu": "QC3",
+    "nameEn": "QC3"
+  },
+  {
+    "id": "mod-utc",
+    "categoryId": "cat-szu",
+    "code": "UTC",
+    "name": "UTC",
+    "nameRu": "UTC",
+    "nameEn": "UTC"
+  },
+  {
+    "id": "mod-gan",
+    "categoryId": "cat-szu",
+    "code": "GAN",
+    "name": "GAN",
+    "nameRu": "GaN",
+    "nameEn": "GaN"
+  },
+  {
+    "id": "mod-y9",
+    "categoryId": "cat-bzu",
+    "code": "Y9",
+    "name": "Y9",
+    "nameRu": "Станция Y9",
+    "nameEn": "Y9 Station"
+  },
+  {
+    "id": "mod-y58",
+    "categoryId": "cat-bzu",
+    "code": "Y58",
+    "name": "Y58",
+    "nameRu": "Одиночная станция Y58",
+    "nameEn": "Single station Y58"
+  },
+  {
+    "id": "mod-m2",
+    "categoryId": "cat-bzu",
+    "code": "M2",
+    "name": "M2",
+    "nameRu": "Разборная станция M2",
+    "nameEn": "Detachable station M2"
+  },
+  {
+    "id": "mod-y93",
+    "categoryId": "cat-bzu",
+    "code": "Y93",
+    "name": "Y93",
+    "nameRu": "Компактная станция Y93",
+    "nameEn": "Compact station Y93"
+  },
+  {
+    "id": "mod-vacuum",
+    "categoryId": "cat-bzu",
+    "code": "Vacuum",
+    "name": "Vacuum",
+    "nameRu": "вакуумная",
+    "nameEn": "vacuum"
+  },
+  {
+    "id": "mod-folding",
+    "categoryId": "cat-bzu",
+    "code": "Folding",
+    "name": "Folding",
+    "nameRu": "раскладываемая",
+    "nameEn": "folding"
+  },
+  {
+    "id": "mod-rgb",
+    "categoryId": "cat-azu",
+    "code": "RGB",
+    "name": "RGB",
+    "nameRu": "RGB",
+    "nameEn": "RGB"
+  },
+  {
+    "id": "mod-hammer",
+    "categoryId": "cat-azu",
+    "code": "Hammer",
+    "name": "Hammer",
+    "nameRu": "Hammer",
+    "nameEn": "Hammer"
+  },
+  {
+    "id": "mod-invisible",
+    "categoryId": "cat-azu",
+    "code": "Invisible",
+    "name": "Invisible",
+    "nameRu": "Невидимка",
+    "nameEn": "Invisible"
+  },
+  {
+    "id": "mod-bullet",
+    "categoryId": "cat-azu",
+    "code": "Bullet",
+    "name": "Bullet",
+    "nameRu": "Патрон",
+    "nameEn": "Bullet"
+  },
+  {
+    "id": "mod-stick",
+    "categoryId": "cat-azu",
+    "code": "Stick",
+    "name": "Stick",
+    "nameRu": "удлиненный",
+    "nameEn": "Stick"
+  },
+  {
+    "id": "mod-carbon-azu",
+    "categoryId": "cat-azu",
+    "code": "Carbon",
+    "name": "Carbon",
+    "nameRu": "карбоновый",
+    "nameEn": "Carbon"
+  },
+  {
+    "id": "mod-earpads",
+    "categoryId": "cat-headphones",
+    "code": "EarPads",
+    "name": "EarPads",
+    "nameRu": "EarPads",
+    "nameEn": "EarPads"
+  },
+  {
+    "id": "mod-earpads-org",
+    "categoryId": "cat-headphones",
+    "code": "EarPads ORG",
+    "name": "EarPads ORG",
+    "nameRu": "EarPads Ориг",
+    "nameEn": "EarPads Orig"
+  },
+  {
+    "id": "mod-earpads-pr",
+    "categoryId": "cat-headphones",
+    "code": "EarPads PR",
+    "name": "EarPads PR",
+    "nameRu": "EarPads Премиум",
+    "nameEn": "EarPads PR"
+  },
+  {
+    "id": "mod-earpads-clr",
+    "categoryId": "cat-headphones",
+    "code": "EarPads CLR",
+    "name": "EarPads CLR",
+    "nameRu": "EarPads Color",
+    "nameEn": "EarPads Color"
+  },
+  {
+    "id": "mod-metal",
+    "categoryId": "cat-headphones",
+    "code": "Metal",
+    "name": "Metal",
+    "nameRu": "Metal",
+    "nameEn": "Metal"
+  },
+  {
+    "id": "mod-pro",
+    "categoryId": "cat-headphones",
+    "code": "PRO",
+    "name": "PRO",
+    "nameRu": "PRO",
+    "nameEn": "PRO"
+  },
+  {
+    "id": "mod-pro-orig",
+    "categoryId": "cat-headphones",
+    "code": "PRO Orig",
+    "name": "PRO Orig",
+    "nameRu": "PRO Orig",
+    "nameEn": "PRO Orig"
+  },
+  {
+    "id": "mod-pro-pr",
+    "categoryId": "cat-headphones",
+    "code": "PRO PR",
+    "name": "PRO PR",
+    "nameRu": "PRO PR",
+    "nameEn": "PRO PR"
+  },
+  {
+    "id": "mod-popup",
+    "categoryId": "cat-headphones",
+    "code": "POPUP",
+    "name": "POPUP",
+    "nameRu": "POPUP",
+    "nameEn": "POPUP"
+  },
+  {
+    "id": "mod-popup-orig",
+    "categoryId": "cat-headphones",
+    "code": "POPUP ORIG",
+    "name": "POPUP ORIG",
+    "nameRu": "POPUP Orig",
+    "nameEn": "POPUP Orig"
+  },
+  {
+    "id": "mod-popup-pr",
+    "categoryId": "cat-headphones",
+    "code": "POPUP PR",
+    "name": "POPUP PR",
+    "nameRu": "POPUP PR",
+    "nameEn": "POPUP PR"
+  },
+  {
+    "id": "mod-old-st",
+    "categoryId": "cat-adapter",
+    "code": "OLD ST",
+    "name": "OLD ST",
+    "nameRu": "OLD ST",
+    "nameEn": "OLD ST"
+  },
+  {
+    "id": "mod-old-pr",
+    "categoryId": "cat-adapter",
+    "code": "OLD PR",
+    "name": "OLD PR",
+    "nameRu": "OLD PR",
+    "nameEn": "OLD PR"
+  },
+  {
+    "id": "mod-old-adapter",
+    "categoryId": "cat-adapter",
+    "code": "OLD",
+    "name": "OLD",
+    "nameRu": "Старый",
+    "nameEn": "Old"
+  },
+  {
+    "id": "mod-pin",
+    "categoryId": "cat-pin",
+    "code": "PIN",
+    "name": "PIN",
+    "nameRu": "Пин",
+    "nameEn": "Pin"
+  },
+  {
+    "id": "mod-old-holder",
+    "categoryId": "cat-holder",
+    "code": "OLD",
+    "name": "OLD",
+    "nameRu": "Старый",
+    "nameEn": "Old"
+  },
+  {
+    "id": "mod-butterfly",
+    "categoryId": "cat-case",
+    "code": "Butterfly",
+    "name": "Butterfly",
+    "nameRu": "Бабочка",
+    "nameEn": "Butterfly"
+  },
+  {
+    "id": "mod-icecream",
+    "categoryId": "cat-case",
+    "code": "IceCream",
+    "name": "IceCream",
+    "nameRu": "Мороженка",
+    "nameEn": "IceCream"
+  },
+  {
+    "id": "mod-heart",
+    "categoryId": "cat-case",
+    "code": "Heart",
+    "name": "Heart",
+    "nameRu": "Сердечко",
+    "nameEn": "Heart"
+  },
+  {
+    "id": "mod-china-braided-pr",
+    "categoryId": "cat-kit",
+    "code": "China braided PR",
+    "name": "China braided PR",
+    "nameRu": "PD + плетеный PR",
+    "nameEn": "PD + braided PR"
+  },
+  {
+    "id": "mod-china-pr",
+    "categoryId": "cat-kit",
+    "code": "China PR",
+    "name": "China PR",
+    "nameRu": "PD + PR",
+    "nameEn": "PD + PR"
+  },
+  {
+    "id": "mod-china-st",
+    "categoryId": "cat-kit",
+    "code": "China ST",
+    "name": "China ST",
+    "nameRu": "PD + ST",
+    "nameEn": "PD + ST"
+  },
+  {
+    "id": "mod-items",
+    "categoryId": "cat-packaging",
+    "code": "items",
+    "name": "items",
+    "nameRu": "Предмет",
+    "nameEn": "items"
+  },
+  {
+    "id": "mod-box",
+    "categoryId": "cat-packaging",
+    "code": "box",
+    "name": "box",
+    "nameRu": "Коробка",
+    "nameEn": "box"
+  },
+  {
+    "id": "mod-box-items",
+    "categoryId": "cat-packaging",
+    "code": "box-items",
+    "name": "box-items",
+    "nameRu": "Коробка предмет",
+    "nameEn": "box-items"
+  },
+  {
+    "id": "mod-screen-mirror",
+    "categoryId": "cat-blogo",
+    "code": "Screen Mirror",
+    "name": "Screen Mirror",
+    "nameRu": "повторитель экрана",
+    "nameEn": "Screen Mirror"
+  }
+]

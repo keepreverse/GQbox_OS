@@ -61,7 +61,7 @@ export default function Architecture() {
               {t('arch.summary.title')}
             </h3>
             <div className="prose prose-invert prose-sm max-w-none">
-              <div className="whitespace-pre-wrap text-text-secondary leading-relaxed text-xs sm:text-sm">
+              <div className="whitespace-pre-wrap break-words text-text-secondary leading-relaxed text-xs sm:text-sm">
                 {currentArchitectureNotes}
               </div>
             </div>

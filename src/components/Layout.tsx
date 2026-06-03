@@ -3,13 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Cpu, Grid3X3, Wrench, BookOpen, Package, Image,
   Sparkles, Menu, X, Bell, Settings, Globe, Shield, Key, LogOut,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Download, Upload, RotateCcw,
 } from 'lucide-react';
 import type { ViewType } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import type { Language } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
 import BottomSheet from './BottomSheet';
+import { exportAllData, importData } from '../data/store';
+import { resetProducts } from '../data/products';
+import { resetDictionaries } from '../data/dictionaries';
+import { exportApi } from '../api/dictionaries';
 
 const MODAL_CLOSE_MS = 150;
 
@@ -84,6 +88,65 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
     setSettingsOpen(true);
     savedLangRef.current = language;
   }, [language]);
+
+  // ─── Управление данными (экспорт/импорт/сброс) ──────────────────────────────
+
+  const handleExport = useCallback(async () => {
+    let data: Record<string, unknown[]> | null = null;
+    try {
+      data = await exportApi.exportAll();
+    } catch {
+      const json = exportAllData();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gqbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gqbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleImport = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      let parsed: Record<string, unknown[]>;
+      try { parsed = JSON.parse(text); } catch { alert(t('settings.import_error')); return; }
+      try {
+        await exportApi.importAll(parsed);
+        window.location.reload();
+      } catch {
+        const ok = importData(text);
+        if (ok) { window.location.reload(); } else { alert(t('settings.import_error')); }
+      }
+    };
+    input.click();
+  }, [t]);
+
+  const handleReset = useCallback(async () => {
+    if (!window.confirm(t('settings.reset_confirm'))) return;
+    try {
+      await exportApi.reset();
+      window.location.reload();
+    } catch {
+      resetProducts();
+      resetDictionaries();
+      window.location.reload();
+    }
+  }, [t]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -163,7 +226,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             <motion.span
               initial={false}
               animate={{ maxWidth: sidebarCollapsed ? 0 : 88, opacity: sidebarCollapsed ? 0 : 1, marginLeft: sidebarCollapsed ? 0 : 2 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="text-[28px] font-bold text-text-primary leading-none overflow-hidden whitespace-nowrap inline-block"
             >
               box
@@ -174,7 +237,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           <motion.div
             initial={false}
             animate={{ opacity: sidebarCollapsed ? 0 : 1, height: sidebarCollapsed ? 0 : 'auto' }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="overflow-hidden w-full pl-[16px] mt-1 mb-4"
           >
             <p className="text-[10px] text-text-secondary whitespace-nowrap font-light tracking-[0.1em] uppercase">
@@ -186,7 +249,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           <motion.button
             initial={false}
             animate={{ opacity: sidebarCollapsed ? 0 : 1, x: sidebarCollapsed ? 20 : 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             onClick={() => {
               if (isMobile) setSidebarOpen(false);
               else setSidebarCollapsed(true);
@@ -202,7 +265,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           <motion.button
             initial={false}
             animate={{ opacity: sidebarCollapsed ? 1 : 0, y: sidebarCollapsed ? 0 : 20 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             onClick={() => setSidebarCollapsed(false)}
             className="absolute bottom-0 left-0 w-[72px] h-11 sm:h-6 border-t border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 transition-colors flex items-center justify-center bg-transparent pointer-events-auto cursor-pointer"
             style={{ pointerEvents: sidebarCollapsed ? 'auto' : 'none' }}
@@ -231,7 +294,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                 title={sidebarCollapsed ? item.label : ''}
               >
                 <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-accent' : 'text-text-tertiary'}`} />
-                <span className={`flex-1 text-left truncate ml-3 transition-opacity duration-200 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden ml-0' : 'opacity-100 ml-3'}`}>
+                <span className={`flex-1 text-left truncate ml-3 transition-opacity duration-150 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden ml-0' : 'opacity-100 ml-3'}`}>
                   {item.label}
                 </span>
                 {!sidebarCollapsed && item.badge && (
@@ -252,7 +315,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             <motion.div
               initial={false}
               animate={{ opacity: sidebarCollapsed ? 0 : 1, maxWidth: sidebarCollapsed ? 0 : 170, marginLeft: sidebarCollapsed ? 0 : 12 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               className="overflow-hidden flex items-center justify-between flex-1"
             >
               <div className="min-w-0 pr-2">
@@ -485,6 +548,32 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                 <span className="text-text-tertiary">sbp_live_8f92...</span>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-text-tertiary">
+                {t('settings.data_management')}
+              </h4>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> {t('settings.export')}
+                </button>
+                <button
+                  onClick={handleImport}
+                  className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" /> {t('settings.import')}
+                </button>
+              </div>
+              <button
+                onClick={handleReset}
+                className="w-full flex items-center justify-center gap-1.5 h-9 rounded text-xs text-danger hover:bg-danger/10 transition-colors border border-danger/20 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> {t('settings.reset_to_defaults')}
+              </button>
+            </div>
           </div>
         </BottomSheet>
       ) : settingsOpen && (
@@ -562,6 +651,30 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                     </span>
                     <span className="text-text-tertiary">sbp_live_8f92...</span>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-xs font-medium text-text-tertiary">{t('settings.data_management')}</h4>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleExport}
+                      className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" /> {t('settings.export')}
+                    </button>
+                    <button
+                      onClick={handleImport}
+                      className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" /> {t('settings.import')}
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleReset}
+                    className="w-full flex items-center justify-center gap-1.5 h-9 rounded text-xs text-danger hover:bg-danger/10 transition-colors border border-danger/20 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> {t('settings.reset_to_defaults')}
+                  </button>
                 </div>
               </div>
 

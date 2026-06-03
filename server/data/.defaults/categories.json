@@ -1,0 +1,134 @@
+[
+  {
+    "id": "cat-cable",
+    "code": "cable",
+    "name": "Кабель",
+    "nameRu": "Кабель",
+    "nameEn": "Cable",
+    "color": "#aa94ee",
+    "icon": "Cable",
+    "description": "",
+    "sortOrder": 1
+  },
+  {
+    "id": "cat-szu",
+    "code": "szu",
+    "name": "СЗУ",
+    "nameRu": "СЗУ",
+    "nameEn": "Wall Charger",
+    "color": "#fbbf24",
+    "icon": "Zap",
+    "description": "",
+    "sortOrder": 2
+  },
+  {
+    "id": "cat-bzu",
+    "code": "bzu",
+    "name": "БЗУ",
+    "nameRu": "БЗУ",
+    "nameEn": "Wireless Charger",
+    "color": "#34d399",
+    "icon": "Wifi",
+    "description": "",
+    "sortOrder": 3
+  },
+  {
+    "id": "cat-azu",
+    "code": "azu",
+    "name": "АЗУ",
+    "nameRu": "АЗУ",
+    "nameEn": "Car Charger",
+    "color": "#f87171",
+    "icon": "Car",
+    "description": "",
+    "sortOrder": 4
+  },
+  {
+    "id": "cat-headphones",
+    "code": "headphones",
+    "name": "Наушники",
+    "nameRu": "Наушники",
+    "nameEn": "Headphones",
+    "color": "#f472b6",
+    "icon": "Headphones",
+    "description": "",
+    "sortOrder": 5
+  },
+  {
+    "id": "cat-adapter",
+    "code": "adapter",
+    "name": "Переходник",
+    "nameRu": "Переходник",
+    "nameEn": "Adapter",
+    "color": "#22d3ee",
+    "icon": "ArrowLeftRight",
+    "description": "",
+    "sortOrder": 6
+  },
+  {
+    "id": "cat-pin",
+    "code": "pin",
+    "name": "Пин",
+    "nameRu": "Пин",
+    "nameEn": "Pin",
+    "color": "#aa94ee",
+    "icon": "Pin",
+    "description": "",
+    "sortOrder": 7
+  },
+  {
+    "id": "cat-holder",
+    "code": "holder",
+    "name": "Держатель",
+    "nameRu": "Держатель",
+    "nameEn": "Holder",
+    "color": "#a3e635",
+    "icon": "GripVertical",
+    "description": "",
+    "sortOrder": 8
+  },
+  {
+    "id": "cat-case",
+    "code": "case",
+    "name": "Чехол",
+    "nameRu": "Чехол",
+    "nameEn": "Case",
+    "color": "#fb923c",
+    "icon": "Smartphone",
+    "description": "",
+    "sortOrder": 9
+  },
+  {
+    "id": "cat-kit",
+    "code": "kit",
+    "name": "Комплект",
+    "nameRu": "Комплект",
+    "nameEn": "Kit",
+    "color": "#c084fc",
+    "icon": "Package",
+    "description": "",
+    "sortOrder": 10
+  },
+  {
+    "id": "cat-packaging",
+    "code": "packaging",
+    "name": "Вложение/упаковка",
+    "nameRu": "Упаковка",
+    "nameEn": "Packaging",
+    "color": "#94a3b8",
+    "icon": "Archive",
+    "description": "",
+    "sortOrder": 11
+  },
+  {
+    "id": "cat-blogo",
+    "code": "blogo",
+    "name": "Blogo",
+    "nameRu": "Blogo",
+    "nameEn": "Blogo",
+    "color": "#2dd4bf",
+    "icon": "Monitor",
+    "description": "",
+    "sortOrder": 12
+  }
+]

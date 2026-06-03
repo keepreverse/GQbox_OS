@@ -60,7 +60,7 @@ export default function BottomSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             onClick={closeOnBackdropClick ? onClose : undefined}
             className="fixed inset-0 z-[99] bg-black/40 cursor-pointer"
             aria-hidden="true"

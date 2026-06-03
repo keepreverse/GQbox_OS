@@ -1,18 +1,8 @@
-/**
- * Семантика полей для всех словарных объектов:
- *  - name     : ИСТОЧНИК  (левый столбец словаря, код для артикула)
- *  - nameRu   : ТОВАРНОЕ RU  (правый столбец словаря, как есть, на русском)
- *  - nameEn?  : ТОВАРНОЕ EN  (перевод правого столбца на английский;
- *                              если не указано — будет использовано nameRu как fallback)
- */
-
 export interface Category {
   id: string;
   code: string;
-  name: string;      // источник: АЗУ, БЗУ, Кабель...
-  sourceEn?: string; // источник EN: Car Charger, Cable...
-  nameRu: string;    // товарное RU: АЗУ., БЗУ., Кабель.
-  nameEn?: string;   // товарное EN: Car Charger., Wireless Charger., Cable.
+  name_source: string;
+  name_product: string;
   color: string;
   icon: string;
   description: string;
@@ -23,10 +13,8 @@ export interface Model {
   id: string;
   categoryId: string;
   code: string;
-  name: string;      // источник: braided, Carbon, Butterfly...
-  sourceEn?: string; // источник EN
-  nameRu: string;    // товарное RU: плетеный, карбоновый, Бабочка
-  nameEn?: string;   // товарное EN: braided, Carbon, Butterfly
+  name_source: string;
+  name_product: string;
   description?: string;
 }
 
@@ -40,39 +28,31 @@ export interface Supplier {
 export interface Color {
   id: string;
   code: string;
-  name: string;
-  sourceEn?: string;
-  nameRu: string;    // товарное RU: Черный, Белый, Красный
-  nameEn?: string;   // товарное EN: Black, White, Red
+  name_source: string;
+  name_product: string;
   hexValue: string;
 }
 
 export interface Connector {
   id: string;
   code: string;
-  name: string;
-  sourceEn?: string;
-  nameRu: string;
-  nameEn?: string;
+  name_source: string;
+  name_product: string;
 }
 
 export interface ChargingProtocol {
   id: string;
   code: string;
-  name: string;
-  sourceEn?: string;
-  nameRu: string;
-  nameEn?: string;
+  name_source: string;
+  name_product: string;
   description?: string;
 }
 
 export interface Material {
   id: string;
   code: string;
-  name: string;
-  sourceEn?: string;
-  nameRu: string;
-  nameEn?: string;
+  name_source: string;
+  name_product: string;
 }
 
 export interface ProductBase {
@@ -149,7 +129,7 @@ export interface PackagingItem {
   id: string;
   sku: string;
   name: string;
-  nameRu: string;
+  name_product: string;
   category: string;
   materialId?: string;
   dimensions?: string;

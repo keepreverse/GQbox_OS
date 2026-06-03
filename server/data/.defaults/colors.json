@@ -1,0 +1,330 @@
+[
+  {
+    "id": "col-01",
+    "code": "01",
+    "name": "ЧЕРНЫЙ",
+    "nameRu": "ЧЕРНЫЙ",
+    "nameEn": "BLACK",
+    "hexValue": "#1a1a1a"
+  },
+  {
+    "id": "col-22",
+    "code": "22",
+    "name": "ТЕМНО-СЕРЫЙ",
+    "nameRu": "ТЕМНО-СЕРЫЙ",
+    "nameEn": "DARK GRAY",
+    "hexValue": "#374151"
+  },
+  {
+    "id": "col-36",
+    "code": "36",
+    "name": "СЕРЫЙ",
+    "nameRu": "СЕРЫЙ",
+    "nameEn": "GRAY",
+    "hexValue": "#6b7280"
+  },
+  {
+    "id": "col-39",
+    "code": "39",
+    "name": "СЕРЕБРО",
+    "nameRu": "СЕРЕБРО",
+    "nameEn": "SILVER",
+    "hexValue": "#c0c0c0"
+  },
+  {
+    "id": "col-02",
+    "code": "02",
+    "name": "БЕЛЫЙ",
+    "nameRu": "БЕЛЫЙ",
+    "nameEn": "WHITE",
+    "hexValue": "#f5f5f5"
+  },
+  {
+    "id": "col-40",
+    "code": "40",
+    "name": "АНТИЧНЫЙ БЕЛЫЙ",
+    "nameRu": "АНТИЧНЫЙ БЕЛЫЙ",
+    "nameEn": "ANTIQUE WHITE",
+    "hexValue": "#faebd7"
+  },
+  {
+    "id": "col-32",
+    "code": "32",
+    "name": "БОРДОВЫЙ",
+    "nameRu": "БОРДОВЫЙ",
+    "nameEn": "BURGUNDY",
+    "hexValue": "#800020"
+  },
+  {
+    "id": "col-33",
+    "code": "33",
+    "name": "МАЛИНОВЫЙ",
+    "nameRu": "МАЛИНОВЫЙ",
+    "nameEn": "CRIMSON",
+    "hexValue": "#dc143c"
+  },
+  {
+    "id": "col-03",
+    "code": "03",
+    "name": "КРАСНЫЙ",
+    "nameRu": "КРАСНЫЙ",
+    "nameEn": "RED",
+    "hexValue": "#dc2626"
+  },
+  {
+    "id": "col-04",
+    "code": "04",
+    "name": "КРАСНОЕ ЗОЛОТО",
+    "nameRu": "КРАСНОЕ ЗОЛОТО",
+    "nameEn": "RED GOLD",
+    "hexValue": "#c0392b"
+  },
+  {
+    "id": "col-06",
+    "code": "06",
+    "name": "КОРИЧНЕВЫЙ",
+    "nameRu": "КОРИЧНЕВЫЙ",
+    "nameEn": "BROWN",
+    "hexValue": "#92400e"
+  },
+  {
+    "id": "col-05",
+    "code": "05",
+    "name": "КОРАЛЛОВЫЙ",
+    "nameRu": "КОРАЛЛОВЫЙ",
+    "nameEn": "CORAL",
+    "hexValue": "#ff7f50"
+  },
+  {
+    "id": "col-07",
+    "code": "07",
+    "name": "ОРАНЖЕВЫЙ",
+    "nameRu": "ОРАНЖЕВЫЙ",
+    "nameEn": "ORANGE",
+    "hexValue": "#f97316"
+  },
+  {
+    "id": "col-38",
+    "code": "38",
+    "name": "ТЕМНО-БЕЖЕВЫЙ",
+    "nameRu": "ТЕМНО-БЕЖЕВЫЙ",
+    "nameEn": "DARK BEIGE",
+    "hexValue": "#a1887f"
+  },
+  {
+    "id": "col-09",
+    "code": "09",
+    "name": "БЕЖЕВЫЙ",
+    "nameRu": "БЕЖЕВЫЙ",
+    "nameEn": "BEIGE",
+    "hexValue": "#d4b896"
+  },
+  {
+    "id": "col-08",
+    "code": "08",
+    "name": "ПЕРСИКОВЫЙ",
+    "nameRu": "ПЕРСИКОВЫЙ",
+    "nameEn": "PEACH",
+    "hexValue": "#ffdab9"
+  },
+  {
+    "id": "col-10",
+    "code": "10",
+    "name": "ЗОЛОТОЙ",
+    "nameRu": "ЗОЛОТОЙ",
+    "nameEn": "GOLD",
+    "hexValue": "#fbbf24"
+  },
+  {
+    "id": "col-11",
+    "code": "11",
+    "name": "ЖЕЛТЫЙ",
+    "nameRu": "ЖЕЛТЫЙ",
+    "nameEn": "YELLOW",
+    "hexValue": "#eab308"
+  },
+  {
+    "id": "col-12",
+    "code": "12",
+    "name": "АНТИЧНОЕ ЗОЛОТО",
+    "nameRu": "АНТИЧНОЕ ЗОЛОТО",
+    "nameEn": "ANTIQUE GOLD",
+    "hexValue": "#cfb53b"
+  },
+  {
+    "id": "col-13",
+    "code": "13",
+    "name": "БОЛОТНЫЙ",
+    "nameRu": "БОЛОТНЫЙ",
+    "nameEn": "MARSH",
+    "hexValue": "#556b2f"
+  },
+  {
+    "id": "col-14",
+    "code": "14",
+    "name": "САЛАТОВЫЙ",
+    "nameRu": "САЛАТОВЫЙ",
+    "nameEn": "LIGHT GREEN",
+    "hexValue": "#84cc16"
+  },
+  {
+    "id": "col-15",
+    "code": "15",
+    "name": "СЕРО-ЗЕЛЕНЫЙ",
+    "nameRu": "СЕРО-ЗЕЛЕНЫЙ",
+    "nameEn": "GRAY-GREEN",
+    "hexValue": "#8fbc8f"
+  },
+  {
+    "id": "col-16",
+    "code": "16",
+    "name": "ЗЕЛЕНЫЙ",
+    "nameRu": "ЗЕЛЕНЫЙ",
+    "nameEn": "GREEN",
+    "hexValue": "#16a34a"
+  },
+  {
+    "id": "col-17",
+    "code": "17",
+    "name": "МЯТНЫЙ",
+    "nameRu": "МЯТНЫЙ",
+    "nameEn": "MINT",
+    "hexValue": "#6ee7b7"
+  },
+  {
+    "id": "col-18",
+    "code": "18",
+    "name": "СИНЕ-ЗЕЛЕНЫЙ",
+    "nameRu": "СИНЕ-ЗЕЛЕНЫЙ",
+    "nameEn": "BLUE-GREEN",
+    "hexValue": "#0d9488"
+  },
+  {
+    "id": "col-19",
+    "code": "19",
+    "name": "СЕРО-БИРЮЗОВЫЙ",
+    "nameRu": "СЕРО-БИРЮЗОВЫЙ",
+    "nameEn": "GRAY-TURQUOISE",
+    "hexValue": "#5f9ea0"
+  },
+  {
+    "id": "col-20",
+    "code": "20",
+    "name": "БИРЮЗОВЫЙ",
+    "nameRu": "БИРЮЗОВЫЙ",
+    "nameEn": "TURQUOISE",
+    "hexValue": "#06b6d4"
+  },
+  {
+    "id": "col-21",
+    "code": "21",
+    "name": "НЕБЕСНО-ГОЛУБОЙ",
+    "nameRu": "НЕБЕСНО-ГОЛУБОЙ",
+    "nameEn": "SKY BLUE",
+    "hexValue": "#0ea5e9"
+  },
+  {
+    "id": "col-37",
+    "code": "37",
+    "name": "СЕРО-СИНИЙ",
+    "nameRu": "СЕРО-СИНИЙ",
+    "nameEn": "BLUE-GRAY",
+    "hexValue": "#64748b"
+  },
+  {
+    "id": "col-23",
+    "code": "23",
+    "name": "ГОЛУБОЙ",
+    "nameRu": "ГОЛУБОЙ",
+    "nameEn": "BLUE",
+    "hexValue": "#2563eb"
+  },
+  {
+    "id": "col-24",
+    "code": "24",
+    "name": "ЯРКО-СИНИЙ",
+    "nameRu": "ЯРКО-СИНИЙ",
+    "nameEn": "BRIGHT BLUE",
+    "hexValue": "#1d4ed8"
+  },
+  {
+    "id": "col-25",
+    "code": "25",
+    "name": "СИНИЙ",
+    "nameRu": "СИНИЙ",
+    "nameEn": "NAVY",
+    "hexValue": "#1e40af"
+  },
+  {
+    "id": "col-26",
+    "code": "26",
+    "name": "ФИАЛКОВЫЙ",
+    "nameRu": "ФИАЛКОВЫЙ",
+    "nameEn": "VIOLET",
+    "hexValue": "#917af7"
+  },
+  {
+    "id": "col-27",
+    "code": "27",
+    "name": "СИРЕНЕВЫЙ",
+    "nameRu": "СИРЕНЕВЫЙ",
+    "nameEn": "LILAC",
+    "hexValue": "#c084fc"
+  },
+  {
+    "id": "col-28",
+    "code": "28",
+    "name": "ФИОЛЕТОВЫЙ",
+    "nameRu": "ФИОЛЕТОВЫЙ",
+    "nameEn": "PURPLE",
+    "hexValue": "#9333ea"
+  },
+  {
+    "id": "col-31",
+    "code": "31",
+    "name": "РОЗОВЫЙ",
+    "nameRu": "РОЗОВЫЙ",
+    "nameEn": "PINK",
+    "hexValue": "#ec4899"
+  },
+  {
+    "id": "col-30",
+    "code": "30",
+    "name": "ЯРКО-РОЗОВЫЙ",
+    "nameRu": "ЯРКО-РОЗОВЫЙ",
+    "nameEn": "BRIGHT PINK",
+    "hexValue": "#ff1493"
+  },
+  {
+    "id": "col-29",
+    "code": "29",
+    "name": "ПЫЛЬНО-РОЗОВЫЙ",
+    "nameRu": "ПЫЛЬНО-РОЗОВЫЙ",
+    "nameEn": "DUSTY PINK",
+    "hexValue": "#f9a8d4"
+  },
+  {
+    "id": "col-35",
+    "code": "35",
+    "name": "НЕЖНО-РОЗОВЫЙ",
+    "nameRu": "НЕЖНО-РОЗОВЫЙ",
+    "nameEn": "SOFT PINK",
+    "hexValue": "#ffb6c1"
+  },
+  {
+    "id": "col-34",
+    "code": "34",
+    "name": "РОЗОВОЕ ЗОЛОТО",
+    "nameRu": "РОЗОВОЕ ЗОЛОТО",
+    "nameEn": "ROSE GOLD",
+    "hexValue": "#b76e79"
+  },
+  {
+    "id": "col-41",
+    "code": "41",
+    "name": "РАЗНОЦВЕТНЫЙ",
+    "nameRu": "РАЗНОЦВЕТНЫЙ",
+    "nameEn": "MULTICOLOR",
+    "hexValue": "gradient"
+  }
+]

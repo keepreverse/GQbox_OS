@@ -1,0 +1,121 @@
+[
+  {
+    "id": "conn-l",
+    "code": "L",
+    "name": "L",
+    "nameRu": "L",
+    "nameEn": "L"
+  },
+  {
+    "id": "conn-usb",
+    "code": "USB",
+    "name": "USB",
+    "nameRu": "USB",
+    "nameEn": "USB"
+  },
+  {
+    "id": "conn-tc",
+    "code": "TC",
+    "name": "TC",
+    "nameRu": "TC",
+    "nameEn": "TC"
+  },
+  {
+    "id": "conn-micro",
+    "code": "Micro",
+    "name": "Micro",
+    "nameRu": "Micro",
+    "nameEn": "Micro"
+  },
+  {
+    "id": "conn-jack",
+    "code": "Jack",
+    "name": "Jack",
+    "nameRu": "Jack",
+    "nameEn": "Jack"
+  },
+  {
+    "id": "conn-30pin",
+    "code": "30pin",
+    "name": "30pin",
+    "nameRu": "30pin",
+    "nameEn": "30pin"
+  },
+  {
+    "id": "conn-360",
+    "code": "360",
+    "name": "360",
+    "nameRu": "360",
+    "nameEn": "360"
+  },
+  {
+    "id": "conn-usb2",
+    "code": "USB2",
+    "name": "USB2",
+    "nameRu": "2USB",
+    "nameEn": "2USB"
+  },
+  {
+    "id": "conn-tc2",
+    "code": "TC2",
+    "name": "TC2",
+    "nameRu": "2TC",
+    "nameEn": "2TC"
+  },
+  {
+    "id": "conn-l2",
+    "code": "L2",
+    "name": "L2",
+    "nameRu": "2L",
+    "nameEn": "2L"
+  },
+  {
+    "id": "conn-ljack",
+    "code": "L+Jack",
+    "name": "L+Jack",
+    "nameRu": "L+Jack",
+    "nameEn": "L+Jack"
+  },
+  {
+    "id": "conn-tcl",
+    "code": "TC-L",
+    "name": "TC-L",
+    "nameRu": "TC-L",
+    "nameEn": "TC-L"
+  },
+  {
+    "id": "conn-tc2l",
+    "code": "TC2-L",
+    "name": "TC2-L",
+    "nameRu": "2TC-L",
+    "nameEn": "2TC-L"
+  },
+  {
+    "id": "conn-usbtc",
+    "code": "USB-TC",
+    "name": "USB-TC",
+    "nameRu": "USB-TC",
+    "nameEn": "USB-TC"
+  },
+  {
+    "id": "conn-usb3",
+    "code": "USB3",
+    "name": "USB3",
+    "nameRu": "3USB",
+    "nameEn": "3USB"
+  },
+  {
+    "id": "conn-tc3",
+    "code": "TC3",
+    "name": "TC3",
+    "nameRu": "3TC",
+    "nameEn": "3TC"
+  },
+  {
+    "id": "conn-l3",
+    "code": "L3",
+    "name": "L3",
+    "nameRu": "3L",
+    "nameEn": "3L"
+  }
+]

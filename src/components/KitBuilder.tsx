@@ -5,11 +5,12 @@ import {
   Hash, Layers, Check, ArrowLeft, Cable, Wifi, Car, Headphones,
   ArrowLeftRight, Pin, GripVertical, Smartphone, Archive, Monitor
 } from 'lucide-react';
-import { products } from '../data/products';
+import { products, addProduct } from '../data/products';
 import { categories, colors } from '../data/dictionaries';
 import type { ProductWithRelations } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
+import { productsApi } from '../api/products';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable, szu: Zap, bzu: Wifi, azu: Car, headphones: Headphones,
@@ -22,8 +23,8 @@ interface KitComponent {
   quantity: number;
 }
 
-function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
-  const expanded = items.flatMap(item => Array.from({ length: item.quantity }, () => displayProductName(item.product, lang)));
+function generateKitName(items: KitComponent[]) {
+  const expanded = items.flatMap(item => Array.from({ length: item.quantity }, () => displayProductName(item.product)));
   const cleaned = expanded.map(v => String(v || '').trim()).filter(v => v && v !== '-');
 
   if (cleaned.length === 0) return '';
@@ -31,13 +32,11 @@ function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
 
   const allSame = cleaned.every(item => item === cleaned[0]);
   if (allSame) {
-    return lang === 'ru'
-      ? `Комплект. ${cleaned[0]} ${cleaned.length} шт.`
-      : `Kit. ${cleaned[0]} ${cleaned.length} pcs.`;
+    return `Комплект. ${cleaned[0]} ${cleaned.length} шт.`;
   }
 
   const colorNames = colors
-    .map(color => lang === 'ru' ? color.nameRu : (color.nameEn || color.nameRu))
+    .map(color => color.name_product)
     .filter(Boolean)
     .sort((a, b) => b.length - a.length);
 
@@ -68,7 +67,7 @@ function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
     map.get(key)!.count += 1;
   }
 
-  const pinPrefix = lang === 'ru' ? 'Пин.' : 'Pin.';
+  const pinPrefix = 'Пин.';
   const pinItems = groups.filter(group => group.base.startsWith(pinPrefix));
   const otherItems = groups.filter(group => !group.base.startsWith(pinPrefix));
 
@@ -76,7 +75,7 @@ function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
   if (pinItems.length > 0) {
     const values = pinItems.map(pin => {
       let value = pin.base.replace(new RegExp(`^${pinPrefix.replace('.', '\\.') }\\s*`), '');
-      if (pin.count > 1) value += lang === 'ru' ? ` ${pin.count} шт.` : ` ${pin.count} pcs.`;
+      if (pin.count > 1) value += ` ${pin.count} шт.`;
       return value;
     });
     pinPart = { base: `${pinPrefix} ${values.join(' + ')}`, color: null, count: 1 };
@@ -90,11 +89,11 @@ function generateKitName(items: KitComponent[], lang: 'ru' | 'en') {
   const parts = finalGroups.map(({ base, color, count }) => {
     let part = base;
     if (!commonColor && color) part += ` ${color}`;
-    if (count > 1) part += lang === 'ru' ? ` ${count} шт.` : ` ${count} pcs.`;
+    if (count > 1) part += ` ${count} шт.`;
     return part;
   });
 
-  const prefix = lang === 'ru' ? 'Комплект.' : 'Kit.';
+  const prefix = 'Комплект.';
   return commonColor ? `${prefix} ${parts.join(' + ')} ${commonColor}` : `${prefix} ${parts.join(' + ')}`;
 }
 
@@ -167,7 +166,6 @@ export default function KitBuilder() {
   const { t, language } = useLanguage();
   const [kitSku, setKitSku] = useState('');
   const [kitName, setKitName] = useState('');
-  const [kitNameRu, setKitNameRu] = useState('');
   const [components, setComponents] = useState<KitComponent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPicker, setShowPicker] = useState(false);
@@ -208,9 +206,8 @@ export default function KitBuilder() {
   const skuExists = products.some(p => p.sku.toLowerCase() === kitSku.trim().toLowerCase());
 
   useEffect(() => {
-    setKitNameRu(generateKitName(components, 'ru'));
-    setKitName(generateKitName(components, 'en'));
-  }, [components, language]);
+    setKitName(generateKitName(components));
+  }, [components]);
 
   const addComponent = (product: ProductWithRelations) => {
     setComponents(prev => {
@@ -234,12 +231,35 @@ export default function KitBuilder() {
     setComponents(newComponents);
   };
 
-  const handleCreateKit = () => {
-    if (components.length === 0 || !kitNameRu || !kitSku || skuExists) return;
+  const handleCreateKit = async () => {
+    if (components.length === 0 || !kitName || !kitSku || skuExists) return;
 
-    setToastMessage(t('kit.toast_created').replace('{name}', language === 'ru' ? kitNameRu : (kitName || kitNameRu)));
+    const maxId = products.reduce((max, p) => {
+      const num = parseInt(p.id.replace('p', ''), 10);
+      return num > max ? num : max;
+    }, 0);
+    const newId = `p${maxId + 1}`;
+    const totalPowerW = components.reduce((sum, c) => sum + (c.product.powerW || 0) * c.quantity, 0);
+
+    const newProduct = {
+      id: newId,
+      sku: kitSku,
+      skuBase: kitSku.replace(/-\w+$/,''),
+      categoryId: 'cat-kit',
+      modelId: 'mod-china-pr',
+      isKit: true,
+      powerW: totalPowerW || undefined,
+      deviceCount: components.reduce((sum, c) => sum + c.quantity, 0),
+    };
+
+    try {
+      await productsApi.create(newProduct);
+    } catch {
+      addProduct(newProduct);
+    }
+
+    setToastMessage(t('kit.toast_created').replace('{name}', kitName));
     setKitName('');
-    setKitNameRu('');
     setKitSku('');
     setComponents([]);
 
@@ -281,8 +301,8 @@ export default function KitBuilder() {
               {t('kit.config')}
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <div className="md:col-span-2">
+            <div className="space-y-3 sm:space-y-4">
+              <div>
                 <label className="text-xs text-text-tertiary mb-1 block">
                   {t('kit.article')}
                 </label>
@@ -300,21 +320,11 @@ export default function KitBuilder() {
                 )}
               </div>
               <div>
-                <label className="text-xs text-text-tertiary mb-1 block">{t('kit.nameEn')}</label>
+                <label className="text-xs text-text-tertiary mb-1 block">{t('kit.name')}</label>
                 <input
                   type="text"
                   value={kitName}
                   onChange={e => setKitName(e.target.value)}
-                  placeholder={t('kit.auto_placeholder')}
-                  className="w-full text-text-primary h-11 sm:h-10"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">{t('kit.nameRu')}</label>
-                <input
-                  type="text"
-                  value={kitNameRu}
-                  onChange={e => setKitNameRu(e.target.value)}
                   placeholder={t('kit.auto_placeholder')}
                   className="w-full text-text-primary h-11 sm:h-10"
                 />
@@ -406,8 +416,8 @@ export default function KitBuilder() {
                 <p className="text-[10px] text-text-tertiary uppercase mb-1">
                   {t('kit.generated_name')}
                 </p>
-                <p className={`text-xs sm:text-sm ${kitNameRu ? '' : 'text-text-muted'}`}>
-                  {kitNameRu || '—'}
+                <p className={`text-xs sm:text-sm ${kitName ? '' : 'text-text-muted'}`}>
+                  {kitName || '—'}
                 </p>
               </div>
 
@@ -432,7 +442,7 @@ export default function KitBuilder() {
 
               <button
                 onClick={handleCreateKit}
-                disabled={components.length === 0 || !kitNameRu || !kitSku || skuExists}
+                disabled={components.length === 0 || !kitName || !kitSku || skuExists}
                 className="w-full min-h-[44px] sm:min-h-0 py-2.5 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40"
               >
                 {t('kit.create')}
@@ -475,7 +485,7 @@ export default function KitBuilder() {
                 {pickerView === 'categories' ? (
                   <div className="space-y-1">
                     {categories
-                      .filter(c => c.nameRu.toLowerCase().includes(searchQuery.toLowerCase()) || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .filter(c => c.name_source.toLowerCase().includes(searchQuery.toLowerCase()) || c.name_product.toLowerCase().includes(searchQuery.toLowerCase()))
                       .map(cat => (
                         <button
                           key={cat.id}
@@ -499,7 +509,7 @@ export default function KitBuilder() {
                           <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-text-primary transition-colors flex-shrink-0" />
                         </button>
                       ))}
-                    {categories.filter(c => c.nameRu.toLowerCase().includes(searchQuery.toLowerCase()) || c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    {categories.filter(c => c.name_source.toLowerCase().includes(searchQuery.toLowerCase()) || c.name_product.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                        <p className="text-center py-12 text-xs text-text-tertiary">
                          {t('kit.no_categories')}
                        </p>

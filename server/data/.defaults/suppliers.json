@@ -1,0 +1,26 @@
+[
+  {
+    "id": "sup-angela",
+    "code": "A",
+    "name": "Angela",
+    "contactInfo": ""
+  },
+  {
+    "id": "sup-wendy",
+    "code": "W",
+    "name": "Wendy",
+    "contactInfo": ""
+  },
+  {
+    "id": "sup-both",
+    "code": "AW",
+    "name": "Angela+Wendy",
+    "contactInfo": ""
+  },
+  {
+    "id": "sup-none",
+    "code": "-",
+    "name": "—",
+    "contactInfo": ""
+  }
+]

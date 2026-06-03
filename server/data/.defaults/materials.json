@@ -1,0 +1,58 @@
+[
+  {
+    "id": "mat-plastic",
+    "code": "plastic",
+    "name": "пластик",
+    "nameRu": "пластик",
+    "nameEn": "plastic"
+  },
+  {
+    "id": "mat-aluminum",
+    "code": "aluminum",
+    "name": "алюминий",
+    "nameRu": "алюминий",
+    "nameEn": "aluminum"
+  },
+  {
+    "id": "mat-alloy",
+    "code": "alloy",
+    "name": "алюминиевый сплав",
+    "nameRu": "алюминиевый сплав",
+    "nameEn": "aluminium alloy"
+  },
+  {
+    "id": "mat-zinc",
+    "code": "zinc",
+    "name": "цинк",
+    "nameRu": "цинк",
+    "nameEn": "zinc"
+  },
+  {
+    "id": "mat-carbon",
+    "code": "carbon",
+    "name": "карбон",
+    "nameRu": "карбон",
+    "nameEn": "carbon"
+  },
+  {
+    "id": "mat-silicone",
+    "code": "silicone",
+    "name": "силикон",
+    "nameRu": "силикон",
+    "nameEn": "silicone"
+  },
+  {
+    "id": "mat-nylon",
+    "code": "nylon",
+    "name": "нейлон",
+    "nameRu": "нейлон",
+    "nameEn": "nylon"
+  },
+  {
+    "id": "mat-magnet",
+    "code": "magnet",
+    "name": "магнит",
+    "nameRu": "магнит",
+    "nameEn": "magnet"
+  }
+]
