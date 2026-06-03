@@ -18,7 +18,7 @@ const categories: Category[] = [
   { id: 'cat-adapter',    code: 'adapter', name_source: 'Переходник',         name_product: 'Переходник',           color: '#22d3ee', icon: 'ArrowLeftRight', description: '', sortOrder: 6 },
   { id: 'cat-pin',        code: 'pin', name_source: 'Пин',                name_product: 'Пин',               color: '#aa94ee', icon: 'Pin',            description: '', sortOrder: 7 },
   { id: 'cat-holder',     code: 'holder', name_source: 'Держатель',          name_product: 'Держатель',            color: '#a3e635', icon: 'GripVertical',   description: '', sortOrder: 8 },
-  { id: 'cat-case',       code: 'case', name_source: 'Чехол',              name_product: 'Чехол',              color: '#fb923c', icon: 'Smartphone',     description: '', sortOrder: 9 },
+  { id: 'cat-case',       code: 'case', name_source: 'Чехол ЗУ',              name_product: 'Чехол ЗУ',              color: '#fb923c', icon: 'Smartphone',     description: '', sortOrder: 9 },
   { id: 'cat-kit',        code: 'kit', name_source: 'Комплект',           name_product: 'Комплект',               color: '#c084fc', icon: 'Package',        description: '', sortOrder: 10 },
   { id: 'cat-packaging',  code: 'packaging', name_source: 'Вложение/упаковка',  name_product: 'Упаковка',         color: '#94a3b8', icon: 'Archive',        description: '', sortOrder: 11 },
   { id: 'cat-blogo',      code: 'blogo', name_source: 'Blogo',              name_product: 'Blogo',             color: '#2dd4bf', icon: 'Monitor',        description: '', sortOrder: 12 },
@@ -232,12 +232,12 @@ export const categoryAttributes: CategoryAttribute[] = [
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'chargingProtocols' | 'materials';
 
 function loadDict<T>(key: DictType, defaults: T[]): T[] {
-  const stored = loadFromStore<T[]>(key);
+  const stored = loadFromStore<T[]>(key as any);
   return stored && Array.isArray(stored) ? stored : defaults;
 }
 
 function saveDict<T>(key: DictType, data: T[]): void {
-  saveToStore(key, data);
+  saveToStore(key as any, data);
 }
 
 // Инициализация: загрузка из store или дефолтов
