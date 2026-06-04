@@ -11,6 +11,8 @@ import type { ProductWithRelations } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
+import { ResponsiveTable } from './ResponsiveTable';
+import type { Column } from './table/types';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable, szu: Zap, bzu: Wifi, azu: Car, headphones: Headphones,
@@ -186,6 +188,95 @@ export default function ProductMatrix() {
     setSelectedPower([]);
     setSelectedLength([]);
   };
+
+  const productColumns: Column<ProductWithRelations>[] = [
+    {
+      key: 'sku',
+      header: t('matrix.col.sku'),
+      width: 12,
+      nowrap: true,
+      cell: p => (
+        <div className="flex items-center min-w-0" title={p.sku}>
+          <code className="text-[11px] sm:text-xs text-accent truncate">{p.sku}</code>
+          {p.isKit && (
+            <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning whitespace-nowrap flex-shrink-0">KIT</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'product',
+      header: t('matrix.col.product'),
+      width: 24,
+      cell: p => {
+        const Icon = categoryIcons[p.category.code] || Archive;
+        return (
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p, language)}>
+            <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(p.category.code) }} />
+            <span className="truncate text-xs sm:text-sm">{displayProductName(p, language)}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'cat',
+      header: t('matrix.col.cat'),
+      width: 10,
+      cell: p => (
+        <span className="text-[11px] sm:text-xs truncate block" style={{ color: getCategoryColorVar(p.category.code) }} title={displaySource(p.category, language)}>
+          {displaySource(p.category, language)}
+        </span>
+      ),
+    },
+    {
+      key: 'model',
+      header: t('matrix.col.model'),
+      width: 14,
+      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block" title={displaySource(p.model, language)}>{displaySource(p.model, language)}</span>,
+    },
+    {
+      key: 'power',
+      header: t('matrix.col.power'),
+      width: 8,
+      nowrap: true,
+      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.powerW ? `${p.powerW}W` : '—'}</span>,
+    },
+    {
+      key: 'length',
+      header: t('matrix.col.length'),
+      width: 8,
+      nowrap: true,
+      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.lengthM ? `${p.lengthM}${t('matrix.unit_m')}` : '—'}</span>,
+    },
+    {
+      key: 'color',
+      header: t('matrix.col.color'),
+      width: 12,
+      cell: p => p.color ? (
+        <div className="flex items-center gap-1 sm:gap-1.5 min-w-0" title={displaySource(p.color, language)}>
+          <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0" style={{
+            background: p.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : p.color.hexValue,
+            border: p.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+          }} />
+          <span className="truncate text-[11px] sm:text-xs text-text-secondary">{displaySource(p.color, language)}</span>
+        </div>
+      ) : null,
+    },
+    {
+      key: 'sup',
+      header: t('matrix.col.sup'),
+      width: 8,
+      nowrap: true,
+      cell: p => supplierBadge(p.supplier?.code),
+    },
+    {
+      key: 'view',
+      header: '',
+      width: 4,
+      align: 'right',
+      cell: () => <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />,
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -366,87 +457,18 @@ export default function ProductMatrix() {
       {/* Data — Table (≥sm) and Cards (<sm) */}
       <div className="glass rounded-xl overflow-hidden">
         {/* Table — desktop/tablet */}
-        <div className="hidden sm:block w-full overflow-x-auto">
-          <div className="min-w-[750px]">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle">
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.sku')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.product')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.cat')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.model')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.power')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.length')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide">{t('matrix.col.color')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap">{t('matrix.col.sup')}</th>
-                  <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wide whitespace-nowrap w-0"></th>
-                </tr>
-              </thead>
-              <tbody key={tableKey} className="table-fade-in">
-                {paginatedProducts.map((product) => {
-                  const Icon = categoryIcons[product.category.code] || Archive;
-                  return (
-                    <tr
-                      key={product.id}
-                      className="border-b border-border-subtle/50 table-row-hover cursor-pointer"
-                      onClick={() => setSelectedProduct(product)}
-                    >
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap">
-                        <code className="text-[11px] sm:text-xs text-accent">{product.sku}</code>
-                        {product.isKit && (
-                          <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning">KIT</span>
-                        )}
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(product.category.code) }} />
-                          <span className="truncate text-xs sm:text-sm">
-                            {displayProductName(product, language)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap">
-                        <span className="text-[11px] sm:text-xs" style={{ color: getCategoryColorVar(product.category.code) }}>
-                          {displaySource(product.category, language)}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate text-[11px] sm:text-xs text-text-secondary">
-                        {displaySource(product.model, language)}
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap text-[11px] sm:text-xs text-text-secondary">{product.powerW ? `${product.powerW}W` : '—'}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate whitespace-nowrap text-[11px] sm:text-xs text-text-secondary">{product.lengthM ? `${product.lengthM}${t('matrix.unit_m')}` : '—'}</td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">
-                        {product.color && (
-                          <div className="flex items-center gap-1 sm:gap-1.5">
-                            <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0" style={{
-                              background: product.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : product.color.hexValue,
-                              border: product.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
-                            }} />
-                            <span className="truncate text-[11px] sm:text-xs text-text-secondary">
-                              {displaySource(product.color, language)}
-                            </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        {supplierBadge(product.supplier?.code)}
-                      </td>
-                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap w-0">
-                        <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />
-                      </td>
-                    </tr>
-                  );
-                })}
-                {paginatedProducts.length === 0 && (
-                  <tr>
-                    <td colSpan={9} className="px-3 sm:px-4 py-8 text-center text-xs text-text-tertiary">
-                      {t('matrix.empty')}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="hidden sm:block">
+          <ResponsiveTable
+            key={tableKey}
+            columns={productColumns}
+            rows={paginatedProducts}
+            rowKey={p => p.id}
+            minWidth={720}
+            emptyMessage={t('matrix.empty')}
+            bodyClassName="table-fade-in"
+            rowClassName={() => 'table-row-hover cursor-pointer'}
+            onRowClick={p => setSelectedProduct(p)}
+          />
         </div>
 
         {/* Cards — mobile */}

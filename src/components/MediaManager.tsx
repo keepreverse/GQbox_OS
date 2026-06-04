@@ -8,6 +8,8 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import BottomSheet from './BottomSheet';
+import { ResponsiveTable } from './ResponsiveTable';
+import type { Column } from './table/types';
 
 interface MediaItem {
   id: string;
@@ -111,6 +113,140 @@ export default function MediaManager() {
   const handleDownloadSelected = () => {
     showToast(t('media.toast.downloading') + ` ${selectedItems.length}`);
   };
+
+  const mediaColumns: Column<MediaItem>[] = [
+    {
+      key: 'file',
+      header: t('media.col.file'),
+      width: 30,
+      cell: m => (
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={m.name}>
+          {m.type === 'image' ? <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" /> : <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />}
+          <span className="truncate text-[11px] sm:text-sm">{m.name}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      header: t('media.col.type'),
+      width: 16,
+      nowrap: true,
+      cell: m => (
+        <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded inline-block truncate max-w-full ${
+          m.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
+        }`}>
+          {m.type === 'image' ? t('media.image_label') : t('media.video_label')}
+        </span>
+      ),
+    },
+    {
+      key: 'sku',
+      header: t('media.col.sku'),
+      width: 18,
+      cell: m => <span className="truncate block text-[11px] sm:text-xs text-accent" title={m.productSku}>{m.productSku}</span>,
+    },
+    {
+      key: 'size',
+      header: t('media.col.size'),
+      width: 11,
+      nowrap: true,
+      hideBelow: 'md',
+      cell: m => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{m.size}</span>,
+    },
+    {
+      key: 'date',
+      header: t('media.col.date'),
+      width: 11,
+      nowrap: true,
+      cell: m => <span className="text-[11px] sm:text-xs text-text-tertiary truncate block">{m.uploadedAt}</span>,
+    },
+    {
+      key: 'actions',
+      header: t('media.col.actions'),
+      width: 14,
+      align: 'right',
+      cell: m => (
+        <div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+          <button
+            className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer"
+            onClick={e => { e.stopPropagation(); showToast(t('media.toast.download_item') + ` "${m.name}"...`); }}
+          >
+            <Download className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+          </button>
+          <button
+            className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer"
+            onClick={e => {
+              e.stopPropagation();
+              setMediaList(prev => prev.filter(x => x.id !== m.id));
+              showToast(t('media.toast.deleted') + ' 1');
+            }}
+          >
+            <Trash2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const renderListCards = () => (
+    <div className="space-y-2">
+      {filtered.map(item => {
+        const isSelected = selectedItems.includes(item.id);
+        return (
+          <div
+            key={item.id}
+            onClick={() => toggleSelect(item.id)}
+            className={`glass rounded-xl p-3 flex items-start justify-between gap-2 cursor-pointer animate-card-in ${
+              isSelected ? '!bg-accent/10' : ''
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 mb-1">
+                {item.type === 'image' ? <FileImage className="w-3.5 h-3.5 flex-shrink-0 text-text-muted" /> : <FileVideo className="w-3.5 h-3.5 flex-shrink-0 text-text-muted" />}
+                <p className="text-sm font-medium truncate" title={item.name}>{item.name}</p>
+              </div>
+              <p className="text-[11px] text-accent truncate" title={item.productSku}>{item.productSku}</p>
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded inline-block ${
+                  item.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
+                }`}>
+                  {item.type === 'image' ? t('media.image_label') : t('media.video_label')}
+                </span>
+                <span className="text-[10px] text-text-tertiary">{item.size}</span>
+                <span className="text-[10px] text-text-muted">{item.uploadedAt}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={e => { e.stopPropagation(); showToast(t('media.toast.download_item') + ` "${item.name}"...`); }}
+                className="p-1.5 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer"
+                aria-label="Download"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  setMediaList(prev => prev.filter(m => m.id !== item.id));
+                  showToast(t('media.toast.deleted') + ' 1');
+                }}
+                className="p-1.5 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer"
+                aria-label="Delete"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      {filtered.length === 0 && (
+        <div className="py-10 flex flex-col items-center gap-2">
+          <FileImage className="w-8 h-8 text-text-muted" />
+          <span className="text-xs text-text-tertiary">{t('media.not_found')}</span>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -239,11 +375,7 @@ export default function MediaManager() {
           {filtered.map(item => (
             <div
               key={item.id}
-              className={`glass group relative rounded-xl overflow-hidden border transition-all duration-150 cursor-pointer ${
-                      selectedItems.includes(item.id)
-                        ? 'border-accent ring-1 ring-accent/30'
-                        : 'border-border-subtle hover:border-border-default hover:-translate-y-0.5'
-              }`}
+              className={`glass group relative rounded-xl overflow-hidden border transition-all duration-150 cursor-pointer hover:-translate-y-0.5 hover:border-border-default`}
               onClick={() => toggleSelect(item.id)}
             >
               <div className="aspect-square bg-bg-tertiary flex items-center justify-center">
@@ -253,7 +385,7 @@ export default function MediaManager() {
                   <FileVideo className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                 )}
               </div>
-              <div className="p-2 sm:p-2.5 md:p-3">
+              <div className={`p-2 sm:p-2.5 md:p-3${selectedItems.includes(item.id) ? ' !bg-accent/10' : ''}`}>
                 <p className="text-[11px] sm:text-xs font-medium truncate">{item.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[10px] text-text-tertiary">{item.size}</span>
@@ -278,78 +410,27 @@ export default function MediaManager() {
 
       {/* List View */}
       {viewMode === 'list' && (
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[480px] sm:min-w-[600px]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border-subtle">
-                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-0"></th>
-                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.file')}</th>
-                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase whitespace-nowrap">{t('media.col.type')}</th>
-                    <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase">{t('media.col.sku')}</th>
-                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase whitespace-nowrap">{t('media.col.size')}</th>
-                    <th className="hidden sm:table-cell text-left px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase whitespace-nowrap">{t('media.col.date')}</th>
-                    <th className="text-right px-2 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase whitespace-nowrap">{t('media.col.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(item => (
-                    <tr
-                      key={item.id}
-                      className={`border-b border-border-subtle/50 table-row-hover group cursor-pointer ${
-                        selectedItems.includes(item.id) ? 'bg-bg-tertiary' : ''
-                      }`}
-                      onClick={() => toggleSelect(item.id)}
-                    >
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 w-0">
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedItems.includes(item.id) ? 'bg-accent border-accent' : 'border-border-default'}`}>
-                          {selectedItems.includes(item.id) && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 truncate">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          {item.type === 'image' ? <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" /> : <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />}
-                          <span className="truncate text-[11px] sm:text-sm">{item.name}</span>
-                        </div>
-                      </td>
-                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
-                          item.type === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
-                        }`}>
-                          {item.type === 'image' ? t('media.image_label') : t('media.video_label')}
-                        </span>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 truncate text-[11px] sm:text-xs text-accent">{item.productSku}</td>
-                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-[11px] sm:text-xs text-text-secondary">{item.size}</td>
-                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-[11px] sm:text-xs text-text-tertiary">{item.uploadedAt}</td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
-                          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); showToast(t('media.toast.download_item') + ` "${item.name}"...`); }}>
-                            <Download className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-                          </button>
-                          <button className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer" onClick={e => { e.stopPropagation(); setMediaList(prev => prev.filter(m => m.id !== item.id)); showToast(t('media.toast.deleted') + ' 1'); }}>
-                            <Trash2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-2 sm:px-4 py-10 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <FileImage className="w-8 h-8 text-text-muted" />
-                          <span className="text-xs text-text-tertiary">{t('media.not_found')}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+        <>
+          <div className="hidden sm:block glass rounded-xl overflow-hidden">
+            <ResponsiveTable
+              columns={mediaColumns}
+              rows={filtered}
+              rowKey={m => m.id}
+              minWidth={640}
+              emptyMessage={
+                <div className="flex flex-col items-center gap-2">
+                  <FileImage className="w-8 h-8 text-text-muted" />
+                  <span className="text-xs text-text-tertiary">{t('media.not_found')}</span>
+                </div>
+              }
+              rowClassName={m => `table-row-hover group cursor-pointer${selectedItems.includes(m.id) ? ' bg-accent/10' : ''}`}
+              onRowClick={m => toggleSelect(m.id)}
+            />
           </div>
-        </div>
+          <div className="sm:hidden">
+            {renderListCards()}
+          </div>
+        </>
       )}
 
       {/* Upload Modal — mobile: BottomSheet; desktop: centered modal (untouched) */}

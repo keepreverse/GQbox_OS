@@ -9,11 +9,14 @@ import {
   addCategory, addModel, addColor, addSupplier, addConnector, addProtocol, addMaterial,
   updateCategory, updateModel, updateColor, updateSupplier, updateConnector, updateProtocol, updateMaterial,
 } from '../data/dictionaries';
+import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
 import BottomSheet from './BottomSheet';
 import { dictionariesApi } from '../api/dictionaries';
+import { ResponsiveTable } from './ResponsiveTable';
+import type { Column } from './table/types';
 
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'protocols' | 'materials';
 
@@ -125,176 +128,129 @@ export default function DictionaryManager() {
     setEditingId(null);
   };
 
-  const renderTable = () => {
-    switch (activeDict) {
-      case 'categories':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[15%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[28%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[28%]">{t('dict.col.product')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[18%]">{t('dict.col.color')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[11%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {categories.map(cat => {
-                const isEditing = editingId === cat.id;
-                return (
-                <tr key={cat.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{cat.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(cat)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(cat, language)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate"><div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} /><span className="text-xs text-text-tertiary truncate">{cat.color}</span></div></td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(cat)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-        );
-      case 'models':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[12%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[26%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[26%]">{t('dict.col.product')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[22%]">{t('dict.col.category')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[14%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {models.map(model => {
-                const cat = categories.find(c => c.id === model.categoryId);
-                const isEditing = editingId === model.id;
-                return (
-                  <tr key={model.id} className="border-b border-border-subtle/50 table-row-hover">
-                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{model.code}</td>
-                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(model)}</td>
-                    <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(model, language)}</td>
-                    <td className="px-3 sm:px-4 py-2 sm:py-3 truncate"><span className="text-xs truncate" style={{ color: cat?.color }}>{cat ? displaySource(cat) : '—'}</span></td>
-                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(model)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        );
-      case 'colors':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[12%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[26%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[26%]">{t('dict.col.product')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[22%]">{t('dict.col.preview')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[14%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {colors.map(color => {
-                const isEditing = editingId === color.id;
-                return (
-                <tr key={color.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{color.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(color)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(color, language)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate"><div className="flex items-center gap-1.5 sm:gap-2"><div className="w-4 sm:w-5 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : color.hexValue }} /><span className="text-xs text-text-tertiary hidden sm:inline truncate">{color.hexValue === 'gradient' ? '—' : color.hexValue}</span></div></td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(color)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-        );
-      case 'suppliers':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[20%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[55%]">{t('dict.col.name')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[25%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {suppliers.map(sup => (
-                <tr key={sup.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{sup.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{sup.name}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1"><button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        );
-      case 'connectors':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[15%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[30%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[30%]">{t('dict.col.product')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[25%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {connectors.map(conn => {
-                const isEditing = editingId === conn.id;
-                return (
-                <tr key={conn.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{conn.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(conn)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(conn, language)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(conn)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-        );
-      case 'protocols':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[14%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[22%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[22%]">{t('dict.col.product')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[28%]">{t('dict.col.description')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[14%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {chargingProtocols.map(proto => {
-                const isEditing = editingId === proto.id;
-                return (
-                <tr key={proto.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{proto.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(proto)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(proto, language)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-text-secondary truncate">{proto.description}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(proto)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-        );
-      case 'materials':
-        return (
-          <table className="w-full text-sm table-fixed">
-            <thead><tr className="border-b border-border-subtle">
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[15%]">{t('dict.col.code')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[30%]">{t('dict.col.source')}</th>
-              <th className="text-left px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[30%]">{t('dict.col.product')}</th>
-              <th className="text-right px-3 sm:px-4 py-2 sm:py-3 text-xs font-medium text-text-tertiary uppercase w-[25%]">{t('dict.col.actions')}</th>
-            </tr></thead>
-            <tbody>
-              {materials.map(mat => {
-                const isEditing = editingId === mat.id;
-                return (
-                <tr key={mat.id} className="border-b border-border-subtle/50 table-row-hover">
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs text-accent truncate">{mat.code}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-text-secondary truncate">{isEditing ? <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.source_placeholder')} /> : displaySource(mat)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 truncate">{isEditing ? <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className="w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary" placeholder={t('dict.form.product_placeholder')} /> : displayName(mat, language)}</td>
-                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-right"><div className="flex items-center justify-end gap-1">{isEditing ? <><button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button><button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button></> : <button onClick={() => handleStartEdit(mat)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>}</div></td>
-                </tr>
-              );})}
-            </tbody>
-          </table>
-        );
+  const editInputCls = 'w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary';
+
+  const renderActions = (row: { id: string }) => {
+    const isEditing = editingId === row.id;
+    if (isEditing) {
+      return (
+        <div className="flex items-center justify-end gap-1">
+          <button onClick={handleSaveEdit} className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"><Check className="w-3.5 h-3.5" /></button>
+          <button onClick={handleCancelEdit} className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      );
     }
+    return (
+      <div className="flex items-center justify-end gap-1">
+        <button onClick={() => handleStartEdit(row)} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>
+      </div>
+    );
+  };
+
+  const sourceCell = (row: { id: string; name_source?: string; name?: string }) => {
+    const value = displaySource(row);
+    if (editingId === row.id) {
+      return <input value={editNameSource} onChange={e => setEditNameSource(e.target.value)} className={editInputCls} placeholder={t('dict.form.source_placeholder')} />;
+    }
+    return <span className="text-text-secondary truncate block" title={value}>{value}</span>;
+  };
+
+  const productCell = (row: { id: string; name_source?: string; name_product?: string }) => {
+    const value = displayName(row as never, language);
+    if (editingId === row.id) {
+      return <input value={editNameProduct} onChange={e => setEditNameProduct(e.target.value)} className={editInputCls} placeholder={t('dict.form.product_placeholder')} />;
+    }
+    return <span className="truncate block" title={value}>{value}</span>;
+  };
+
+  const dictColumns: Record<DictType, Column<unknown>[]> = {
+    categories: [
+      { key: 'code', header: t('dict.col.code'), width: 15, nowrap: true, cell: (c: Category) => <span className="text-xs text-accent truncate block" title={c.code}>{c.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 28, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 28, cell: productCell },
+      { key: 'color', header: t('dict.col.color'), width: 18, cell: (c: Category) => (
+        <div className="flex items-center gap-2 min-w-0" title={c.color}>
+          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(c.code) }} />
+          <span className="text-xs text-text-tertiary truncate">{c.color}</span>
+        </div>
+      ) },
+      { key: 'actions', header: t('dict.col.actions'), width: 11, align: 'right', cell: renderActions },
+    ],
+    models: [
+      { key: 'code', header: t('dict.col.code'), width: 12, nowrap: true, cell: (m: Model) => <span className="text-xs text-accent truncate block" title={m.code}>{m.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 26, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 26, cell: productCell },
+      { key: 'category', header: t('dict.col.category'), width: 22, cell: (m: Model) => {
+        const cat = categories.find(c => c.id === m.categoryId);
+        const value = cat ? displaySource(cat) : '—';
+        return <span className="text-xs truncate block" style={{ color: cat?.color }} title={value}>{value}</span>;
+      } },
+      { key: 'actions', header: t('dict.col.actions'), width: 14, align: 'right', cell: renderActions },
+    ],
+    colors: [
+      { key: 'code', header: t('dict.col.code'), width: 12, nowrap: true, cell: (c: Color) => <span className="text-xs text-accent truncate block" title={c.code}>{c.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 26, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 26, cell: productCell },
+      { key: 'preview', header: t('dict.col.preview'), width: 22, cell: (c: Color) => (
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={c.hexValue === 'gradient' ? '—' : c.hexValue}>
+          <div className="w-4 sm:w-5 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: c.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.hexValue }} />
+          <span className="text-xs text-text-tertiary hidden sm:inline truncate">{c.hexValue === 'gradient' ? '—' : c.hexValue}</span>
+        </div>
+      ) },
+      { key: 'actions', header: t('dict.col.actions'), width: 14, align: 'right', cell: renderActions },
+    ],
+    suppliers: [
+      { key: 'code', header: t('dict.col.code'), width: 20, nowrap: true, cell: (s: Supplier) => <span className="text-xs text-accent truncate block" title={s.code}>{s.code}</span> },
+      { key: 'name', header: t('dict.col.name'), width: 55, cell: (s: Supplier) => <span className="truncate block" title={s.name}>{s.name}</span> },
+      { key: 'actions', header: t('dict.col.actions'), width: 25, align: 'right', cell: (s: Supplier) => (
+        <div className="flex items-center justify-end gap-1">
+          <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>
+        </div>
+      ) },
+    ],
+    connectors: [
+      { key: 'code', header: t('dict.col.code'), width: 15, nowrap: true, cell: (c: Connector) => <span className="text-xs text-accent truncate block" title={c.code}>{c.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 30, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 30, cell: productCell },
+      { key: 'actions', header: t('dict.col.actions'), width: 25, align: 'right', cell: renderActions },
+    ],
+    protocols: [
+      { key: 'code', header: t('dict.col.code'), width: 14, nowrap: true, cell: (p: ChargingProtocol) => <span className="text-xs text-accent truncate block" title={p.code}>{p.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 22, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 22, cell: productCell },
+      { key: 'description', header: t('dict.col.description'), width: 28, cell: (p: ChargingProtocol) => <span className="text-xs text-text-secondary truncate block" title={p.description}>{p.description}</span> },
+      { key: 'actions', header: t('dict.col.actions'), width: 14, align: 'right', cell: renderActions },
+    ],
+    materials: [
+      { key: 'code', header: t('dict.col.code'), width: 15, nowrap: true, cell: (m: Material) => <span className="text-xs text-accent truncate block" title={m.code}>{m.code}</span> },
+      { key: 'source', header: t('dict.col.source'), width: 30, cell: sourceCell },
+      { key: 'product', header: t('dict.col.product'), width: 30, cell: productCell },
+      { key: 'actions', header: t('dict.col.actions'), width: 25, align: 'right', cell: renderActions },
+    ],
+  };
+
+  const dictRows: Record<DictType, unknown[]> = {
+    categories: categories as unknown[],
+    models: models as unknown[],
+    colors: colors as unknown[],
+    suppliers: suppliers as unknown[],
+    connectors: connectors as unknown[],
+    protocols: chargingProtocols as unknown[],
+    materials: materials as unknown[],
+  };
+
+  const renderTable = () => {
+    const cols = dictColumns[activeDict];
+    const rows = dictRows[activeDict];
+    return (
+      <ResponsiveTable
+        columns={cols}
+        rows={rows}
+        rowKey={(r: any) => r.id}
+        minWidth={560}
+        rowClassName={() => 'table-row-hover'}
+      />
+    );
   };
 
   const editBtn = (
@@ -615,11 +571,7 @@ export default function DictionaryManager() {
 
       <div className="hidden sm:block">
         <div className="glass rounded-xl overflow-hidden">
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[450px] sm:min-w-[600px]">
-              {renderTable()}
-            </div>
-          </div>
+          {renderTable()}
         </div>
       </div>
       <div className="sm:hidden">
