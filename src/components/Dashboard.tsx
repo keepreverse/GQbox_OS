@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect, useSyncExternalStore } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Cable, Zap, Wifi, Car, Headphones, ArrowLeftRight, Pin,
@@ -7,6 +7,7 @@ import {
   ChevronRight, AlertCircle
 } from 'lucide-react';
 import { products } from '../data/products';
+import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories } from '../data/dictionaries';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -74,6 +75,8 @@ export default function Dashboard({ onViewChange }: DashboardProps) {
   const { t, language } = useLanguage();
   const { sidebarCollapsed } = useLayout();
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
+
+  useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
   const stats = useMemo(() => {
     const total = products.length;

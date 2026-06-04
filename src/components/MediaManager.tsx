@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, Grid, List,
   FileImage, FileVideo, Trash2, Download,
   X, Check
 } from 'lucide-react';
+import { useToast } from './useToast';
+import { Toast } from './Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import BottomSheet from './BottomSheet';
@@ -42,7 +43,7 @@ export default function MediaManager() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadClosing, setUploadClosing] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { toast, showToast, hideToast } = useToast();
 
   const MODAL_CLOSE_MS = 150;
 
@@ -76,11 +77,6 @@ export default function MediaManager() {
 
   const toggleSelect = (id: string) => {
     setSelectedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleUpload = () => {
@@ -250,21 +246,7 @@ export default function MediaManager() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            key="toast-notification"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
-          >
-            <Check className="w-4 h-4 flex-shrink-0" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Toast data={toast} onClose={hideToast} />
 
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -423,7 +405,7 @@ export default function MediaManager() {
                   <span className="text-xs text-text-tertiary">{t('media.not_found')}</span>
                 </div>
               }
-              rowClassName={m => `table-row-hover group cursor-pointer${selectedItems.includes(m.id) ? ' bg-accent/10' : ''}`}
+              rowClassName={m => `table-row-hover group cursor-pointer${selectedItems.includes(m.id) ? ' bg-accent/10 border-l-2 border-l-accent/40' : ' border-l-2 border-l-transparent'}`}
               onRowClick={m => toggleSelect(m.id)}
             />
           </div>

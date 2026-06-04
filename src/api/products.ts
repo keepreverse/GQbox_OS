@@ -1,6 +1,8 @@
 import { request } from './client';
 import type { RawProduct } from '../data/products';
 
+type NewProduct = Omit<RawProduct, 'id'> & { id?: string };
+
 export const productsApi = {
   getAll: () => request<RawProduct[]>('/products'),
 
@@ -8,7 +10,7 @@ export const productsApi = {
 
   search: (q: string) => request<RawProduct[]>(`/products/search?q=${encodeURIComponent(q)}`),
 
-  create: (raw: RawProduct) => request<RawProduct>('/products', {
+  create: (raw: NewProduct) => request<RawProduct>('/products', {
     method: 'POST',
     body: JSON.stringify(raw),
   }),

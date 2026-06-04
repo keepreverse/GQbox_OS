@@ -156,11 +156,6 @@ This SKU represents a 2-meter black ZS-standard cable.`,
   const rootRef = useRef<HTMLDivElement>(null);
   const [rootHeight, setRootHeight] = useState('auto');
 
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-
   useLayoutEffect(() => {
     const update = () => {
       if (!rootRef.current) return;

@@ -224,8 +224,8 @@ let _rawProducts = loadRawProducts();
  * Поля fullName / fullNameRu генерируются простым шаблоном на основе словарных значений.
  */
 function hydrate(raw: RawProduct): ProductWithRelations {
-  const category = getCategoryById(raw.categoryId)!;
-  const model = getModelById(raw.modelId)!;
+  const category = getCategoryById(raw.categoryId) ?? { id: '', code: 'unknown', name_source: 'Unknown', name_product: 'Неизвестно', color: '', icon: '', description: '', sortOrder: 0 };
+  const model = getModelById(raw.modelId) ?? { id: '', categoryId: '', code: 'unknown', name_source: 'Unknown', name_product: 'Неизвестно' };
   const color = raw.colorId ? getColorById(raw.colorId) : undefined;
   const supplier = raw.supplierId ? getSupplierById(raw.supplierId) : undefined;
   const bodyMaterial = raw.bodyMaterialId ? getMaterialById(raw.bodyMaterialId) : undefined;
@@ -234,25 +234,29 @@ function hydrate(raw: RawProduct): ProductWithRelations {
   const connectorMale = raw.connectorMaleId ? getConnectorById(raw.connectorMaleId) : undefined;
   const chargingProtocol = raw.chargingProtocolId ? getProtocolById(raw.chargingProtocolId) : undefined;
 
-  const buildName = (): string => {
+  const buildName = (useProductNames: boolean): string => {
     const parts: string[] = [];
-    parts.push(category.name_product + '.');
+    const catName = useProductNames ? category.name_product : category.name_source;
+    const modelName = useProductNames ? model.name_product : model.name_source;
+    parts.push(catName + '.');
 
     if (connectorFemale && connectorMale) {
-      parts.push(`${connectorFemale.name_source}-${connectorMale.name_source}`);
+      const fName = useProductNames ? connectorFemale.name_product : connectorFemale.name_source;
+      const mName = useProductNames ? connectorMale.name_product : connectorMale.name_source;
+      parts.push(`${fName}-${mName}`);
     } else if (connectorFemale) {
-      parts.push(connectorFemale.name_source);
+      parts.push(useProductNames ? connectorFemale.name_product : connectorFemale.name_source);
     } else if (connectorMale) {
-      parts.push(connectorMale.name_source);
+      parts.push(useProductNames ? connectorMale.name_product : connectorMale.name_source);
     }
 
-    if (model && model.name_source) parts.push(model.name_source);
+    if (model && modelName) parts.push(modelName);
 
     if (typeof raw.powerW === 'number') parts.push(`${raw.powerW}W`);
-    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}м`);
+    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}${useProductNames ? 'м' : 'm'}`);
 
     if (color) {
-      parts.push(color.name_product);
+      parts.push(useProductNames ? color.name_product : color.name_source);
     }
 
     return parts.join(' ');
@@ -276,7 +280,7 @@ function hydrate(raw: RawProduct): ProductWithRelations {
     if (raw.powerW && raw.powerW >= 20) features.push(lang === 'ru' ? 'Быстрая зарядка' : 'Fast charging');
     if (chargingProtocol) features.push(displaySource(chargingProtocol, lang));
     if (raw.dataTransferMbps) features.push(lang === 'ru' ? 'Передача данных' : 'Data transfer');
-    if (bodyMaterial && bodyMaterial.name === 'aluminum') features.push(lang === 'ru' ? 'Алюминиевый корпус' : 'Aluminum body');
+    if (bodyMaterial && bodyMaterial.name_source === 'aluminum') features.push(lang === 'ru' ? 'Алюминиевый корпус' : 'Aluminum body');
     return features.join(' • ');
   };
 
@@ -298,8 +302,8 @@ function hydrate(raw: RawProduct): ProductWithRelations {
     model,
     color,
     supplier,
-    fullName: buildName(),
-    fullNameRu: buildName(),
+    fullName: buildName(false),
+    fullNameRu: buildName(true),
     bodyMaterial,
     wireMaterial,
     currentA: raw.currentA,
@@ -340,8 +344,26 @@ let _products = hydrateAll();
 /**
  * Перестроение массива products после изменений.
  */
-function rebuildProducts(): void {
+let _productsListeners: Set<() => void> = new Set();
+let _productsVersion = 0;
+
+function _notifyProductsChanged(): void {
+  _productsVersion++;
+  _productsListeners.forEach(fn => fn());
+}
+
+export function rebuildProducts(): void {
   _products = hydrateAll();
+  _notifyProductsChanged();
+}
+
+export function subscribeToProducts(onChange: () => void): () => void {
+  _productsListeners.add(onChange);
+  return () => _productsListeners.delete(onChange);
+}
+
+export function getProductsVersion(): number {
+  return _productsVersion;
 }
 
 export { _products as products };
@@ -364,17 +386,19 @@ export function searchProducts(query: string): ProductWithRelations[] {
     p.sku.toLowerCase().includes(q) ||
     p.fullName.toLowerCase().includes(q) ||
     p.fullNameRu.toLowerCase().includes(q) ||
-    p.category.name.toLowerCase().includes(q) ||
-    p.model.name.toLowerCase().includes(q),
+    p.category.name_source.toLowerCase().includes(q) ||
+    p.model.name_source.toLowerCase().includes(q),
   );
 }
 
 // ─── CRUD-операции ─────────────────────────────────────────────────────────
 
-export function addProduct(raw: RawProduct): void {
+export function addProduct(raw: RawProduct): boolean {
+  if (_rawProducts.some(p => p.sku === raw.sku)) return false;
   _rawProducts.push(raw);
   saveRawProducts(_rawProducts);
   rebuildProducts();
+  return true;
 }
 
 export function updateProduct(id: string, updates: Partial<RawProduct>): void {

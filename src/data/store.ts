@@ -2,13 +2,6 @@ const STORAGE_PREFIX = 'gqbox_';
 
 export type StoreKey = 'products' | 'dictionaries' | 'marketplaces' | 'kits';
 
-interface StoreData {
-  products: any[];
-  dictionaries: any;
-  marketplaces: any[];
-  kits: any[];
-}
-
 function getKey(key: StoreKey): string {
   return `${STORAGE_PREFIX}${key}`;
 }

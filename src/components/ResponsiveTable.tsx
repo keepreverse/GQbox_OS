@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { Column, ResponsiveTableProps } from './table/types';
 import { validateColumnWidths } from './table/types';
 

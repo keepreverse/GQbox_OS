@@ -1,11 +1,14 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
+import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { Reorder, useDragControls } from 'framer-motion';
 import {
   Package, Plus, X, Search, ChevronRight, Zap,
-  Hash, Layers, Check, ArrowLeft, Cable, Wifi, Car, Headphones,
-  ArrowLeftRight, Pin, GripVertical, Smartphone, Archive, Monitor
+  Hash, Layers, ArrowLeft, Cable, Wifi, Car, Headphones,
+  ArrowLeftRight, Pin, GripVertical, Smartphone, Archive, Monitor, Check, AlertCircle
 } from 'lucide-react';
+import { useToast } from './useToast';
+import { Toast } from './Toast';
 import { products, addProduct } from '../data/products';
+import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, colors } from '../data/dictionaries';
 import type { ProductWithRelations } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
@@ -172,7 +175,10 @@ export default function KitBuilder() {
   const [pickerClosing, setPickerClosing] = useState(false);
   const [pickerView, setPickerView] = useState<'categories' | 'products'>('categories');
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { toast, showToast, hideToast } = useToast();
+  const [addSuccess, setAddSuccess] = useState(false);
+
+  useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
   const MODAL_CLOSE_MS = 150;
 
@@ -210,6 +216,7 @@ export default function KitBuilder() {
   }, [components]);
 
   const addComponent = (product: ProductWithRelations) => {
+    setAddSuccess(false);
     setComponents(prev => {
       const existing = prev.find(item => item.product.id === product.id);
       return existing
@@ -232,60 +239,53 @@ export default function KitBuilder() {
   };
 
   const handleCreateKit = async () => {
-    if (components.length === 0 || !kitName || !kitSku || skuExists) return;
+    if (components.length < 2 || !kitName || !kitSku || skuExists) return;
 
-    const maxId = products.reduce((max, p) => {
-      const num = parseInt(p.id.replace('p', ''), 10);
-      return num > max ? num : max;
-    }, 0);
-    const newId = `p${maxId + 1}`;
-    const totalPowerW = components.reduce((sum, c) => sum + (c.product.powerW || 0) * c.quantity, 0);
+    const powers = components.map(c => c.product.powerW).filter((p): p is number => p != null);
+    const maxPowerW = powers.length > 0 ? Math.max(...powers) : undefined;
 
-    const newProduct = {
-      id: newId,
+    const draft = {
       sku: kitSku,
       skuBase: kitSku.replace(/-\w+$/,''),
       categoryId: 'cat-kit',
       modelId: 'mod-china-pr',
       isKit: true,
-      powerW: totalPowerW || undefined,
+      powerW: maxPowerW,
       deviceCount: components.reduce((sum, c) => sum + c.quantity, 0),
     };
 
+    let product;
     try {
-      await productsApi.create(newProduct);
+      product = await productsApi.create(draft);
     } catch {
-      addProduct(newProduct);
+      const maxId = products.reduce((max, p) => {
+        const num = parseInt((p.id || '').replace(/^p/, ''), 10);
+        return num > max ? num : max;
+      }, 0);
+      product = { ...draft, id: `p${maxId + 1}` };
     }
-
-    setToastMessage(t('kit.toast_created').replace('{name}', kitName));
-    setKitName('');
-    setKitSku('');
-    setComponents([]);
-
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+    const added = addProduct(product);
+    if (added) {
+      setAddSuccess(true);
+      showToast(t('kit.toast_created'));
+      setKitName('');
+      setKitSku('');
+      setComponents([]);
+    } else {
+      showToast(t('kit.toast_duplicate'), 'error');
+    }
   };
 
-  const totalPower = components.reduce((sum, c) => sum + (c.product.powerW || 0), 0);
+  const uniquePowers = useMemo(() => {
+    const vals = components
+      .map(c => c.product.powerW)
+      .filter((p): p is number => p != null);
+    return [...new Set(vals)].sort((a, b) => b - a);
+  }, [components]);
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
-          >
-            <Check className="w-4 h-4 flex-shrink-0" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Toast data={toast} onClose={hideToast} />
 
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('kit.title')}</h2>
@@ -309,7 +309,7 @@ export default function KitBuilder() {
                 <input
                   type="text"
                   value={kitSku}
-                  onChange={e => setKitSku(e.target.value)}
+                  onChange={e => { setKitSku(e.target.value); setAddSuccess(false); }}
                   placeholder={t('kit.article_placeholder')}
                   className={`w-full text-text-primary h-11 sm:h-10 ${skuExists ? 'border-danger focus:border-danger' : ''}`}
                 />
@@ -324,7 +324,7 @@ export default function KitBuilder() {
                 <input
                   type="text"
                   value={kitName}
-                  onChange={e => setKitName(e.target.value)}
+                  onChange={e => { setKitName(e.target.value); setAddSuccess(false); }}
                   placeholder={t('kit.auto_placeholder')}
                   className="w-full text-text-primary h-11 sm:h-10"
                 />
@@ -337,7 +337,9 @@ export default function KitBuilder() {
                 <span className="text-xs sm:text-sm text-text-secondary">
                   {t('kit.total_power')}
                 </span>
-                <span className="text-xs sm:text-sm font-medium">{totalPower}W</span>
+                <span className="text-xs sm:text-sm font-medium truncate max-w-[150px] sm:max-w-[200px]" title={uniquePowers.map(p => `${p}W`).join(', ')}>
+                  {uniquePowers.length > 0 ? uniquePowers.map(p => `${p}W`).join(', ') : '—'}
+                </span>
               </div>
               <div className="h-4 w-px bg-border-default hidden sm:block" />
               <div className="flex items-center gap-2">
@@ -345,7 +347,9 @@ export default function KitBuilder() {
                 <span className="text-xs sm:text-sm text-text-secondary">
                   {t('kit.components')}:
                 </span>
-                <span className="text-xs sm:text-sm font-medium">{components.length}</span>
+                <span className={`text-xs sm:text-sm font-medium ${components.length < 2 ? 'text-danger' : 'text-text-primary'}`}>
+                  {components.length < 2 ? `${components.length}/2` : components.length}
+                </span>
               </div>
             </div>
           </div>
@@ -379,9 +383,26 @@ export default function KitBuilder() {
                   {t('kit.empty_components')}
                 </p>
                 <p className="text-[10px] sm:text-xs mt-1">
-                  {t('kit.add_hint')}
+                  {t('kit.min_components')}
                 </p>
               </div>
+            ) : components.length === 1 ? (
+              <>
+                <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-danger/10 border border-danger/20 text-[11px] sm:text-xs text-danger">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  {t('kit.one_more_needed')}
+                </div>
+                <Reorder.Group axis="y" values={components} onReorder={handleReorder} className="space-y-2">
+                  {components.map((comp) => (
+                    <ComponentItem
+                      key={comp.product.id}
+                      comp={comp}
+                      onUpdateQty={updateQuantity}
+                      onRemove={removeComponent}
+                    />
+                  ))}
+                </Reorder.Group>
+              </>
             ) : (
               <Reorder.Group axis="y" values={components} onReorder={handleReorder} className="space-y-2">
                 {components.map((comp) => (
@@ -440,9 +461,16 @@ export default function KitBuilder() {
                 )}
               </div>
 
+              {addSuccess && (
+                <div className="flex items-center gap-1.5 text-xs text-success">
+                  <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                  {t('kit.add_success')}
+                </div>
+              )}
+
               <button
                 onClick={handleCreateKit}
-                disabled={components.length === 0 || !kitName || !kitSku || skuExists}
+                disabled={components.length < 2 || !kitName || !kitSku || skuExists || addSuccess}
                 className="w-full min-h-[44px] sm:min-h-0 py-2.5 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40"
               >
                 {t('kit.create')}

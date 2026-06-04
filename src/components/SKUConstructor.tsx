@@ -1,12 +1,15 @@
-import { Fragment, useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight, ChevronLeft, Check, Hash, Type,
-  Copy, Sparkles, RotateCcw, AlertCircle, Table2
+  Copy, Sparkles, RotateCcw, AlertCircle, Table2,
 } from 'lucide-react';
+import { useToast } from './useToast';
+import { Toast } from './Toast';
 import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '../data/dictionaries';
 import { getModelsByCategory } from '../data/dictionaries';
 import { products, addProduct } from '../data/products';
+import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { useLanguage } from '../context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
 import { productsApi } from '../api/products';
@@ -48,13 +51,16 @@ export default function SKUConstructor() {
   const [copied, setCopied] = useState(false);
   const [skuDuplicate, setSkuDuplicate] = useState(false);
   const [skuSuggestion, setSkuSuggestion] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
+
+  useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
   useEffect(() => {
-    if (step === 5 && !generatedSKU) {
+    if (step === 5) {
       handleGenerate();
     }
-  }, [step]);
+  }, [step, form]);
 
   const availableModels = useMemo(() => {
     return form.categoryId ? getModelsByCategory(form.categoryId) : [];
@@ -100,6 +106,7 @@ export default function SKUConstructor() {
     const sku = generateSKU();
     const name = generateName();
     const existingSkus = new Set(products.map(p => p.sku));
+    setAddSuccess(false);
 
     if (existingSkus.has(sku)) {
       setSkuDuplicate(true);
@@ -136,13 +143,13 @@ export default function SKUConstructor() {
   };
 
   const handleAddToMatrix = async () => {
-    const maxId = products.reduce((max, p) => {
-      const num = parseInt(p.id.replace('p', ''), 10);
-      return num > max ? num : max;
-    }, 0);
-    const newId = `p${maxId + 1}`;
-    const newProduct = {
-      id: newId,
+    handleGenerate();
+    // Synchronous safety check — catches edge cases where state hasn't propagated
+    const freshSku = generateSKU();
+    const existingSkus = new Set(products.map(p => p.sku));
+    if (!freshSku || existingSkus.has(freshSku)) return;
+    if (skuDuplicate || !generatedSKU) return;
+    const draft = {
       sku: generatedSKU,
       skuBase: 'S' + form.baseNumber,
       categoryId: form.categoryId,
@@ -162,20 +169,32 @@ export default function SKUConstructor() {
       lengthVariant: form.lengthVariant || undefined,
       isKit: form.isKit || undefined,
     };
-    try {
-      await productsApi.create(newProduct);
-    } catch {
-      addProduct(newProduct);
-    }
     const name = generatedName || generatedSKU;
-    setToastMessage(t('sku.added_to_matrix').replace('{name}', name));
-    setTimeout(() => setToastMessage(null), 3000);
+    let product;
+    try {
+      product = await productsApi.create(draft);
+    } catch {
+      // API unavailable — generate id locally and add
+      const maxId = products.reduce((max, p) => {
+        const num = parseInt((p.id || '').replace(/^p/, ''), 10);
+        return num > max ? num : max;
+      }, 0);
+      product = { ...draft, id: `p${maxId + 1}` };
+    }
+    const added = addProduct(product);
+    if (added) {
+      setAddSuccess(true);
+      showToast(t('sku.added_to_matrix').replace('{name}', name));
+    } else {
+      showToast(t('sku.toast_duplicate'), 'error');
+    }
   };
 
   const updateForm = (key: keyof SKUFormData, value: string | boolean) => {
     setForm(prev => ({ ...prev, [key]: value }));
     setSkuDuplicate(false);
     setSkuSuggestion('');
+    setAddSuccess(false);
   };
 
   const toggleCategory = (catId: string) => {
@@ -615,8 +634,13 @@ export default function SKUConstructor() {
                         {copied ? t('sku.copied') : t('sku.copy')}
                       </button>
                     </div>
-                    <code className={`text-xl sm:text-2xl block overflow-x-auto ${skuDuplicate ? 'text-danger' : 'text-accent'}`}>{generatedSKU}</code>
-                    {skuDuplicate && (
+                    <code className={`text-xl sm:text-2xl block overflow-x-auto ${addSuccess ? 'text-success' : skuDuplicate ? 'text-danger' : 'text-accent'}`}>{generatedSKU}</code>
+                    {addSuccess ? (
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-success">
+                        <Check className="w-3 h-3 flex-shrink-0" />
+                        {t('sku.add_success')}
+                      </div>
+                    ) : skuDuplicate && (
                       <div className="space-y-2">
                         <p className="text-[11px] sm:text-xs text-danger flex items-center gap-1.5">
                           <AlertCircle className="w-3 h-3 flex-shrink-0" />
@@ -712,28 +736,22 @@ export default function SKUConstructor() {
         ) : (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); setSkuDuplicate(false); setSkuSuggestion(''); }}
+              onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); setSkuDuplicate(false); setSkuSuggestion(''); setAddSuccess(false); }}
               className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.reset')}
             </button>
             <button
               onClick={handleAddToMatrix}
-              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-success/25 text-white text-xs sm:text-sm hover:bg-success/35 transition-all font-medium border border-success/40 cursor-pointer"
+              disabled={skuDuplicate || !generatedSKU || addSuccess}
+              className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-success/25 text-white text-xs sm:text-sm hover:bg-success/35 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium border border-success/40 cursor-pointer"
             >
               <Table2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.add_to_matrix')}
             </button>
           </div>
         )}
       </div>
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-bg-tertiary border border-border-default shadow-lg backdrop-blur-md text-xs sm:text-sm">
-            <Check className="w-4 h-4 text-success" />
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+      <Toast data={toast} onClose={hideToast} />
     </div>
   );
 }

@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useSyncExternalStore } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Download, Eye, X, Cable, Zap, Wifi, Car, Headphones,
   ArrowLeftRight, Pin, GripVertical, Smartphone, Package, Archive, Monitor,
   ChevronLeft, ChevronRight, SlidersHorizontal, Check
 } from 'lucide-react';
-import { products } from '../data/products';
+import { products, subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, suppliers, colors } from '../data/dictionaries';
 import type { ProductWithRelations } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
@@ -35,6 +35,8 @@ export default function ProductMatrix() {
   const [tableKey, setTableKey] = useState(0);
   const pageSize = 15;
 
+  const productsVersion = useSyncExternalStore(subscribeToProducts, getProductsVersion);
+
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const matchesSearch = !searchQuery ||
@@ -54,7 +56,7 @@ export default function ProductMatrix() {
 
       return matchesSearch && matchesCategory && matchesSupplier && matchesColor && matchesPower && matchesLength;
     });
-  }, [searchQuery, selectedCategories, selectedSuppliers, selectedColors, selectedPower, selectedLength]);
+  }, [productsVersion, searchQuery, selectedCategories, selectedSuppliers, selectedColors, selectedPower, selectedLength]);
 
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -106,17 +108,17 @@ export default function ProductMatrix() {
   const uniqueColors = useMemo(() => {
     const codes = new Set(products.map(p => p.color?.code).filter(Boolean));
     return colors.filter(c => codes.has(c.code));
-  }, []);
+  }, [productsVersion]);
 
   const uniquePowerValues = useMemo(() => {
     const vals = new Set(products.map(p => p.powerW).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
-  }, []);
+  }, [productsVersion]);
 
   const uniqueLengthValues = useMemo(() => {
     const vals = new Set(products.map(p => p.lengthM).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
-  }, []);
+  }, [productsVersion]);
 
   const activeFiltersCount = selectedCategories.length + selectedSuppliers.length + selectedColors.length + selectedPower.length + selectedLength.length;
 

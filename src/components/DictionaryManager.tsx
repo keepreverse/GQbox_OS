@@ -1,14 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import {
   Palette, Plug, Zap, Truck, Layers, Tag,
   Plus, Edit3, X, Check, Box
 } from 'lucide-react';
+import { useToast } from './useToast';
+import { Toast } from './Toast';
 import {
   categories, models, colors, suppliers, connectors, chargingProtocols, materials,
   addCategory, addModel, addColor, addSupplier, addConnector, addProtocol, addMaterial,
   updateCategory, updateModel, updateColor, updateSupplier, updateConnector, updateProtocol, updateMaterial,
 } from '../data/dictionaries';
+import { rebuildProducts } from '../data/products';
 import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
@@ -29,7 +31,7 @@ export default function DictionaryManager() {
   const [code, setCode] = useState('');
   const [nameSource, setNameSource] = useState('');
   const [nameProduct, setNameProduct] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { toast, showToast, hideToast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNameSource, setEditNameSource] = useState('');
@@ -73,29 +75,41 @@ export default function DictionaryManager() {
     const apiType = dictTypeMap[activeDict];
     const prefix = idPrefixMap[apiType];
     const id = `${prefix}${code}`;
-    const item: Record<string, unknown> = { id, code, name: nameSource, name_source: nameSource, name_product: nameProduct };
-
-    let saved = false;
-    try {
-      await dictionariesApi.add(apiType as never, item);
-      saved = true;
-    } catch {
-      const localAdd: Record<string, (item: any) => void> = {
-        categories: addCategory, models: addModel, colors: addColor,
-        suppliers: addSupplier, connectors: addConnector,
-        chargingProtocols: addProtocol, materials: addMaterial,
-      };
-      localAdd[apiType]?.(item);
-      saved = true;
+    const item: Record<string, unknown> = { id, code, name_source: nameSource, name_product: nameProduct };
+    if (apiType === 'suppliers') {
+      delete item.name_source;
+      delete item.name_product;
+      item.name = nameSource;
     }
 
-    if (saved) {
-      setToastMessage(t('dict.toast_added').replace('{name}', nameProduct));
+    const dictData = { categories, models, colors, suppliers, connectors, chargingProtocols, materials };
+    const entries = dictData[apiType as keyof typeof dictData] as any[];
+    const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
+    if (entries.some((e: any) => (e[sourceKey] || '').toLowerCase() === nameSource.toLowerCase())) {
+      showToast(t('dict.toast_source_duplicate').replace('{name}', nameSource), 'error');
+      return;
+    }
+
+    try {
+      await dictionariesApi.add(apiType as never, item);
+    } catch {
+      // API unavailable, continue with local only
+    }
+    const localAdd: Record<string, (item: any) => boolean> = {
+      categories: addCategory, models: addModel, colors: addColor,
+      suppliers: addSupplier, connectors: addConnector,
+      chargingProtocols: addProtocol, materials: addMaterial,
+    };
+    const added = localAdd[apiType]?.(item) ?? true;
+    rebuildProducts();
+    if (added) {
+      showToast(t('dict.toast_added').replace('{name}', nameProduct));
       setCode('');
       setNameSource('');
       setNameProduct('');
       setShowAddForm(false);
-      setTimeout(() => { setToastMessage(null); }, 3000);
+    } else {
+      showToast(t('dict.toast_duplicate').replace('{code}', code), 'error');
     }
   };
 
@@ -114,14 +128,24 @@ export default function DictionaryManager() {
       name_product: editNameProduct,
       name: editNameSource,
     };
+
+    const dictData = { categories, models, colors, suppliers, connectors, chargingProtocols, materials };
+    const entries = dictData[apiType as keyof typeof dictData] as any[];
+    const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
+    if (entries.some((e: any) => e.id !== editingId && (e[sourceKey] || '').toLowerCase() === editNameSource.toLowerCase())) {
+      showToast(t('dict.toast_source_duplicate').replace('{name}', editNameSource), 'error');
+      return;
+    }
+
     try {
       await dictionariesApi.update(apiType as never, editingId, updates);
     } catch {
-      localUpdateMap[localType]?.(editingId, updates);
+      // API unavailable, continue with local only
     }
-    setToastMessage(t('dict.save_success').replace('{name}', editNameProduct));
+    localUpdateMap[localType]?.(editingId, updates);
+    rebuildProducts();
+    showToast(t('dict.save_success').replace('{name}', editNameProduct));
     setEditingId(null);
-    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleCancelEdit = () => {
@@ -163,7 +187,7 @@ export default function DictionaryManager() {
     return <span className="truncate block" title={value}>{value}</span>;
   };
 
-  const dictColumns: Record<DictType, Column<unknown>[]> = {
+  const dictColumns: Record<DictType, Column<any>[]> = {
     categories: [
       { key: 'code', header: t('dict.col.code'), width: 15, nowrap: true, cell: (c: Category) => <span className="text-xs text-accent truncate block" title={c.code}>{c.code}</span> },
       { key: 'source', header: t('dict.col.source'), width: 28, cell: sourceCell },
@@ -202,7 +226,7 @@ export default function DictionaryManager() {
     suppliers: [
       { key: 'code', header: t('dict.col.code'), width: 20, nowrap: true, cell: (s: Supplier) => <span className="text-xs text-accent truncate block" title={s.code}>{s.code}</span> },
       { key: 'name', header: t('dict.col.name'), width: 55, cell: (s: Supplier) => <span className="truncate block" title={s.name}>{s.name}</span> },
-      { key: 'actions', header: t('dict.col.actions'), width: 25, align: 'right', cell: (s: Supplier) => (
+      { key: 'actions', header: t('dict.col.actions'), width: 25, align: 'right', cell: () => (
         <div className="flex items-center justify-end gap-1">
           <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer"><Edit3 className="w-3.5 h-3.5" /></button>
         </div>
@@ -391,19 +415,7 @@ export default function DictionaryManager() {
 
   return (
     <div className="space-y-6">
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-[60] flex items-center gap-2 p-3 rounded-lg bg-success text-white text-xs shadow-lg"
-          >
-            <Check className="w-4 h-4 flex-shrink-0" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Toast data={toast} onClose={hideToast} />
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>

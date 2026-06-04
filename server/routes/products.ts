@@ -52,6 +52,22 @@ async function getAllProducts(): Promise<any[]> {
   return readCollection<any>('products');
 }
 
+async function getNextProductId(): Promise<string> {
+  if (useDb()) {
+    const row = await queryOne<{ max_num: number | null }>(
+      `SELECT MAX(CAST(REPLACE(id, 'p', '') AS INTEGER)) AS max_num FROM products WHERE id ~ '^p[0-9]+$'`
+    );
+    const nextNum = (row?.max_num ?? 0) + 1;
+    return `p${nextNum}`;
+  }
+  const products = readCollection<any>('products');
+  const maxNum = products.reduce((max: number, p: any) => {
+    const num = parseInt((p.id || '').replace(/^p/, ''), 10);
+    return isNaN(num) ? max : Math.max(max, num);
+  }, 0);
+  return `p${maxNum + 1}`;
+}
+
 // GET /api/products
 router.get('/', async (_req: Request, res: Response) => {
   try {
@@ -97,15 +113,15 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /api/products
 router.post('/', async (req: Request, res: Response) => {
   const raw = req.body;
-  if (!raw.id || !raw.sku) {
-    res.status(400).json({ error: 'id and sku are required' });
+  if (!raw.sku) {
+    res.status(400).json({ error: 'sku is required' });
     return;
   }
+  const id = await getNextProductId();
+  const product = { ...raw, id };
   try {
     if (useDb()) {
-      const existing = await queryOne<any>('SELECT id FROM products WHERE id = $1', [raw.id]);
-      if (existing) { res.status(409).json({ error: 'Product with this id already exists' }); return; }
-      const vals = mapToDb(raw);
+      const vals = mapToDb(product);
       await query(`
         INSERT INTO products (id, sku, sku_base, category_id, model_id, color_id, supplier_id,
           body_material_id, wire_material_id, current_a, voltage_v, power_w, length_m,
@@ -113,15 +129,14 @@ router.post('/', async (req: Request, res: Response) => {
           variant_code, length_variant, supplier_suffix, is_kit)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
       `, vals);
-      res.status(201).json(raw);
+      res.status(201).json(product);
       return;
     }
   } catch { /* fallthrough */ }
   const products = readCollection<any>('products');
-  if (products.find(p => p.id === raw.id)) { res.status(409).json({ error: 'Product with this id already exists' }); return; }
-  products.push(raw);
+  products.push(product);
   writeCollection('products', products);
-  res.status(201).json(raw);
+  res.status(201).json(product);
 });
 
 // PUT /api/products/:id

@@ -260,9 +260,11 @@ export { _materials as materials };
 
 // ─── CRUD-операции по словарям ──────────────────────────────────────────────
 
-export function addCategory(item: Category): void {
+export function addCategory(item: Category): boolean {
+  if (_categories.some(c => c.id === item.id)) return false;
   _categories.push(item);
   saveDict('categories', _categories);
+  return true;
 }
 export function updateCategory(id: string, updates: Partial<Category>): void {
   const idx = _categories.findIndex(c => c.id === id);
@@ -273,9 +275,11 @@ export function deleteCategory(id: string): void {
   saveDict('categories', _categories);
 }
 
-export function addModel(item: Model): void {
+export function addModel(item: Model): boolean {
+  if (_models.some(m => m.id === item.id)) return false;
   _models.push(item);
   saveDict('models', _models);
+  return true;
 }
 export function updateModel(id: string, updates: Partial<Model>): void {
   const idx = _models.findIndex(m => m.id === id);
@@ -286,9 +290,11 @@ export function deleteModel(id: string): void {
   saveDict('models', _models);
 }
 
-export function addColor(item: Color): void {
+export function addColor(item: Color): boolean {
+  if (_colors.some(c => c.id === item.id)) return false;
   _colors.push(item);
   saveDict('colors', _colors);
+  return true;
 }
 export function updateColor(id: string, updates: Partial<Color>): void {
   const idx = _colors.findIndex(c => c.id === id);
@@ -299,9 +305,11 @@ export function deleteColor(id: string): void {
   saveDict('colors', _colors);
 }
 
-export function addSupplier(item: Supplier): void {
+export function addSupplier(item: Supplier): boolean {
+  if (_suppliers.some(s => s.id === item.id)) return false;
   _suppliers.push(item);
   saveDict('suppliers', _suppliers);
+  return true;
 }
 export function updateSupplier(id: string, updates: Partial<Supplier>): void {
   const idx = _suppliers.findIndex(s => s.id === id);
@@ -312,9 +320,11 @@ export function deleteSupplier(id: string): void {
   saveDict('suppliers', _suppliers);
 }
 
-export function addConnector(item: Connector): void {
+export function addConnector(item: Connector): boolean {
+  if (_connectors.some(c => c.id === item.id)) return false;
   _connectors.push(item);
   saveDict('connectors', _connectors);
+  return true;
 }
 export function updateConnector(id: string, updates: Partial<Connector>): void {
   const idx = _connectors.findIndex(c => c.id === id);
@@ -325,9 +335,11 @@ export function deleteConnector(id: string): void {
   saveDict('connectors', _connectors);
 }
 
-export function addProtocol(item: ChargingProtocol): void {
+export function addProtocol(item: ChargingProtocol): boolean {
+  if (_chargingProtocols.some(p => p.id === item.id)) return false;
   _chargingProtocols.push(item);
   saveDict('chargingProtocols', _chargingProtocols);
+  return true;
 }
 export function updateProtocol(id: string, updates: Partial<ChargingProtocol>): void {
   const idx = _chargingProtocols.findIndex(p => p.id === id);
@@ -338,9 +350,11 @@ export function deleteProtocol(id: string): void {
   saveDict('chargingProtocols', _chargingProtocols);
 }
 
-export function addMaterial(item: Material): void {
+export function addMaterial(item: Material): boolean {
+  if (_materials.some(m => m.id === item.id)) return false;
   _materials.push(item);
   saveDict('materials', _materials);
+  return true;
 }
 export function updateMaterial(id: string, updates: Partial<Material>): void {
   const idx = _materials.findIndex(m => m.id === id);
