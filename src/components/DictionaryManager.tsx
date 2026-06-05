@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Palette, Plug, Zap, Truck, Layers, Tag,
   Plus, Edit3, X, Check, Box
@@ -13,18 +13,29 @@ import {
 import { rebuildProducts } from '../data/products';
 import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
-import { useLayout } from '../context/LayoutContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
-import BottomSheet from './BottomSheet';
+import Modal from './Modal';
 import { dictionariesApi } from '../api/dictionaries';
 import { ResponsiveTable } from './ResponsiveTable';
 import type { Column } from './table/types';
 
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'protocols' | 'materials';
 
+function useIsNarrow(): boolean {
+  const [isNarrow, setIsNarrow] = useState(true);
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 639px)');
+    const handle = (e: MediaQueryListEvent) => setIsNarrow(e.matches);
+    mql.addEventListener('change', handle);
+    setIsNarrow(mql.matches);
+    return () => mql.removeEventListener('change', handle);
+  }, []);
+  return isNarrow;
+}
+
 export default function DictionaryManager() {
   const { t, language } = useLanguage();
-  const { isMobile } = useLayout();
+  const isNarrow = useIsNarrow();
   const [activeDict, setActiveDict] = useState<DictType>('categories');
   const [showAddForm, setShowAddForm] = useState(false);
   
@@ -36,6 +47,10 @@ export default function DictionaryManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNameSource, setEditNameSource] = useState('');
   const [editNameProduct, setEditNameProduct] = useState('');
+
+  useEffect(() => {
+    setEditingId(null);
+  }, [activeDict]);
 
   const dictTypeMap: Record<DictType, string> = {
     categories: 'categories', models: 'models', colors: 'colors',
@@ -277,8 +292,13 @@ export default function DictionaryManager() {
     );
   };
 
-  const editBtn = (
-    <button className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center">
+  const editBtn = (item: any) => (
+    <button
+      onClick={() => handleStartEdit(item)}
+      className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
+      aria-label={t('dict.edit_title')}
+      title={t('dict.edit_title')}
+    >
       <Edit3 className="w-3.5 h-3.5" />
     </button>
   );
@@ -303,7 +323,7 @@ export default function DictionaryManager() {
                     <span className="text-[10px] text-text-tertiary truncate">{cat.color}</span>
                   </div>
                 </div>
-                {editBtn}
+                {editBtn(cat)}
               </div>
             ))}
           </div>
@@ -323,7 +343,7 @@ export default function DictionaryManager() {
                       <p className="text-[10px] mt-1.5 truncate" style={{ color: cat.color }}>{displaySource(cat)}</p>
                     )}
                   </div>
-                  {editBtn}
+                  {editBtn(model)}
                 </div>
               );
             })}
@@ -343,7 +363,7 @@ export default function DictionaryManager() {
                     <span className="text-[10px] text-text-tertiary truncate">{color.hexValue === 'gradient' ? '—' : color.hexValue}</span>
                   </div>
                 </div>
-                {editBtn}
+                {editBtn(color)}
               </div>
             ))}
           </div>
@@ -357,7 +377,7 @@ export default function DictionaryManager() {
                   <div className="flex items-center gap-1.5 mb-1">{codeChip(sup.code)}</div>
                   <p className="text-sm text-text-primary truncate">{sup.name}</p>
                 </div>
-                {editBtn}
+                {editBtn(sup)}
               </div>
             ))}
           </div>
@@ -372,7 +392,7 @@ export default function DictionaryManager() {
                   <p className="text-sm text-text-primary truncate">{displayName(conn, language)}</p>
                   <p className="text-[11px] text-text-tertiary truncate">{displaySource(conn)}</p>
                 </div>
-                {editBtn}
+                {editBtn(conn)}
               </div>
             ))}
           </div>
@@ -390,7 +410,7 @@ export default function DictionaryManager() {
                     <p className="text-[10px] text-text-tertiary mt-1.5 line-clamp-2">{proto.description}</p>
                   )}
                 </div>
-                {editBtn}
+                  {editBtn(proto)}
               </div>
             ))}
           </div>
@@ -405,7 +425,7 @@ export default function DictionaryManager() {
                   <p className="text-sm text-text-primary truncate">{displayName(mat, language)}</p>
                   <p className="text-[11px] text-text-tertiary truncate">{displaySource(mat)}</p>
                 </div>
-                {editBtn}
+                {editBtn(mat)}
               </div>
             ))}
           </div>
@@ -413,18 +433,25 @@ export default function DictionaryManager() {
     }
   };
 
+  const editingItem = editingId
+    ? (dictRows[activeDict] as any[]).find(r => r.id === editingId)
+    : null;
+
   return (
     <div className="space-y-6">
       <Toast data={toast} onClose={hideToast} />
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-        <div>
+      <div className="flex items-start sm:items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('dict.title')}</h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('dict.subtitle')}</p>
         </div>
         <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40"
+          onClick={() => {
+            setEditingId(null);
+            setShowAddForm(!showAddForm);
+          }}
+          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
           <Plus className="w-4 h-4" /> {t('dict.add')}
         </button>
@@ -450,8 +477,11 @@ export default function DictionaryManager() {
         ))}
       </div>
 
-      {isMobile ? (
-        <BottomSheet
+      {isNarrow ? (
+        <>
+        <Modal
+          variant="bottom-sheet"
+          width="md"
           open={showAddForm}
           onClose={() => setShowAddForm(false)}
           title={`${t('dict.add_title')}${dictConfig.find(d => d.id === activeDict)?.label ?? ''}`}
@@ -509,7 +539,80 @@ export default function DictionaryManager() {
               />
             </div>
           </div>
-        </BottomSheet>
+        </Modal>
+        <Modal
+          variant="bottom-sheet"
+          width="md"
+          open={editingId !== null}
+          onClose={handleCancelEdit}
+          title={`${t('dict.edit_title')}${dictConfig.find(d => d.id === activeDict)?.label ?? ''}`}
+          icon={<Edit3 className="w-4 h-4 text-accent flex-shrink-0" />}
+          ariaLabel={t('dict.edit_title')}
+          footer={
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
+              >
+                {t('dict.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={!editNameSource || (activeDict !== 'suppliers' && !editNameProduct)}
+                className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
+              >
+                <Check className="w-4 h-4" /> {t('dict.save')}
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
+              <div className="text-text-secondary font-mono text-sm h-11 flex items-center px-3 rounded-lg bg-bg-tertiary border border-border-subtle">
+                {editingItem?.code ?? ''}
+              </div>
+            </div>
+            {activeDict === 'suppliers' ? (
+              <div>
+                <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.name')}</label>
+                <input
+                  type="text"
+                  placeholder={t('dict.form.source_placeholder')}
+                  value={editNameSource}
+                  onChange={e => setEditNameSource(e.target.value)}
+                  className="w-full text-text-primary h-11"
+                />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
+                  <input
+                    type="text"
+                    placeholder={t('dict.form.source_placeholder')}
+                    value={editNameSource}
+                    onChange={e => setEditNameSource(e.target.value)}
+                    className="w-full text-text-primary h-11"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
+                  <input
+                    type="text"
+                    placeholder={t('dict.form.product_placeholder')}
+                    value={editNameProduct}
+                    onChange={e => setEditNameProduct(e.target.value)}
+                    className="w-full text-text-primary h-11"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </Modal>
+        </>
       ) : (
         <div
           style={{

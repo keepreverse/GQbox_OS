@@ -4,7 +4,6 @@ import {
   getConnectorById, getProtocolById, getMaterialById,
 } from './dictionaries';
 import { getMarketplaceListingsBySku } from './marketplaces';
-import { displaySource } from '../utils/display';
 import { loadFromStore, saveToStore } from './store';
 
 /**
@@ -13,8 +12,8 @@ import { loadFromStore, saveToStore } from './store';
  * Хранит только ссылки на словарь по id и численные поля.
  * Любые имена, переводы и форматирование берутся ИЗ СЛОВАРЯ.
  *
- * Поля fullName / fullNameRu сюда НЕ записываются.
- * Если нужно — они должны генерироваться по шаблону из словаря.
+ * Поле productName сюда НЕ записывается.
+ * Если нужно — оно должно генерироваться по шаблону из словаря.
  */
 export interface RawProduct {
   id: string;
@@ -221,9 +220,9 @@ let _rawProducts = loadRawProducts();
  * Сборка ProductWithRelations из сырых данных:
  * все имена, переводы, форматирование берутся ИЗ СЛОВАРЯ через id.
  *
- * Поля fullName / fullNameRu генерируются простым шаблоном на основе словарных значений.
+ * Поле productName генерируется простым шаблоном на основе словарных значений.
  */
-function hydrate(raw: RawProduct): ProductWithRelations {
+function hydrate(raw: RawProduct, index: number, total: number): ProductWithRelations {
   const category = getCategoryById(raw.categoryId) ?? { id: '', code: 'unknown', name_source: 'Unknown', name_product: 'Неизвестно', color: '', icon: '', description: '', sortOrder: 0 };
   const model = getModelById(raw.modelId) ?? { id: '', categoryId: '', code: 'unknown', name_source: 'Unknown', name_product: 'Неизвестно' };
   const color = raw.colorId ? getColorById(raw.colorId) : undefined;
@@ -234,53 +233,44 @@ function hydrate(raw: RawProduct): ProductWithRelations {
   const connectorMale = raw.connectorMaleId ? getConnectorById(raw.connectorMaleId) : undefined;
   const chargingProtocol = raw.chargingProtocolId ? getProtocolById(raw.chargingProtocolId) : undefined;
 
-  const buildName = (useProductNames: boolean): string => {
+  const buildName = (): string => {
     const parts: string[] = [];
-    const catName = useProductNames ? category.name_product : category.name_source;
-    const modelName = useProductNames ? model.name_product : model.name_source;
-    parts.push(catName + '.');
+    parts.push(category.name_product + '.');
 
     if (connectorFemale && connectorMale) {
-      const fName = useProductNames ? connectorFemale.name_product : connectorFemale.name_source;
-      const mName = useProductNames ? connectorMale.name_product : connectorMale.name_source;
-      parts.push(`${fName}-${mName}`);
+      parts.push(`${connectorFemale.name_product}-${connectorMale.name_product}`);
     } else if (connectorFemale) {
-      parts.push(useProductNames ? connectorFemale.name_product : connectorFemale.name_source);
+      parts.push(connectorFemale.name_product);
     } else if (connectorMale) {
-      parts.push(useProductNames ? connectorMale.name_product : connectorMale.name_source);
+      parts.push(connectorMale.name_product);
     }
 
-    if (model && modelName) parts.push(modelName);
+    if (model && model.name_product) parts.push(model.name_product);
 
     if (typeof raw.powerW === 'number') parts.push(`${raw.powerW}W`);
-    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}${useProductNames ? 'м' : 'm'}`);
+    if (typeof raw.lengthM === 'number') parts.push(`${raw.lengthM}м`);
 
     if (color) {
-      parts.push(useProductNames ? color.name_product : color.name_source);
+      parts.push(color.name_product);
     }
 
     return parts.join(' ');
   };
 
-  // Генерация описания и УТП на основе характеристик
-  const generateDescription = (lang: 'ru' | 'en'): string => {
+  const generateDescription = (): string => {
     const cat = category.name_product;
-    const modelSrc = displaySource(model, lang);
+    const modelSrc = model.name_product;
     const power = raw.powerW ? `${raw.powerW}W` : '';
-    const length = raw.lengthM ? `${raw.lengthM}${lang === 'ru' ? 'м' : 'm'}` : '';
-    
-    if (lang === 'ru') {
-      return `${cat} серии ${modelSrc}${power ? ` мощностью ${power}` : ''}${length ? ` длиной ${length}` : ''}. Предназначен для быстрой и безопасной зарядки устройств.`;
-    }
-    return `${cat} ${modelSrc} series${power ? ` with ${power} power` : ''}${length ? ` and ${length} length` : ''}. Designed for fast and safe device charging.`;
+    const length = raw.lengthM ? `${raw.lengthM}м` : '';
+    return `${cat} серии ${modelSrc}${power ? ` мощностью ${power}` : ''}${length ? ` длиной ${length}` : ''}. Предназначен для быстрой и безопасной зарядки устройств.`;
   };
 
-  const generateUsp = (lang: 'ru' | 'en'): string => {
+  const generateUsp = (): string => {
     const features: string[] = [];
-    if (raw.powerW && raw.powerW >= 20) features.push(lang === 'ru' ? 'Быстрая зарядка' : 'Fast charging');
-    if (chargingProtocol) features.push(displaySource(chargingProtocol, lang));
-    if (raw.dataTransferMbps) features.push(lang === 'ru' ? 'Передача данных' : 'Data transfer');
-    if (bodyMaterial && bodyMaterial.name_source === 'aluminum') features.push(lang === 'ru' ? 'Алюминиевый корпус' : 'Aluminum body');
+    if (raw.powerW && raw.powerW >= 20) features.push('Быстрая зарядка');
+    if (chargingProtocol) features.push(chargingProtocol.name_product);
+    if (raw.dataTransferMbps) features.push('Передача данных');
+    if (bodyMaterial && bodyMaterial.name_source === 'aluminum') features.push('Алюминиевый корпус');
     return features.join(' • ');
   };
 
@@ -302,8 +292,7 @@ function hydrate(raw: RawProduct): ProductWithRelations {
     model,
     color,
     supplier,
-    fullName: buildName(false),
-    fullNameRu: buildName(true),
+    productName: buildName(),
     bodyMaterial,
     wireMaterial,
     currentA: raw.currentA,
@@ -321,11 +310,9 @@ function hydrate(raw: RawProduct): ProductWithRelations {
     variantCode: raw.variantCode,
     lengthVariant: raw.lengthVariant,
     supplierSuffix: raw.supplierSuffix,
-    createdAt: raw.createdAt ?? '2023-01-01',
-    description: generateDescription('ru'),
-    descriptionEn: generateDescription('en'),
-    usp: generateUsp('ru'),
-    uspEn: generateUsp('en'),
+    createdAt: raw.createdAt ?? generateSeedCreatedAt(index, total),
+    description: generateDescription(),
+    usp: generateUsp(),
     tags: generateTags(),
     media: [],
     marketplaceListings: getMarketplaceListingsBySku(raw.sku),
@@ -336,7 +323,19 @@ function hydrate(raw: RawProduct): ProductWithRelations {
  * Гидратация всех данных. Вызывается при загрузке и после изменений.
  */
 function hydrateAll(): ProductWithRelations[] {
-  return _rawProducts.map(hydrate);
+  const total = _rawProducts.length;
+  return _rawProducts.map((raw, index) => hydrate(raw, index, total));
+}
+
+/**
+ * Генерирует createdAt для seed-данных без явной даты.
+ * Товар в конце массива = самый свежий (сегодня), в начале = ~6 мес. назад.
+ * Размазываем по последним 180 дням.
+ */
+function generateSeedCreatedAt(index: number, total: number): string {
+  const denom = Math.max(total - 1, 1);
+  const daysAgo = Math.floor((total - 1 - index) * (180 / denom));
+  return new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 }
 
 let _products = hydrateAll();
@@ -384,8 +383,7 @@ export function searchProducts(query: string): ProductWithRelations[] {
   const q = query.toLowerCase();
   return _products.filter(p =>
     p.sku.toLowerCase().includes(q) ||
-    p.fullName.toLowerCase().includes(q) ||
-    p.fullNameRu.toLowerCase().includes(q) ||
+    p.productName.toLowerCase().includes(q) ||
     p.category.name_source.toLowerCase().includes(q) ||
     p.model.name_source.toLowerCase().includes(q),
   );

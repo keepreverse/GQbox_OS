@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Architecture from './components/Architecture';
@@ -8,7 +8,7 @@ import DictionaryManager from './components/DictionaryManager';
 import KitBuilder from './components/KitBuilder';
 import MediaManager from './components/MediaManager';
 import AIHub from './components/AIHub';
-import type { ViewType } from './data/types';
+import type { ViewType, MatrixFilters } from './data/types';
 import { LanguageProvider } from './context/LanguageContext';
 
 function getInitialView(): ViewType {
@@ -24,6 +24,7 @@ function getInitialView(): ViewType {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView);
+  const [pendingMatrixFilters, setPendingMatrixFilters] = useState<MatrixFilters | null>(null);
   const viewRef = useRef(currentView);
   viewRef.current = currentView;
 
@@ -31,14 +32,23 @@ export default function App() {
     try { localStorage.setItem('gqbox_view', viewRef.current); } catch {}
   }, [currentView]);
 
+  const navigateToMatrix = useCallback((filters: MatrixFilters) => {
+    setPendingMatrixFilters(filters);
+    setCurrentView('matrix');
+  }, []);
+
+  const handleInitialFiltersApplied = useCallback(() => {
+    setPendingMatrixFilters(null);
+  }, []);
+
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onViewChange={setCurrentView} />;
+        return <Dashboard onViewChange={setCurrentView} onNavigateToMatrix={navigateToMatrix} />;
       case 'architecture':
         return <Architecture />;
       case 'matrix':
-        return <ProductMatrix />;
+        return <ProductMatrix initialFilters={pendingMatrixFilters} onInitialFiltersApplied={handleInitialFiltersApplied} />;
       case 'sku-constructor':
         return <SKUConstructor />;
       case 'dictionary':
@@ -50,7 +60,7 @@ export default function App() {
       case 'ai-hub':
         return <AIHub />;
       default:
-        return <Dashboard onViewChange={setCurrentView} />;
+        return <Dashboard onViewChange={setCurrentView} onNavigateToMatrix={navigateToMatrix} />;
     }
   };
 

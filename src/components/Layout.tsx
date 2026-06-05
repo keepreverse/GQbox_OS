@@ -1,21 +1,15 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Cpu, Grid3X3, Wrench, BookOpen, Package, Image,
-  Sparkles, Menu, X, Bell, Settings, Globe, Shield, Key, LogOut,
-  ChevronLeft, ChevronRight, Download, Upload, RotateCcw,
+  Sparkles, Menu, Bell, Settings,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import type { ViewType } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
-import type { Language } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
-import BottomSheet from './BottomSheet';
-import { exportAllData, importData } from '../data/store';
-import { resetProducts } from '../data/products';
-import { resetDictionaries } from '../data/dictionaries';
-import { exportApi } from '../api/dictionaries';
-
-const MODAL_CLOSE_MS = 150;
+import SettingsPanel from './SettingsPanel';
+import DevModeBadge from './DevModeBadge';
 
 interface LayoutProps {
   currentView: ViewType;
@@ -30,8 +24,13 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsClosing, setSettingsClosing] = useState(false);
-  const savedLangRef = useRef<Language>(language);
+  const [developerMode, setDeveloperMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('gqbox_dev_mode') === 'true'; } catch { return false; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('gqbox_dev_mode', String(developerMode)); } catch {}
+  }, [developerMode]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -54,99 +53,17 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
     return () => document.removeEventListener('mousedown', handleClick);
   }, [notificationsOpen]);
 
-  // Close dropdown on Escape
+  // Close dropdown / settings on Escape
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (notificationsOpen) setNotificationsOpen(false);
-        if (settingsOpen) closeSettings();
+        if (settingsOpen) setSettingsOpen(false);
       }
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [notificationsOpen, settingsOpen]);
-
-  const closeSettings = useCallback(() => {
-    setSettingsClosing(true);
-    setLanguage(savedLangRef.current);
-    setTimeout(() => {
-      setSettingsOpen(false);
-      setSettingsClosing(false);
-    }, MODAL_CLOSE_MS);
-  }, [setLanguage]);
-
-  const saveSettings = useCallback(() => {
-    setSettingsClosing(true);
-    setTimeout(() => {
-      setSettingsOpen(false);
-      setSettingsClosing(false);
-    }, MODAL_CLOSE_MS);
-  }, []);
-
-  const openSettings = useCallback(() => {
-    setSettingsClosing(false);
-    setSettingsOpen(true);
-    savedLangRef.current = language;
-  }, [language]);
-
-  // ─── Управление данными (экспорт/импорт/сброс) ──────────────────────────────
-
-  const handleExport = useCallback(async () => {
-    let data: Record<string, unknown[]> | null = null;
-    try {
-      data = await exportApi.exportAll();
-    } catch {
-      const json = exportAllData();
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gqbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      return;
-    }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gqbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
-
-  const handleImport = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const text = await file.text();
-      let parsed: Record<string, unknown[]>;
-      try { parsed = JSON.parse(text); } catch { alert(t('settings.import_error')); return; }
-      try {
-        await exportApi.importAll(parsed);
-        window.location.reload();
-      } catch {
-        const ok = importData(text);
-        if (ok) { window.location.reload(); } else { alert(t('settings.import_error')); }
-      }
-    };
-    input.click();
-  }, [t]);
-
-  const handleReset = useCallback(async () => {
-    if (!window.confirm(t('settings.reset_confirm'))) return;
-    try {
-      await exportApi.reset();
-      window.location.reload();
-    } catch {
-      resetProducts();
-      resetDictionaries();
-      window.location.reload();
-    }
-  }, [t]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -323,7 +240,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                 <p className="text-[10px] text-text-tertiary truncate">{t('header.admin')}</p>
               </div>
               <button
-                onClick={openSettings}
+                onClick={() => setSettingsOpen(true)}
                 className="h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors flex-shrink-0 cursor-pointer flex items-center justify-center"
                 title={t('header.settings')}
                 aria-label={t('header.settings')}
@@ -337,7 +254,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
       <div className="flex flex-col flex-1 min-w-0">
         <header className="border-b border-border-subtle flex items-center justify-between px-4 bg-bg-secondary/50 backdrop-blur-sm z-30" style={{ height: 72 }}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {isMobile && !sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -348,26 +265,35 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
                 <Menu className="w-4 h-4" />
               </button>
             )}
+            <AnimatePresence>
+              <DevModeBadge key="dev-mode-badge" active={developerMode} />
+            </AnimatePresence>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-lg bg-bg-tertiary border border-border-subtle p-0.5">
+            <div className="max-[359px]:hidden flex items-center rounded-lg bg-bg-tertiary border border-border-subtle p-0.5 h-9">
               <button
                 onClick={() => setLanguage('ru')}
-                className={`flex items-center gap-1 h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
-                  language === 'ru' ? 'bg-bg-elevated text-text-primary' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
+                className={`h-full px-2.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  language === 'ru'
+                    ? 'bg-bg-elevated text-text-primary'
+                    : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
                 }`}
+                title={t('header.settings.russian')}
+                aria-label={t('header.settings.russian')}
               >
-                <Globe className="w-3 h-3 text-accent" />
                 RU
               </button>
               <button
                 onClick={() => setLanguage('en')}
-                className={`flex items-center gap-1 h-9 px-3 rounded text-xs font-medium transition-colors cursor-pointer ${
-                  language === 'en' ? 'bg-bg-elevated text-text-primary' : 'text-text-tertiary hover:text-text-secondary'
+                className={`h-full px-2.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-bg-elevated text-text-primary'
+                    : 'text-text-tertiary hover:text-text-primary'
                 }`}
+                title={t('header.settings.english')}
+                aria-label={t('header.settings.english')}
               >
-                <Globe className="w-3 h-3 text-info" />
                 EN
               </button>
             </div>
@@ -420,7 +346,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             </div>
 
             <button
-              onClick={openSettings}
+              onClick={() => setSettingsOpen(true)}
               className="h-9 w-9 p-0 rounded-lg text-text-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
               title={t('header.settings')}
               aria-label={t('header.settings')}
@@ -447,254 +373,12 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
         </main>
       </div>
 
-      {isMobile ? (
-        <BottomSheet
-          open={settingsOpen}
-          onClose={() => { setLanguage(savedLangRef.current); setSettingsOpen(false); }}
-          title={t('header.settings')}
-          icon={<Settings className="w-4 h-4 text-accent flex-shrink-0" />}
-          ariaLabel={t('header.settings')}
-          footer={
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => { setLanguage(savedLangRef.current); setSettingsOpen(false); }}
-                className="flex-1 h-11 rounded-lg text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
-              >
-                <LogOut className="w-3.5 h-3.5" /> {t('header.settings.logout')}
-              </button>
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(false)}
-                  className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
-                >
-                  {t('header.settings.save')}
-                </button>
-            </div>
-          }
-        >
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary border border-border-subtle">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-sm font-bold text-white ring-1 ring-accent/30 flex-shrink-0">
-                GQ
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">{t('header.team')}</p>
-                <p className="text-xs text-text-secondary truncate">product@gqbox.com</p>
-                <span className="inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded bg-success/10 text-success">
-                  <Shield className="w-2.5 h-2.5" /> {t('header.admin')}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-medium text-text-tertiary">
-                {t('header.settings.system_params')}
-              </h4>
-
-              <div className="flex items-center justify-between text-sm gap-2">
-                <span className="text-text-secondary">
-                  {t('header.settings.interface_lang')}
-                </span>
-                <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
-                  <button
-                    onClick={() => setLanguage('ru')}
-                    className={`h-9 px-3 rounded text-xs flex items-center cursor-pointer ${
-                      language === 'ru'
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
-                    }`}
-                  >
-                    {t('header.settings.russian')}
-                  </button>
-                  <button
-                    onClick={() => setLanguage('en')}
-                    className={`h-9 px-3 rounded text-xs flex items-center cursor-pointer ${
-                      language === 'en'
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
-                    }`}
-                  >
-                    English
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">
-                  {t('header.settings.theme')}
-                </span>
-                <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
-                  Futuristic Dark
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-text-secondary">
-                  {t('header.settings.db_version')}
-                </span>
-                <span className="text-xs text-accent">v2.4-normalized</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-xs font-medium text-text-tertiary">
-                {t('header.settings.integrations')}
-              </h4>
-              <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
-                <span className="flex items-center gap-1.5 text-text-secondary">
-                  <Key className="w-3.5 h-3.5 text-warning" /> Supabase API
-                </span>
-                <span className="text-text-tertiary">sbp_live_8f92...</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-xs font-medium text-text-tertiary">
-                {t('settings.data_management')}
-              </h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleExport}
-                  className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> {t('settings.export')}
-                </button>
-                <button
-                  onClick={handleImport}
-                  className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                >
-                  <Upload className="w-3.5 h-3.5" /> {t('settings.import')}
-                </button>
-              </div>
-              <button
-                onClick={handleReset}
-                className="w-full flex items-center justify-center gap-1.5 h-9 rounded text-xs text-danger hover:bg-danger/10 transition-colors border border-danger/20 cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" /> {t('settings.reset_to_defaults')}
-              </button>
-            </div>
-          </div>
-        </BottomSheet>
-      ) : settingsOpen && (
-        <div
-          onClick={closeSettings}
-          className={`fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm t-backdrop${settingsClosing ? ' is-closing' : ''}`}
-        >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={`t-modal glass-strong rounded-xl w-full max-w-md overflow-hidden border border-border-strong shadow-2xl${settingsOpen && !settingsClosing ? ' is-open' : ''}${settingsClosing ? ' is-closing' : ''}`}
-            >
-              <div className="p-4 border-b border-border-subtle flex items-center justify-between bg-bg-secondary">
-                <div className="flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-accent" />
-                  <h3 className="text-sm font-medium">{t('header.settings')}</h3>
-                </div>
-                <button onClick={closeSettings} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-6">
-                <div className="flex items-center gap-4 p-3 rounded-lg bg-bg-tertiary border border-border-subtle">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-sm font-bold text-white ring-1 ring-accent/30">
-                GQ
-              </div>
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">{t('header.team')}</p>
-                    <p className="text-xs text-text-secondary">product@gqbox.com</p>
-                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded bg-success/10 text-success">
-                      <Shield className="w-2.5 h-2.5" /> {t('header.admin')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.system_params')}</h4>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">{t('header.settings.interface_lang')}</span>
-                    <div className="flex gap-1 bg-bg-tertiary p-0.5 rounded border border-border-subtle">
-                      <button
-                        onClick={() => setLanguage('ru')}
-                        className={`px-2 py-0.5 rounded text-xs ${language === 'ru' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'} cursor-pointer`}
-                      >
-                        {t('header.settings.russian')}
-                      </button>
-                      <button
-                        onClick={() => setLanguage('en')}
-                        className={`px-2 py-0.5 rounded text-xs cursor-pointer ${language === 'en' ? 'bg-accent/25 text-white border border-accent/40' : 'text-text-tertiary'}`}
-                      >
-                        {t('header.settings.english')}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">{t('header.settings.theme')}</span>
-                    <span className="text-xs text-text-tertiary px-2 py-0.5 rounded bg-bg-tertiary border border-border-subtle">
-                      Futuristic Dark
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">{t('header.settings.db_version')}</span>
-                    <span className="text-xs text-accent">v2.4-normalized</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.integrations')}</h4>
-                  <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
-                    <span className="flex items-center gap-1.5 text-text-secondary">
-                      <Key className="w-3.5 h-3.5 text-warning" /> Supabase API
-                    </span>
-                    <span className="text-text-tertiary">sbp_live_8f92...</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-text-tertiary">{t('settings.data_management')}</h4>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleExport}
-                      className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5" /> {t('settings.export')}
-                    </button>
-                    <button
-                      onClick={handleImport}
-                      className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded bg-bg-tertiary text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                    >
-                      <Upload className="w-3.5 h-3.5" /> {t('settings.import')}
-                    </button>
-                  </div>
-                  <button
-                    onClick={handleReset}
-                    className="w-full flex items-center justify-center gap-1.5 h-9 rounded text-xs text-danger hover:bg-danger/10 transition-colors border border-danger/20 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" /> {t('settings.reset_to_defaults')}
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-3 border-t border-border-subtle bg-bg-secondary flex justify-between items-center">
-                <button
-                  onClick={closeSettings}
-                  className="flex items-center gap-1 text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 px-2 py-1 rounded border border-danger/20"
-                >
-                  <LogOut className="w-3 h-3" /> {t('header.settings.logout_full')}
-                </button>
-                <button
-                  onClick={saveSettings}
-                  className="px-4 py-1.5 bg-accent/25 text-white rounded text-xs hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer"
-                >
-                  {t('header.settings.save')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      <SettingsPanel
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        developerMode={developerMode}
+        onDeveloperModeChange={setDeveloperMode}
+      />
     </div>
     </LayoutProvider>
   );

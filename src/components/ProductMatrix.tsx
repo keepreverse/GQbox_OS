@@ -1,4 +1,4 @@
-import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Download, Eye, X, Cable, Zap, Wifi, Car, Headphones,
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { products, subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, suppliers, colors } from '../data/dictionaries';
-import type { ProductWithRelations } from '../data/types';
+import type { ProductWithRelations, MatrixFilters } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
@@ -20,7 +20,12 @@ const categoryIcons: Record<string, React.ElementType> = {
   kit: Package, packaging: Archive, blogo: Monitor,
 };
 
-export default function ProductMatrix() {
+interface ProductMatrixProps {
+  initialFilters?: MatrixFilters | null;
+  onInitialFiltersApplied?: () => void;
+}
+
+export default function ProductMatrix({ initialFilters, onInitialFiltersApplied }: ProductMatrixProps = {}) {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -37,12 +42,25 @@ export default function ProductMatrix() {
 
   const productsVersion = useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
+  useEffect(() => {
+    if (initialFilters) {
+      setSelectedCategories(initialFilters.categories ?? []);
+      setSelectedSuppliers(initialFilters.suppliers ?? []);
+      setSelectedColors(initialFilters.colors ?? []);
+      setSelectedPower(initialFilters.power ?? []);
+      setSelectedLength(initialFilters.length ?? []);
+      setShowFilters(true);
+      setCurrentPage(1);
+      setTableKey(k => k + 1);
+      onInitialFiltersApplied?.();
+    }
+  }, [initialFilters, onInitialFiltersApplied]);
+
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const matchesSearch = !searchQuery ||
         p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.fullNameRu.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.model?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (p.model?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (p.color?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
@@ -125,11 +143,10 @@ export default function ProductMatrix() {
   const handleExport = () => {
     setExporting(true);
     setTimeout(() => {
-      const headers = ['SKU', 'Name_RU', 'Name_EN', 'Category', 'Model', 'Power_W', 'Length_M', 'Color', 'Supplier'];
+      const headers = ['SKU', 'Name', 'Category', 'Model', 'Power_W', 'Length_M', 'Color', 'Supplier'];
       const rows = filteredProducts.map(p => [
         p.sku,
-        `"${p.fullNameRu.replace(/"/g, '""')}"`,
-        `"${p.fullName.replace(/"/g, '""')}"`,
+        `"${p.productName.replace(/"/g, '""')}"`,
         displaySource(p.category, language),
         displaySource(p.model, language),
         p.powerW || '',
@@ -213,9 +230,9 @@ export default function ProductMatrix() {
       cell: p => {
         const Icon = categoryIcons[p.category.code] || Archive;
         return (
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p, language)}>
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p)}>
             <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(p.category.code) }} />
-            <span className="truncate text-xs sm:text-sm">{displayProductName(p, language)}</span>
+            <span className="truncate text-xs sm:text-sm">{displayProductName(p)}</span>
           </div>
         );
       },
@@ -248,7 +265,7 @@ export default function ProductMatrix() {
       header: t('matrix.col.length'),
       width: 8,
       nowrap: true,
-      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.lengthM ? `${p.lengthM}${t('matrix.unit_m')}` : '—'}</span>,
+      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.lengthM ? `${p.lengthM}м` : '—'}</span>,
     },
     {
       key: 'color',
@@ -283,21 +300,19 @@ export default function ProductMatrix() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-        <div>
+      <div className="flex items-start sm:items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('matrix.title')}</h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{filteredProducts.length} {t('matrix.subtitle')}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExport}
-            disabled={exporting || filteredProducts.length === 0}
-            className="h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 cursor-pointer"
-          >
-            {exporting ? <Check className="w-3.5 h-3.5 text-success" /> : <Download className="w-3.5 h-3.5" />}
-            {exporting ? t('matrix.exporting') : t('matrix.export')}
-          </button>
-        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting || filteredProducts.length === 0}
+          className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+        >
+          {exporting ? <Check className="w-3.5 h-3.5 text-success" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? t('matrix.exporting') : t('matrix.export')}
+        </button>
       </div>
 
       {/* Search & Filters */}
@@ -334,11 +349,11 @@ export default function ProductMatrix() {
         style={{
           display: 'grid',
           gridTemplateRows: showFilters ? '1fr' : '0fr',
-          transition: 'grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: 'grid-template-rows 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <div className="overflow-hidden">
-          <div className="glass rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4 animate-fade-in">
+          <div className="glass rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium">{t('matrix.filters')}</h3>
               {activeFiltersCount > 0 && (
@@ -446,7 +461,7 @@ export default function ProductMatrix() {
                           : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
                       }`}
                     >
-                      {val}{t('matrix.unit_m')}
+                      {val}м
                     </button>
                   ))}
                 </div>
@@ -481,7 +496,7 @@ export default function ProductMatrix() {
               <button
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
-                aria-label={`${displayProductName(product, language)} ${product.sku}`}
+                aria-label={`${displayProductName(product)} ${product.sku}`}
                 className="w-full text-left glass rounded-xl p-3 active:scale-[0.99] transition-transform"
               >
                 <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -500,7 +515,7 @@ export default function ProductMatrix() {
                   )}
                 </div>
                 <p className="text-sm font-medium text-text-primary line-clamp-2 mb-2">
-                  {displayProductName(product, language)}
+                  {displayProductName(product)}
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle truncate max-w-[120px]">
@@ -513,7 +528,7 @@ export default function ProductMatrix() {
                   )}
                   {product.lengthM != null && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
-                      {product.lengthM}{t('matrix.unit_m')}
+                      {product.lengthM}м
                     </span>
                   )}
                   {product.color && (

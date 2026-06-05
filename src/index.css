@@ -321,12 +321,6 @@ html {
   --dropdown-pre-scale: 0.97;
   --dropdown-closing-scale: 0.99;
   --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  /* Modal open / close */
-  --modal-open-dur: 250ms;
-  --modal-close-dur: 150ms;
-  --modal-scale: 0.96;
-  --modal-scale-close: 0.96;
-  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Panel reveal */
   --panel-open-dur: 400ms;
   --panel-close-dur: 350ms;
@@ -409,38 +403,6 @@ html {
     opacity   var(--dropdown-close-dur) var(--dropdown-ease);
 }
 
-.t-modal {
-  transform-origin: center;
-  transform: scale(var(--modal-scale));
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    transform var(--modal-open-dur) var(--modal-ease),
-    opacity   var(--modal-open-dur) var(--modal-ease);
-}
-.t-modal.is-open {
-  transform: scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-.t-modal.is-closing {
-  transform: scale(var(--modal-scale-close));
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    transform var(--modal-close-dur) var(--modal-ease),
-    opacity   var(--modal-close-dur) var(--modal-ease);
-}
-
-.t-backdrop {
-  opacity: 1;
-  transition: opacity var(--modal-open-dur) var(--modal-ease);
-}
-.t-backdrop.is-closing {
-  opacity: 0;
-  transition: opacity var(--modal-close-dur) var(--modal-ease);
-}
-
 .t-success-check {
   display: inline-block;
   transform-origin: center;
@@ -477,10 +439,28 @@ html {
 }
 @keyframes t-check-draw { to { stroke-dashoffset: 0; } }
 
+@keyframes dev-mode-scan {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(1200%); }
+}
+
+@keyframes dev-mode-glow {
+  0%, 100% {
+    text-shadow: 0 0 2px rgba(251, 191, 36, 0.5), 0 0 1px rgba(251, 191, 36, 0.7);
+    opacity: 0.85;
+  }
+  50% {
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.85), 0 0 2px rgba(251, 191, 36, 1), 0 0 12px rgba(251, 191, 36, 0.4);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .t-dropdown, .t-modal { transition: none !important; }
+  .t-dropdown { transition: none !important; }
   .t-success-check { animation: none !important; opacity: 1; }
   .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
+  [style*="dev-mode-scan"] { animation: none !important; }
+  .dev-mode-glow { animation: none !important; }
 }
 
 /* Skip link for accessibility */

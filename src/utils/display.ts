@@ -33,10 +33,9 @@ export function getCategoryColorVar(code: string): string {
 }
 
 export function displayProductName(
-  item: { fullName?: string; fullNameRu?: string },
-  language?: string,
+  item: { productName?: string },
 ): string {
-  return language === 'ru' ? (item.fullNameRu || '') : (item.fullName || '');
+  return item.productName || '';
 }
 
 export function getColorHexValue(hexValue: string): string {

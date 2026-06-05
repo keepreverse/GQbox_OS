@@ -95,7 +95,7 @@ export default function SKUConstructor() {
       if (conn) parts.push('-' + conn.code);
     }
     if (selectedModel) parts.push(displayName(selectedModel, language));
-    if (form.lengthM) parts.push(form.lengthM + t('sku.unit_m'));
+    if (form.lengthM) parts.push(form.lengthM + 'м');
     if (selectedColor) parts.push(displayName(selectedColor, language).toUpperCase());
     if (form.powerW) parts.push(form.powerW + 'W');
     

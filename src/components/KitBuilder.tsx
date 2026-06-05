@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useToast } from './useToast';
 import { Toast } from './Toast';
+import Modal from './Modal';
 import { products, addProduct } from '../data/products';
 import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, colors } from '../data/dictionaries';
@@ -105,7 +106,7 @@ function ComponentItem({ comp, onUpdateQty, onRemove }: {
   onUpdateQty: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
 }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const controls = useDragControls();
 
   return (
@@ -124,9 +125,9 @@ function ComponentItem({ comp, onUpdateQty, onRemove }: {
           <GripVertical className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs sm:text-sm font-medium truncate">
-            {language === 'ru' ? comp.product.fullNameRu : comp.product.fullName}
-          </p>
+           <p className="text-xs sm:text-sm font-medium truncate">
+             {comp.product.productName}
+           </p>
           <p className="text-[10px] sm:text-[11px] text-text-tertiary truncate">
             {comp.product.sku} · {comp.product.powerW ? `${comp.product.powerW}W` : '—'}
           </p>
@@ -172,7 +173,6 @@ export default function KitBuilder() {
   const [components, setComponents] = useState<KitComponent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerClosing, setPickerClosing] = useState(false);
   const [pickerView, setPickerView] = useState<'categories' | 'products'>('categories');
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
   const { toast, showToast, hideToast } = useToast();
@@ -180,34 +180,38 @@ export default function KitBuilder() {
 
   useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
-  const MODAL_CLOSE_MS = 150;
-
   const closePicker = useCallback(() => {
-    setPickerClosing(true);
-    setTimeout(() => {
-      setShowPicker(false);
-      setPickerClosing(false);
-      setPickerView('categories');
-      setSelectedCategoryCode(null);
-      setSearchQuery('');
-    }, MODAL_CLOSE_MS);
+    setShowPicker(false);
+  }, []);
+
+  const resetPickerState = useCallback(() => {
+    setPickerView('categories');
+    setSelectedCategoryCode(null);
+    setSearchQuery('');
   }, []);
 
   const openPicker = useCallback(() => {
-    setPickerClosing(false);
     setShowPicker(true);
   }, []);
 
   const availableProducts = useMemo(() => {
     if (pickerView === 'categories') return [];
-    return products.filter(p => 
+    return products.filter(p =>
       p.category.code === selectedCategoryCode &&
-      !p.isKit && 
+      !p.isKit &&
       !components.some(c => c.product.id === p.id) &&
       (p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       p.fullNameRu.toLowerCase().includes(searchQuery.toLowerCase()))
+       p.productName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [searchQuery, components, pickerView, selectedCategoryCode]);
+
+  const filteredCategories = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return categories.filter(c =>
+      c.name_source.toLowerCase().includes(q) ||
+      c.name_product.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
 
   const skuExists = products.some(p => p.sku.toLowerCase() === kitSku.trim().toLowerCase());
 
@@ -481,104 +485,105 @@ export default function KitBuilder() {
       </div>
 
       {/* Product Picker Modal */}
-      {showPicker && (
-        <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm t-backdrop${pickerClosing ? ' is-closing' : ''}`}
-          onClick={closePicker}
-        >
-          <div
-            className={`t-modal glass-strong rounded-xl w-full max-w-lg max-h-[80dvh] flex flex-col border border-border-strong shadow-2xl overflow-hidden${!pickerClosing ? ' is-open' : ' is-closing'}`}
-            onClick={e => e.stopPropagation()}
-          >
-              <div className="p-4 border-b border-border-subtle flex items-center gap-3 bg-bg-secondary">
-                {pickerView === 'products' ? (
-                  <button onClick={() => { setPickerView('categories'); setSelectedCategoryCode(null); setSearchQuery(''); }} className="p-1.5 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer">
-                    <ArrowLeft className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <Search className="w-4 h-4 text-text-muted ml-1" />
-                )}
-                <input
-                  type="text"
-                  placeholder={pickerView === 'categories' ? t('kit.search_categories') : t('kit.search_products')}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent border-none p-0 h-11 sm:h-auto text-sm focus:ring-0 text-text-primary placeholder:text-text-muted"
-                />
-                <button onClick={closePicker} className="p-1.5 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer">
-                  <X className="w-4 h-4" />
-                </button>
+      <Modal
+        variant="auto"
+        width="lg"
+        open={showPicker}
+        onClose={closePicker}
+        onExitComplete={resetPickerState}
+        title={t('kit.picker_title')}
+        icon={<Package className="w-4 h-4 text-accent flex-shrink-0" />}
+        ariaLabel={t('kit.picker_title')}
+        height="clamp(75dvh, 80dvh, 95dvh)"
+        pinned
+        contentClassName="p-0"
+      >
+        <div className="p-3 sm:p-4 border-b border-border-subtle flex items-center gap-3 bg-bg-secondary">
+          {pickerView === 'products' ? (
+            <button onClick={() => { setPickerView('categories'); setSelectedCategoryCode(null); setSearchQuery(''); }} className="p-1.5 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          ) : (
+            <Search className="w-4 h-4 text-text-muted ml-1" />
+          )}
+          <input
+            type="text"
+            placeholder={pickerView === 'categories' ? t('kit.search_categories') : t('kit.search_products')}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent border-none p-0 h-11 sm:h-auto text-sm focus:ring-0 text-text-primary placeholder:text-text-muted"
+          />
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {pickerView === 'categories' ? (
+            filteredCategories.length > 0 ? (
+              <div className="p-2 bg-bg-primary/50 min-h-full">
+                <div className="space-y-1">
+                  {filteredCategories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setSelectedCategoryCode(cat.code); setPickerView('products'); setSearchQuery(''); }}
+                      className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
+                        {(() => {
+                          const Icon = categoryIcons[cat.code] || Archive;
+                          return <Icon className="w-5 h-5" style={{ color: getCategoryColorVar(cat.code) }} />;
+                        })()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate text-text-primary">
+                          {displaySource(cat, language)}
+                        </p>
+                        <p className="text-[10px] text-text-tertiary truncate mt-0.5">
+                          {t('kit.select_components')}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-text-primary transition-colors flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-2 bg-bg-primary/50">
-                {pickerView === 'categories' ? (
-                  <div className="space-y-1">
-                    {categories
-                      .filter(c => c.name_source.toLowerCase().includes(searchQuery.toLowerCase()) || c.name_product.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map(cat => (
-                        <button
-                          key={cat.id}
-                          onClick={() => { setSelectedCategoryCode(cat.code); setPickerView('products'); setSearchQuery(''); }}
-                          className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
-                        >
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
-                            {(() => {
-                              const Icon = categoryIcons[cat.code] || Archive;
-                              return <Icon className="w-5 h-5" style={{ color: getCategoryColorVar(cat.code) }} />;
-                            })()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate text-text-primary">
-                              {displaySource(cat, language)}
-                            </p>
-                            <p className="text-[10px] text-text-tertiary truncate mt-0.5">
-                              {t('kit.select_components')}
-                            </p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-text-primary transition-colors flex-shrink-0" />
-                        </button>
-                      ))}
-                    {categories.filter(c => c.name_source.toLowerCase().includes(searchQuery.toLowerCase()) || c.name_product.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                       <p className="text-center py-12 text-xs text-text-tertiary">
-                         {t('kit.no_categories')}
-                       </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {availableProducts.map(product => (
-                      <button
-                        key={product.id}
-                        onClick={() => addComponent(product)}
-                        className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
-                      >
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
-                          <Hash className="w-5 h-5" style={{ color: getCategoryColorVar(product.category.code) }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate text-text-primary">
-                            {displayProductName(product, language)}
-                          </p>
-                          <p className="text-[10px] text-text-tertiary truncate mt-0.5 flex items-center gap-2">
-                            <span className="text-accent">{product.sku}</span>
-                            {product.powerW && <span className="text-text-muted">· {product.powerW}W</span>}
-                          </p>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-white transition-all text-accent flex-shrink-0 cursor-pointer">
-                          <Plus className="w-4 h-4" />
-                        </div>
-                      </button>
-                    ))}
-                    {availableProducts.length === 0 && (
-                      <p className="text-center py-12 text-xs text-text-tertiary">
-                        {t('kit.no_products')}
+            ) : (
+              <p className="text-center py-12 text-xs text-text-tertiary">
+                {t('kit.no_categories')}
+              </p>
+            )
+          ) : availableProducts.length > 0 ? (
+            <div className="p-2 bg-bg-primary/50 min-h-full">
+              <div className="space-y-1">
+                {availableProducts.map(product => (
+                  <button
+                    key={product.id}
+                    onClick={() => addComponent(product)}
+                    className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
+                      <Hash className="w-5 h-5" style={{ color: getCategoryColorVar(product.category.code) }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-text-primary">
+                        {displayProductName(product)}
                       </p>
-                    )}
-                  </div>
-                )}
+                      <p className="text-[10px] text-text-tertiary truncate mt-0.5 flex items-center gap-2">
+                        <span className="text-accent">{product.sku}</span>
+                        {product.powerW && <span className="text-text-muted">· {product.powerW}W</span>}
+                      </p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-white transition-all text-accent flex-shrink-0 cursor-pointer">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-center py-12 text-xs text-text-tertiary">
+              {t('kit.no_products')}
+            </p>
+          )}
+        </div>
+      </Modal>
       </div>
     );
   }

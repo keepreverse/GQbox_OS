@@ -81,22 +81,6 @@ export interface ProductBase {
   updatedAt: string;
 }
 
-export interface ProductVariant {
-  id: string;
-  productBaseId: string;
-  sku: string;
-  variantCode?: string;
-  colorId?: string;
-  lengthVariant?: string;
-  supplierSuffix?: string;
-  isKit: boolean;
-  fullName: string;
-  fullNameRu: string;
-  barcode?: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
 export interface KitComponent {
   id: string;
   kitVariantId: string;
@@ -166,8 +150,7 @@ export interface ProductWithRelations {
   model: Model;
   color?: Color;
   supplier?: Supplier;
-  fullName: string;
-  fullNameRu: string;
+  productName: string;
   bodyMaterial?: Material;
   wireMaterial?: Material;
   currentA?: number;
@@ -187,9 +170,7 @@ export interface ProductWithRelations {
   supplierSuffix?: string;
   createdAt: string;
   description?: string;
-  descriptionEn?: string;
   usp?: string;
-  uspEn?: string;
   tags?: string[];
   media?: ProductMedia[];
   marketplaceListings?: MarketplaceListing[];
@@ -236,13 +217,21 @@ export interface NamingLogicDefinition {
   rules: string[];
 }
 
-export type ViewType = 
-  | 'dashboard' 
-  | 'architecture' 
-  | 'matrix' 
-  | 'sku-constructor' 
-  | 'dictionary' 
+export type ViewType =
+  | 'dashboard'
+  | 'architecture'
+  | 'matrix'
+  | 'sku-constructor'
+  | 'dictionary'
   | 'product-detail'
   | 'kit-builder'
   | 'media'
   | 'ai-hub';
+
+export interface MatrixFilters {
+  categories?: string[];
+  suppliers?: string[];
+  colors?: string[];
+  power?: number[];
+  length?: number[];
+}

@@ -1,16 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { X, Image as ImageIcon, Video, Tag, Zap, Ruler, Users, Plug, Battery, Link as LinkIcon, Shield, Globe, ShoppingBag } from 'lucide-react';
 import type { ProductWithRelations } from '../data/types';
 import { useLanguage } from '../context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '../utils/display';
-
-const MODAL_CLOSE_MS = 150;
-
-const connectionTypeTranslations: Record<string, string> = {
-  'Прямое': 'Direct',
-  'Bluetooth': 'Bluetooth',
-  'ONLY MUSIC': 'ONLY MUSIC',
-};
+import Modal from './Modal';
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;
@@ -19,35 +12,21 @@ interface ProductDetailCardProps {
 
 export default function ProductDetailCard({ product, onClose }: ProductDetailCardProps) {
   const { t, language } = useLanguage();
-  const [closing, setClosing] = useState(false);
-  const [isNarrow, setIsNarrow] = useState(true);
-
-  useEffect(() => {
-    const check = () => setIsNarrow(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+  const [open, setOpen] = useState(true);
 
   const handleClose = useCallback(() => {
-    setClosing(true);
-    setTimeout(() => onClose(), MODAL_CLOSE_MS);
-  }, [onClose]);
+    setOpen(false);
+  }, []);
 
-  const desc = language === 'ru' ? (product.description || product.descriptionEn) : (product.descriptionEn || product.description);
-  const usp = language === 'ru' ? (product.usp || product.uspEn) : (product.uspEn || product.usp);
+  const desc = product.description || '';
+  const usp = product.usp || '';
   const tags = product.tags || [];
 
   const specs = [
     { icon: Zap, label: t('detail.power'), value: product.powerW ? `${product.powerW}W` : '—' },
     { icon: Battery, label: t('detail.current'), value: product.currentA ? `${product.currentA}A` : '—' },
     { icon: Zap, label: t('detail.voltage'), value: product.voltageV ? `${product.voltageV}V` : '—' },
-    { icon: Ruler, label: t('detail.length'), value: product.lengthM ? `${product.lengthM}${t('detail.unit_m')}` : '—' },
+    { icon: Ruler, label: t('detail.length'), value: product.lengthM ? `${product.lengthM}м` : '—' },
     { icon: Users, label: t('detail.devices'), value: product.deviceCount || '—' },
     { icon: LinkIcon, label: t('detail.speed'), value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—' },
   ];
@@ -58,9 +37,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
     { label: t('detail.protocol'), value: product.chargingProtocol ? displaySource(product.chargingProtocol, language) : '—' },
     {
       label: t('detail.connection'),
-      value: product.connectionType
-        ? (language === 'ru' ? product.connectionType : (connectionTypeTranslations[product.connectionType] || product.connectionType))
-        : '—',
+      value: product.connectionType || '—',
     },
   ];
 
@@ -97,9 +74,9 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
               <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-warning/10 text-warning font-medium">KIT</span>
             )}
           </div>
-          <h2 className="text-sm sm:text-base font-semibold text-text-primary mb-0.5 leading-snug line-clamp-2">
-            {language === 'ru' ? product.fullNameRu : product.fullName}
-          </h2>
+           <h2 className="text-sm sm:text-base font-semibold text-text-primary mb-0.5 leading-snug line-clamp-2">
+             {product.productName}
+           </h2>
           <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-text-tertiary flex-wrap">
             <span style={{ color: getCategoryColorVar(product.category.code) }}>{displaySource(product.category, language)}</span>
             <span>·</span>
@@ -307,32 +284,19 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
   );
 
   return (
-    <div className="fixed inset-0 z-[100]" onClick={handleClose}>
-      <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm t-backdrop${closing ? ' is-closing' : ''}`} />
-      {isNarrow ? (
-        <div className="absolute inset-x-0 bottom-0 flex flex-col pt-6 pb-[env(safe-area-inset-bottom)]">
-          <div
-            className={`t-modal glass-strong rounded-t-2xl w-full border border-border-strong shadow-2xl mx-auto flex flex-col mt-auto overflow-hidden animate-card-in${closing ? ' is-closing' : ' is-open'}`}
-            style={{ maxHeight: 'clamp(78dvh, 88dvh, 95dvh)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            {modalContent}
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center p-4 min-h-full">
-          <div
-            className={`t-modal glass-strong rounded-2xl w-full border border-border-strong shadow-2xl flex flex-col overflow-hidden${!closing ? ' is-open' : ' is-closing'}`}
-            style={{
-              maxWidth: 'clamp(820px, 65vw, 1100px)',
-              maxHeight: 'clamp(72dvh, 82dvh, 92dvh)',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {modalContent}
-          </div>
-        </div>
-      )}
-    </div>
+    <Modal
+      variant="auto"
+      width="lg"
+      open={open}
+      onClose={handleClose}
+      onExitComplete={onClose}
+      showCloseButton={false}
+      height="clamp(75dvh, 80dvh, 95dvh)"
+      pinned
+      className="sm:!max-w-[min(1100px,65vw)] sm:rounded-2xl"
+      contentClassName="p-0 flex flex-col"
+    >
+      {modalContent}
+    </Modal>
   );
 }

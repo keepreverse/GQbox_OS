@@ -2,13 +2,13 @@ import { useState, useCallback } from 'react';
 import {
   Upload, Grid, List,
   FileImage, FileVideo, Trash2, Download,
-  X, Check
+  Check
 } from 'lucide-react';
 import { useToast } from './useToast';
 import { Toast } from './Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
-import BottomSheet from './BottomSheet';
+import Modal from './Modal';
 import { ResponsiveTable } from './ResponsiveTable';
 import type { Column } from './table/types';
 
@@ -42,25 +42,13 @@ export default function MediaManager() {
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showUpload, setShowUpload] = useState(false);
-  const [uploadClosing, setUploadClosing] = useState(false);
   const { toast, showToast, hideToast } = useToast();
 
-  const MODAL_CLOSE_MS = 150;
-
   const closeUpload = useCallback(() => {
-    if (isMobile) {
-      setShowUpload(false);
-    } else {
-      setUploadClosing(true);
-      setTimeout(() => {
-        setShowUpload(false);
-        setUploadClosing(false);
-      }, MODAL_CLOSE_MS);
-    }
-  }, [isMobile]);
+    setShowUpload(false);
+  }, []);
 
   const openUpload = useCallback(() => {
-    setUploadClosing(false);
     setShowUpload(true);
   }, []);
 
@@ -248,8 +236,8 @@ export default function MediaManager() {
     <div className="space-y-6">
       <Toast data={toast} onClose={hideToast} />
 
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex items-start sm:items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('media.title')}</h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
             {mediaList.length} {t('media.subtitle')} · {mediaList.filter(m => m.type === 'image').length} {t('media.images')} · {mediaList.filter(m => m.type === 'video').length} {t('media.videos')}
@@ -257,7 +245,7 @@ export default function MediaManager() {
         </div>
         <button
           onClick={openUpload}
-          className="flex items-center gap-2 min-h-[44px] sm:min-h-0 px-4 py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all self-start sm:self-auto cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
           <Upload className="w-4 h-4" /> {t('media.upload')}
         </button>
@@ -415,131 +403,69 @@ export default function MediaManager() {
         </>
       )}
 
-      {/* Upload Modal — mobile: BottomSheet; desktop: centered modal (untouched) */}
-      {isMobile ? (
-        <BottomSheet
-          open={showUpload}
-          onClose={closeUpload}
-          title={t('media.upload_title')}
-          icon={<Upload className="w-4 h-4 text-accent flex-shrink-0" />}
-          ariaLabel={t('media.upload_title')}
-          footer={
-            <button
-              type="button"
-              onClick={handleUpload}
-              className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
-            >
-              {t('media.upload_button')}
-            </button>
-          }
-        >
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
-              <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
-              <p className="text-xs sm:text-sm text-text-secondary">
-                {t('media.drop_here')}
-              </p>
-              <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-                  {t('media.click_browse')}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('media.file_name')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., product_photo.jpg"
-                  value={fileName}
-                  onChange={e => setFileName(e.target.value)}
-                  className="w-full text-text-primary h-11"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('media.sku_link')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., S10002E/01"
-                  value={uploadSku}
-                  onChange={e => setUploadSku(e.target.value)}
-                  className="w-full text-text-primary h-11"
-                />
-              </div>
-            </div>
-          </div>
-        </BottomSheet>
-      ) : showUpload && (
-        <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm t-backdrop${uploadClosing ? ' is-closing' : ''}`}
-          onClick={closeUpload}
-        >
-            <div
-              className={`t-modal glass-strong rounded-xl w-full max-w-md p-4 sm:p-6 border border-border-strong shadow-2xl${!uploadClosing ? ' is-open' : ' is-closing'}`}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">
-                  {t('media.upload_title')}
-                </h3>
-                <button onClick={closeUpload} className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
-                <p className="text-xs sm:text-sm text-text-secondary">
-                  {t('media.drop_here')}
-                </p>
-                <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
-                {t('media.click_browse')}
-                </p>
-                <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
+      {/* Upload Modal */}
+      <Modal
+        variant="auto"
+        width="md"
+        open={showUpload}
+        onClose={closeUpload}
+        title={t('media.upload_title')}
+        icon={<Upload className="w-4 h-4 text-accent flex-shrink-0" />}
+        ariaLabel={t('media.upload_title')}
+        footer={
+          <button
+            type="button"
+            onClick={handleUpload}
+            className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+          >
+            {t('media.upload_button')}
+          </button>
+        }
+      >
+        <div className="space-y-4">
+          <div className="border-2 border-dashed border-border-default rounded-xl p-6 sm:p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
+            <Upload className="w-8 h-8 text-text-muted mx-auto mb-3" />
+            <p className="text-xs sm:text-sm text-text-secondary">
+              {t('media.drop_here')}
+            </p>
+            <p className="text-[10px] sm:text-xs text-text-tertiary mt-1">
+              {t('media.click_browse')}
+            </p>
+            {!isMobile && (
+              <p className="text-[9px] sm:text-[10px] text-text-muted mt-3">
                 {t('media.supported_formats')}
-                </p>
-              </div>
+              </p>
+            )}
+          </div>
 
-              <div className="mt-4 space-y-3">
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('media.file_name')}
-                  </label>
-                  <input
-                    type="text"
-                  placeholder={t('media.file_name_placeholder')}
-                    value={fileName}
-                    onChange={e => setFileName(e.target.value)}
-                    className="w-full text-text-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                    {t('media.sku_link')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t('media.sku_link_placeholder')}
-                    value={uploadSku}
-                    onChange={e => setUploadSku(e.target.value)}
-                    className="w-full text-text-primary"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleUpload}
-                className="w-full mt-5 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
-              >
-                {t('media.upload_button')}
-              </button>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">
+                {t('media.file_name')}
+              </label>
+              <input
+                type="text"
+                placeholder={isMobile ? 'e.g., product_photo.jpg' : t('media.file_name_placeholder')}
+                value={fileName}
+                onChange={e => setFileName(e.target.value)}
+                className="w-full text-text-primary h-11"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-text-tertiary mb-1 block">
+                {t('media.sku_link')}
+              </label>
+              <input
+                type="text"
+                placeholder={isMobile ? 'e.g., S10002E/01' : t('media.sku_link_placeholder')}
+                value={uploadSku}
+                onChange={e => setUploadSku(e.target.value)}
+                className="w-full text-text-primary h-11"
+              />
             </div>
           </div>
-      )}
+        </div>
+      </Modal>
     </div>
   );
 }
