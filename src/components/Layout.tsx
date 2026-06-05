@@ -25,7 +25,11 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [developerMode, setDeveloperMode] = useState<boolean>(() => {
-    try { return localStorage.getItem('gqbox_dev_mode') === 'true'; } catch { return false; }
+    try {
+      const val = localStorage.getItem('gqbox_dev_mode');
+      if (val === null) return true;
+      return val === 'true';
+    } catch { return true; }
   });
 
   useEffect(() => {
