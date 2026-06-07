@@ -51,8 +51,10 @@ const translations: Record<Language, Translations> = {
     'header.dev_mode.session': 'Сессия',
     'settings.work_mode': 'Режим работы',
     'settings.developer_mode': 'Режим разработчика',
-    'settings.developer_mode_desc': 'Переключение на PostgreSQL для тестирования против реальной БД. Данные тестовой сессии в браузере сохранятся отдельно.',
-    'settings.developer_mode_active': 'Данный переключатель демонстрационный — реальное подключение к PostgreSQL появится в следующем обновлении.',
+    'settings.developer_mode_desc':
+      'Переключение на PostgreSQL для тестирования против реальной БД. Данные тестовой сессии в браузере сохранятся отдельно.',
+    'settings.developer_mode_active':
+      'Данный переключатель демонстрационный — реальное подключение к PostgreSQL появится в следующем обновлении.',
     'settings.data_management': 'Управление данными',
     'settings.export': 'Экспорт',
     'settings.import': 'Импорт',
@@ -350,33 +352,51 @@ const translations: Record<Language, Translations> = {
     'ai.send': 'Отправить',
     'ai.copy': 'Копировать',
     'ai.copied': 'Скопировано',
-    'ai.disclaimer': 'Ответы генерируются для демонстрации. Подключите API ключи OpenAI/Claude для реальной работы.',
+    'ai.disclaimer':
+      'Ответы генерируются для демонстрации. Подключите API ключи OpenAI/Claude для реальной работы.',
     'ai.preset1_label': 'Сгенерировать описание товара',
-    'ai.preset1_prompt': 'Напиши продающее описание товара для сетевого зарядного устройства 20W PD с выходом USB-C, белого цвета, в премиальном алюминиевом корпусе',
+    'ai.preset1_prompt':
+      'Напиши продающее описание товара для сетевого зарядного устройства 20W PD с выходом USB-C, белого цвета, в премиальном алюминиевом корпусе',
     'ai.preset2_label': 'Проанализировать паттерн SKU',
     'ai.preset2_prompt': 'Проанализируй структуру SKU S10002E-2/01 и объясни каждый сегмент',
     'ai.preset3_label': 'Промпт для генерации фото',
-    'ai.preset3_prompt': 'Создай детализированный промпт для нейросети для генерации студийной фотографии белой беспроводной зарядной станции 3-в-1',
+    'ai.preset3_prompt':
+      'Создай детализированный промпт для нейросети для генерации студийной фотографии белой беспроводной зарядной станции 3-в-1',
     'ai.preset4_label': 'Перевести на английский',
-    'ai.preset4_prompt': 'Переведи это название товара на английский язык: "Премиальный плетеный кабель USB-C — Lightning, 1 м, черный, 20 Вт PD"',
-    'ai.welcome': 'Привет! Я — ассистент по работе с товарами GQbox.\n\nЧем могу помочь:\n• Написать или улучшить описание товара\n• Перевести название или характеристики\n• Проанализировать артикул (SKU)\n• Сгенерировать промпт для нейросети\n• Ответить на вопросы по ассортименту\n\nВыберите готовый запрос из списка или напишите свой.',
-    'ai.default_response': 'Я проанализировал ваш запрос: "{query}"... Это демонстрационный ответ — в рабочей среде система свяжется с вашей нейросетью (OpenAI или Claude) через Supabase Edge Functions.',
+    'ai.preset4_prompt':
+      'Переведи это название товара на английский язык: "Премиальный плетеный кабель USB-C — Lightning, 1 м, черный, 20 Вт PD"',
+    'ai.welcome':
+      'Привет! Я — ассистент по работе с товарами GQbox.\n\nЧем могу помочь:\n• Написать или улучшить описание товара\n• Перевести название или характеристики\n• Проанализировать артикул (SKU)\n• Сгенерировать промпт для нейросети\n• Ответить на вопросы по ассортименту\n\nВыберите готовый запрос из списка или напишите свой.',
+    'ai.default_response':
+      'Я проанализировал ваш запрос: "{query}"... Это демонстрационный ответ — в рабочей среде система свяжется с вашей нейросетью (OpenAI или Claude) через Supabase Edge Functions.',
 
     // Architecture System Descriptions
-    'arch.system.fe_nextjs_desc': 'Серверные компоненты для загрузки данных, клиентские для интерактивности',
-    'arch.system.fe_shadcn_desc': 'Библиотека компонентов с кастомной темой для тёмного премиум интерфейса',
-    'arch.system.fe_tanstack_desc': 'Управление серверным состоянием с кешированием и оптимистичными обновлениями',
+    'arch.system.fe_nextjs_desc':
+      'Серверные компоненты для загрузки данных, клиентские для интерактивности',
+    'arch.system.fe_shadcn_desc':
+      'Библиотека компонентов с кастомной темой для тёмного премиум интерфейса',
+    'arch.system.fe_tanstack_desc':
+      'Управление серверным состоянием с кешированием и оптимистичными обновлениями',
     'arch.system.fe_zustand_desc': 'Лёгкое клиентское состояние для настроек интерфейса и фильтров',
     'arch.system.be_supabase_desc': 'Управляемый Postgres с real-time подписками и RLS',
-    'arch.system.be_db_functions_desc': 'Триггеры PL/pgSQL для автогенерации SKU и шаблонов названий',
-    'arch.system.be_edge_functions_desc': 'Serverless на Deno для генерации AI-контента и внешних API',
-    'arch.system.be_storage_desc': 'Организованное хранение медиа с CDN-доставкой для изображений товаров',
-    'arch.system.ai_vector_desc': 'Описания товаров и атрибуты хранятся как векторные вложения pgvector для семантического поиска',
-    'arch.system.ai_metadata_desc': 'Каждый товар имеет нормализованную схему JSON-LD для потребления AI',
-    'arch.system.ai_templates_desc': 'Шаблоны промптов AI для генерации описаний, заголовков и маркетингового текста',
-    'arch.system.ai_graph_desc': 'Связи товаров закодированы как граф данных для рекомендательных систем',
-    'arch.system.ai_media_desc': 'Конвейер компьютерного зрения для автоматической тегизации изображений товаров',
-    'arch.system.ai_i18n_desc': 'Структура, готовая к i18n, с русским как основным и английским для экспорта',
+    'arch.system.be_db_functions_desc':
+      'Триггеры PL/pgSQL для автогенерации SKU и шаблонов названий',
+    'arch.system.be_edge_functions_desc':
+      'Serverless на Deno для генерации AI-контента и внешних API',
+    'arch.system.be_storage_desc':
+      'Организованное хранение медиа с CDN-доставкой для изображений товаров',
+    'arch.system.ai_vector_desc':
+      'Описания товаров и атрибуты хранятся как векторные вложения pgvector для семантического поиска',
+    'arch.system.ai_metadata_desc':
+      'Каждый товар имеет нормализованную схему JSON-LD для потребления AI',
+    'arch.system.ai_templates_desc':
+      'Шаблоны промптов AI для генерации описаний, заголовков и маркетингового текста',
+    'arch.system.ai_graph_desc':
+      'Связи товаров закодированы как граф данных для рекомендательных систем',
+    'arch.system.ai_media_desc':
+      'Конвейер компьютерного зрения для автоматической тегизации изображений товаров',
+    'arch.system.ai_i18n_desc':
+      'Структура, готовая к i18n, с русским как основным и английским для экспорта',
 
     // Layout
     'layout.collapse_menu': 'Свернуть меню',
@@ -432,8 +452,10 @@ const translations: Record<Language, Translations> = {
     'header.dev_mode.session': 'Session',
     'settings.work_mode': 'Work Mode',
     'settings.developer_mode': 'Developer Mode',
-    'settings.developer_mode_desc': 'Switch to PostgreSQL for testing against a real DB. Test session data in the browser will be kept separately.',
-    'settings.developer_mode_active': 'Active. In this iteration the toggle is demonstrative — actual PostgreSQL connection will appear in the next update.',
+    'settings.developer_mode_desc':
+      'Switch to PostgreSQL for testing against a real DB. Test session data in the browser will be kept separately.',
+    'settings.developer_mode_active':
+      'Active. In this iteration the toggle is demonstrative — actual PostgreSQL connection will appear in the next update.',
     'settings.data_management': 'Data Management',
     'settings.export': 'Export',
     'settings.import': 'Import',
@@ -729,31 +751,44 @@ const translations: Record<Language, Translations> = {
     'ai.send': 'Send',
     'ai.copy': 'Copy',
     'ai.copied': 'Copied',
-    'ai.disclaimer': 'AI responses are generated for demonstration. Connect to OpenAI/Claude API for production use.',
+    'ai.disclaimer':
+      'AI responses are generated for demonstration. Connect to OpenAI/Claude API for production use.',
     'ai.preset1_label': 'Generate Product Description',
-    'ai.preset1_prompt': 'Write a compelling product description for a 20W PD wall charger with USB-C output, white color, premium aluminum body',
+    'ai.preset1_prompt':
+      'Write a compelling product description for a 20W PD wall charger with USB-C output, white color, premium aluminum body',
     'ai.preset2_label': 'Analyze SKU Pattern',
     'ai.preset2_prompt': 'Analyze the SKU pattern S10002E-2/01 and explain each segment',
     'ai.preset3_label': 'Generate Image Prompt',
-    'ai.preset3_prompt': 'Create a detailed AI image generation prompt for a product photo of a white wireless charging station',
+    'ai.preset3_prompt':
+      'Create a detailed AI image generation prompt for a product photo of a white wireless charging station',
     'ai.preset4_label': 'Translate to Russian',
-    'ai.preset4_prompt': 'Translate this product title to Russian: "Premium Braided USB-C to Lightning Cable, 1m, Black, 20W PD"',
-    'ai.welcome': 'Hi! I\'m your GQbox product assistant.\n\nI can help with:\n• Writing or improving product descriptions\n• Translating names and specs\n• Analyzing SKU patterns\n• Generating AI image prompts\n• Answering assortment questions\n\nPick a preset or type your own request.',
-    'ai.default_response': 'I\'ve analyzed your request about "{query}". This is a placeholder response — in production, this would connect to your AI model (OpenAI, Claude, or local LLM) via Supabase Edge Functions.',
+    'ai.preset4_prompt':
+      'Translate this product title to Russian: "Premium Braided USB-C to Lightning Cable, 1m, Black, 20W PD"',
+    'ai.welcome':
+      "Hi! I'm your GQbox product assistant.\n\nI can help with:\n• Writing or improving product descriptions\n• Translating names and specs\n• Analyzing SKU patterns\n• Generating AI image prompts\n• Answering assortment questions\n\nPick a preset or type your own request.",
+    'ai.default_response':
+      'I\'ve analyzed your request about "{query}". This is a placeholder response — in production, this would connect to your AI model (OpenAI, Claude, or local LLM) via Supabase Edge Functions.',
 
     // Architecture System Descriptions
-    'arch.system.fe_nextjs_desc': 'Server Components for data fetching, Client Components for interactivity',
+    'arch.system.fe_nextjs_desc':
+      'Server Components for data fetching, Client Components for interactivity',
     'arch.system.fe_shadcn_desc': 'Component library with custom theming for dark premium UI',
     'arch.system.fe_tanstack_desc': 'Server state management with caching and optimistic updates',
     'arch.system.fe_zustand_desc': 'Lightweight client state for UI preferences and filters',
     'arch.system.be_supabase_desc': 'Managed Postgres with real-time subscriptions and RLS',
-    'arch.system.be_db_functions_desc': 'PL/pgSQL triggers for SKU auto-generation and name templating',
-    'arch.system.be_edge_functions_desc': 'Deno-based serverless for AI content generation and external APIs',
+    'arch.system.be_db_functions_desc':
+      'PL/pgSQL triggers for SKU auto-generation and name templating',
+    'arch.system.be_edge_functions_desc':
+      'Deno-based serverless for AI content generation and external APIs',
     'arch.system.be_storage_desc': 'Organized media storage with CDN delivery for product images',
-    'arch.system.ai_vector_desc': 'Product descriptions and attributes stored as pgvector embeddings for semantic search',
-    'arch.system.ai_metadata_desc': 'Every product has normalized JSON-LD schema for AI consumption',
-    'arch.system.ai_templates_desc': 'AI prompt templates for generating descriptions, titles, and marketing copy',
-    'arch.system.ai_graph_desc': 'Product relationships encoded as graph data for recommendation engines',
+    'arch.system.ai_vector_desc':
+      'Product descriptions and attributes stored as pgvector embeddings for semantic search',
+    'arch.system.ai_metadata_desc':
+      'Every product has normalized JSON-LD schema for AI consumption',
+    'arch.system.ai_templates_desc':
+      'AI prompt templates for generating descriptions, titles, and marketing copy',
+    'arch.system.ai_graph_desc':
+      'Product relationships encoded as graph data for recommendation engines',
     'arch.system.ai_media_desc': 'Computer vision pipeline for auto-tagging product images',
     'arch.system.ai_i18n_desc': 'i18n-ready structure with Russian as primary, English for export',
 

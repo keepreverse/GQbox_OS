@@ -27,11 +27,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
       const val = localStorage.getItem('gqbox_dev_mode');
       if (val === null) return true;
       return val === 'true';
-    } catch { return true; }
+    } catch {
+      return true;
+    }
   });
 
   useEffect(() => {
-    try { localStorage.setItem('gqbox_dev_mode', String(developerMode)); } catch {}
+    try {
+      localStorage.setItem('gqbox_dev_mode', String(developerMode));
+    } catch {}
   }, [developerMode]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,14 +50,14 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   useClickOutside(
     dropdownRef,
     useCallback(() => setNotificationsOpen(false), []),
-    notificationsOpen,
+    notificationsOpen
   );
 
   useEscapeKey(
     useCallback(() => {
       if (notificationsOpen) setNotificationsOpen(false);
       if (settingsOpen) setSettingsOpen(false);
-    }, [notificationsOpen, settingsOpen]),
+    }, [notificationsOpen, settingsOpen])
   );
 
   const isMobileMedia = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
@@ -68,10 +72,13 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
     }
   }, [isMobileMedia]);
 
-  const handleNavigate = useCallback((view: ViewType) => {
-    onViewChange(view);
-    if (isMobile) setSidebarOpen(false);
-  }, [onViewChange, isMobile]);
+  const handleNavigate = useCallback(
+    (view: ViewType) => {
+      onViewChange(view);
+      if (isMobile) setSidebarOpen(false);
+    },
+    [onViewChange, isMobile]
+  );
 
   const handleCollapse = useCallback(() => {
     if (isMobile) setSidebarOpen(false);
@@ -87,7 +94,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   }, []);
 
   const handleToggleNotifications = useCallback(() => {
-    setNotificationsOpen(prev => !prev);
+    setNotificationsOpen((prev) => !prev);
   }, []);
 
   const handleCloseNotifications = useCallback(() => {
@@ -101,12 +108,15 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const sidebarWidth = isMobile ? 244 : sidebarCollapsed ? 72 : 244;
   const headerHeight = 72;
 
-  const layoutCtx = useMemo(() => ({
-    sidebarWidth: isMobile ? 0 : sidebarWidth,
-    headerHeight,
-    isMobile,
-    sidebarCollapsed,
-  }), [sidebarWidth, isMobile, sidebarCollapsed]);
+  const layoutCtx = useMemo(
+    () => ({
+      sidebarWidth: isMobile ? 0 : sidebarWidth,
+      headerHeight,
+      isMobile,
+      sidebarCollapsed,
+    }),
+    [sidebarWidth, isMobile, sidebarCollapsed]
+  );
 
   return (
     <LayoutProvider value={layoutCtx}>
@@ -148,7 +158,11 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             onOpenSettings={handleOpenSettings}
           />
 
-          <main ref={mainRef} id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden grid-pattern relative">
+          <main
+            ref={mainRef}
+            id="main-content"
+            className="flex-1 overflow-y-auto overflow-x-hidden grid-pattern relative"
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentView}

@@ -50,9 +50,10 @@ export default function Toggle({
         transition-all duration-150 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50
         focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary
-        ${checked
-          ? 'bg-accent/30 border-accent/40 justify-end'
-          : 'bg-bg-tertiary border-border-subtle justify-start hover:border-border-strong'
+        ${
+          checked
+            ? 'bg-accent/30 border-accent/40 justify-end'
+            : 'bg-bg-tertiary border-border-subtle justify-start hover:border-border-strong'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
@@ -65,10 +66,7 @@ export default function Toggle({
       <span
         className={`
           block rounded-full transition-all duration-150 ease-out
-          ${checked
-            ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.4)]'
-            : 'bg-text-tertiary'
-          }
+          ${checked ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.4)]' : 'bg-text-tertiary'}
         `}
         style={{ width: KNOB_SIZE, height: KNOB_SIZE }}
       />

@@ -10,15 +10,17 @@ export const productsApi = {
 
   search: (q: string) => request<RawProduct[]>(`/products/search?q=${encodeURIComponent(q)}`),
 
-  create: (raw: NewProduct) => request<RawProduct>('/products', {
-    method: 'POST',
-    body: JSON.stringify(raw),
-  }),
+  create: (raw: NewProduct) =>
+    request<RawProduct>('/products', {
+      method: 'POST',
+      body: JSON.stringify(raw),
+    }),
 
-  update: (id: string, data: Partial<RawProduct>) => request<RawProduct>(`/products/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
+  update: (id: string, data: Partial<RawProduct>) =>
+    request<RawProduct>(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 
   remove: (id: string) => request<void>(`/products/${id}`, { method: 'DELETE' }),
 };

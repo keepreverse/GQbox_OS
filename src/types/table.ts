@@ -29,7 +29,7 @@ export function validateColumnWidths<T>(columns: Column<T>[]): number {
   if (process.env.NODE_ENV !== 'production' && Math.abs(total - 100) > 0.01) {
     console.warn(
       `[ResponsiveTable] Column widths sum to ${total}, expected 100. Columns:`,
-      columns.map(c => `${c.key}=${c.width}`).join(', ')
+      columns.map((c) => `${c.key}=${c.width}`).join(', ')
     );
   }
   return total;

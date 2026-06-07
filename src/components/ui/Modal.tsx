@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import {
-  MODAL_BACKDROP_DURATION_S,
-  MODAL_SHEET_DURATION_S,
-  LAYOUT_EASE,
-} from '@constants/timing';
+import { MODAL_BACKDROP_DURATION_S, MODAL_SHEET_DURATION_S, LAYOUT_EASE } from '@constants/timing';
 
 type ModalVariant = 'auto' | 'centered' | 'bottom-sheet';
 type ModalWidth = 'sm' | 'md' | 'lg' | 'xl';
@@ -79,7 +75,9 @@ export default function Modal({
     variant === 'auto' ? (isNarrow ? 'bottom-sheet' : 'centered') : variant;
 
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open || !closeOnEsc) return;
@@ -126,9 +124,7 @@ export default function Modal({
                 : { opacity: 0, y: '100%' }
             }
             animate={
-              resolvedVariant === 'centered'
-                ? { opacity: 1, scale: 1 }
-                : { opacity: 1, y: 0 }
+              resolvedVariant === 'centered' ? { opacity: 1, scale: 1 } : { opacity: 1, y: 0 }
             }
             exit={
               resolvedVariant === 'centered'
@@ -136,7 +132,7 @@ export default function Modal({
                 : { opacity: 0, y: '100%' }
             }
             transition={{ duration: SHEET_DUR, ease: SHEET_EASE }}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             className={
               resolvedVariant === 'centered'
                 ? `relative glass-strong rounded-xl w-full mx-4 border border-border-strong shadow-2xl flex flex-col overflow-hidden ${WIDTH_MAP[width]} ${className}`
@@ -165,7 +161,10 @@ export default function Modal({
                 )}
               </div>
             )}
-            <div data-modal-content className={`flex-1 overflow-y-auto overscroll-contain ${contentClassName || 'p-4 sm:p-5'}`}>
+            <div
+              data-modal-content
+              className={`flex-1 overflow-y-auto overscroll-contain ${contentClassName || 'p-4 sm:p-5'}`}
+            >
               {children}
             </div>
             {footer && (

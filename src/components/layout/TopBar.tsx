@@ -30,13 +30,34 @@ export function TopBar({
   const { language, setLanguage, t } = useLanguage();
 
   const mockNotifications = [
-    { id: 1, title: t('header.notifications.n1_title'), desc: t('header.notifications.n1_desc'), time: t('header.notifications.n1_time'), unread: true },
-    { id: 2, title: t('header.notifications.n2_title'), desc: t('header.notifications.n2_desc'), time: t('header.notifications.n2_time'), unread: true },
-    { id: 3, title: t('header.notifications.n3_title'), desc: t('header.notifications.n3_desc'), time: t('header.notifications.n3_time'), unread: false },
+    {
+      id: 1,
+      title: t('header.notifications.n1_title'),
+      desc: t('header.notifications.n1_desc'),
+      time: t('header.notifications.n1_time'),
+      unread: true,
+    },
+    {
+      id: 2,
+      title: t('header.notifications.n2_title'),
+      desc: t('header.notifications.n2_desc'),
+      time: t('header.notifications.n2_time'),
+      unread: true,
+    },
+    {
+      id: 3,
+      title: t('header.notifications.n3_title'),
+      desc: t('header.notifications.n3_desc'),
+      time: t('header.notifications.n3_time'),
+      unread: false,
+    },
   ];
 
   return (
-    <header className="border-b border-border-subtle flex items-center justify-between px-4 bg-bg-secondary/50 backdrop-blur-sm z-30" style={{ height: 72 }}>
+    <header
+      className="border-b border-border-subtle flex items-center justify-between px-4 bg-bg-secondary/50 backdrop-blur-sm z-30"
+      style={{ height: 72 }}
+    >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {isMobile && !sidebarOpen && (
           <button
@@ -85,7 +106,9 @@ export function TopBar({
           <button
             onClick={onToggleNotifications}
             className={`h-9 w-9 p-0 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
-              notificationsOpen ? 'bg-bg-hover text-text-primary' : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
+              notificationsOpen
+                ? 'bg-bg-hover text-text-primary'
+                : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
             }`}
             title={t('header.notifications')}
             aria-expanded={notificationsOpen}
@@ -102,15 +125,24 @@ export function TopBar({
             data-origin="top-right"
           >
             <div className="p-3 border-b border-border-subtle flex items-center justify-between bg-bg-secondary">
-              <span className="text-xs font-medium text-text-primary tracking-tight">{t('header.notifications')}</span>
-              <span className="text-[10px] text-accent font-medium cursor-pointer hover:underline">{t('header.notifications.mark_read')}</span>
+              <span className="text-xs font-medium text-text-primary tracking-tight">
+                {t('header.notifications')}
+              </span>
+              <span className="text-[10px] text-accent font-medium cursor-pointer hover:underline">
+                {t('header.notifications.mark_read')}
+              </span>
             </div>
             <div className="max-h-80 overflow-y-auto divide-y divide-border-subtle">
               {mockNotifications.map((n) => (
-                <div key={n.id} className={`p-3 hover:bg-bg-hover transition-colors cursor-pointer ${n.unread ? 'bg-accent/5' : ''}`}>
+                <div
+                  key={n.id}
+                  className={`p-3 hover:bg-bg-hover transition-colors cursor-pointer ${n.unread ? 'bg-accent/5' : ''}`}
+                >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-medium text-text-primary">{n.title}</p>
-                    {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1" />}
+                    {n.unread && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1" />
+                    )}
                   </div>
                   <p className="text-[11px] text-text-secondary mt-0.5">{n.desc}</p>
                   <span className="text-[9px] text-text-tertiary mt-1 block">{n.time}</span>

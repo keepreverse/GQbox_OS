@@ -1,9 +1,25 @@
 import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
-  Download, Eye, X, Cable, Zap, Wifi, Car, Headphones,
-  ArrowLeftRight, Pin, GripVertical, Smartphone, Package, Archive, Monitor,
-  ChevronLeft, ChevronRight, SlidersHorizontal, Check
+  Download,
+  Eye,
+  X,
+  Cable,
+  Zap,
+  Wifi,
+  Car,
+  Headphones,
+  ArrowLeftRight,
+  Pin,
+  GripVertical,
+  Smartphone,
+  Package,
+  Archive,
+  Monitor,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  Check,
 } from 'lucide-react';
 import { products, subscribeToProducts, getProductsVersion } from '@data/products';
 import { categories, suppliers, colors } from '@data/dictionaries';
@@ -15,9 +31,18 @@ import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 
 const categoryIcons: Record<string, React.ElementType> = {
-  cable: Cable, szu: Zap, bzu: Wifi, azu: Car, headphones: Headphones,
-  adapter: ArrowLeftRight, pin: Pin, holder: GripVertical, case: Smartphone,
-  kit: Package, packaging: Archive, blogo: Monitor,
+  cable: Cable,
+  szu: Zap,
+  bzu: Wifi,
+  azu: Car,
+  headphones: Headphones,
+  adapter: ArrowLeftRight,
+  pin: Pin,
+  holder: GripVertical,
+  case: Smartphone,
+  kit: Package,
+  packaging: Archive,
+  blogo: Monitor,
 };
 
 interface ProductMatrixProps {
@@ -25,7 +50,10 @@ interface ProductMatrixProps {
   onInitialFiltersApplied?: () => void;
 }
 
-export default function ProductMatrix({ initialFilters, onInitialFiltersApplied }: ProductMatrixProps = {}) {
+export default function ProductMatrix({
+  initialFilters,
+  onInitialFiltersApplied,
+}: ProductMatrixProps = {}) {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -51,14 +79,15 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       setSelectedLength(initialFilters.length ?? []);
       setShowFilters(true);
       setCurrentPage(1);
-      setTableKey(k => k + 1);
+      setTableKey((k) => k + 1);
       onInitialFiltersApplied?.();
     }
   }, [initialFilters, onInitialFiltersApplied]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      const matchesSearch = !searchQuery ||
+    return products.filter((p) => {
+      const matchesSearch =
+        !searchQuery ||
         p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.model?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
@@ -66,15 +95,35 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
         (p.color?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (p.color?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(p.category.code);
-      const matchesSupplier = selectedSuppliers.length === 0 || selectedSuppliers.includes(p.supplier?.code || '-');
-      const matchesColor = selectedColors.length === 0 || (p.color && selectedColors.includes(p.color.code));
-      const matchesPower = selectedPower.length === 0 || (p.powerW != null && selectedPower.includes(p.powerW));
-      const matchesLength = selectedLength.length === 0 || (p.lengthM != null && selectedLength.includes(p.lengthM));
+      const matchesCategory =
+        selectedCategories.length === 0 || selectedCategories.includes(p.category.code);
+      const matchesSupplier =
+        selectedSuppliers.length === 0 || selectedSuppliers.includes(p.supplier?.code || '-');
+      const matchesColor =
+        selectedColors.length === 0 || (p.color && selectedColors.includes(p.color.code));
+      const matchesPower =
+        selectedPower.length === 0 || (p.powerW != null && selectedPower.includes(p.powerW));
+      const matchesLength =
+        selectedLength.length === 0 || (p.lengthM != null && selectedLength.includes(p.lengthM));
 
-      return matchesSearch && matchesCategory && matchesSupplier && matchesColor && matchesPower && matchesLength;
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesSupplier &&
+        matchesColor &&
+        matchesPower &&
+        matchesLength
+      );
     });
-  }, [productsVersion, searchQuery, selectedCategories, selectedSuppliers, selectedColors, selectedPower, selectedLength]);
+  }, [
+    productsVersion,
+    searchQuery,
+    selectedCategories,
+    selectedSuppliers,
+    selectedColors,
+    selectedPower,
+    selectedLength,
+  ]);
 
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -84,67 +133,81 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
 
   const toggleCategory = (code: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    setSelectedCategories((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
-    setTableKey(k => k + 1);
+    setTableKey((k) => k + 1);
   };
 
   const toggleSupplier = (code: string) => {
-    setSelectedSuppliers(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    setSelectedSuppliers((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
-    setTableKey(k => k + 1);
+    setTableKey((k) => k + 1);
   };
 
   const toggleColor = (code: string) => {
-    setSelectedColors(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    setSelectedColors((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
-    setTableKey(k => k + 1);
+    setTableKey((k) => k + 1);
   };
 
   const togglePower = (val: number) => {
-    setSelectedPower(prev =>
-      prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]
+    setSelectedPower((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
     setCurrentPage(1);
-    setTableKey(k => k + 1);
+    setTableKey((k) => k + 1);
   };
 
   const toggleLength = (val: number) => {
-    setSelectedLength(prev =>
-      prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]
+    setSelectedLength((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
     setCurrentPage(1);
-    setTableKey(k => k + 1);
+    setTableKey((k) => k + 1);
   };
 
   const uniqueColors = useMemo(() => {
-    const codes = new Set(products.map(p => p.color?.code).filter(Boolean));
-    return colors.filter(c => codes.has(c.code));
+    const codes = new Set(products.map((p) => p.color?.code).filter(Boolean));
+    return colors.filter((c) => codes.has(c.code));
   }, [productsVersion]);
 
   const uniquePowerValues = useMemo(() => {
-    const vals = new Set(products.map(p => p.powerW).filter((v): v is number => v != null));
+    const vals = new Set(products.map((p) => p.powerW).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
   }, [productsVersion]);
 
   const uniqueLengthValues = useMemo(() => {
-    const vals = new Set(products.map(p => p.lengthM).filter((v): v is number => v != null));
+    const vals = new Set(products.map((p) => p.lengthM).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
   }, [productsVersion]);
 
-  const activeFiltersCount = selectedCategories.length + selectedSuppliers.length + selectedColors.length + selectedPower.length + selectedLength.length;
+  const activeFiltersCount =
+    selectedCategories.length +
+    selectedSuppliers.length +
+    selectedColors.length +
+    selectedPower.length +
+    selectedLength.length;
 
   const handleExport = () => {
     setExporting(true);
     setTimeout(() => {
-      const headers = ['SKU', 'Name', 'Category', 'Model', 'Power_W', 'Length_M', 'Color', 'Supplier'];
-      const rows = filteredProducts.map(p => [
+      const headers = [
+        'SKU',
+        'Name',
+        'Category',
+        'Model',
+        'Power_W',
+        'Length_M',
+        'Color',
+        'Supplier',
+      ];
+      const rows = filteredProducts.map((p) => [
         p.sku,
         `"${p.productName.replace(/"/g, '""')}"`,
         displaySource(p.category, language),
@@ -152,16 +215,21 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
         p.powerW || '',
         p.lengthM || '',
         p.color ? displaySource(p.color, language) : '',
-        p.supplier?.name || ''
+        p.supplier?.name || '',
       ]);
 
-      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+      const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
       const url = URL.createObjectURL(blob);
 
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `gqbox_matrix_export_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute(
+        'download',
+        `gqbox_matrix_export_${new Date().toISOString().slice(0, 10)}.csv`
+      );
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -178,7 +246,15 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       if (currentPage <= 4) {
         pages.push(1, 2, 3, 4, 5, '...', totalPages);
       } else if (currentPage >= totalPages - 3) {
-        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(
+          1,
+          '...',
+          totalPages - 4,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages
+        );
       } else {
         pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
       }
@@ -189,12 +265,17 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
   const supplierBadge = (code?: string) => {
     const c = code || '-';
     return (
-      <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
-        c === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
-        c === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
-        c === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
-        'bg-bg-elevated text-text-muted'
-      }`}>
+      <span
+        className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
+          c === 'A'
+            ? 'bg-supplier-a-bg text-supplier-a'
+            : c === 'W'
+              ? 'bg-supplier-w-bg text-supplier-w'
+              : c === 'AW'
+                ? 'bg-supplier-aw-bg text-supplier-aw'
+                : 'bg-bg-elevated text-text-muted'
+        }`}
+      >
         {c === '-' ? '—' : c}
       </span>
     );
@@ -214,11 +295,13 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       header: t('matrix.col.sku'),
       width: 12,
       nowrap: true,
-      cell: p => (
+      cell: (p) => (
         <div className="flex items-center min-w-0" title={p.sku}>
           <code className="text-[11px] sm:text-xs text-accent truncate">{p.sku}</code>
           {p.isKit && (
-            <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning whitespace-nowrap flex-shrink-0">KIT</span>
+            <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning whitespace-nowrap flex-shrink-0">
+              KIT
+            </span>
           )}
         </div>
       ),
@@ -227,11 +310,14 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       key: 'product',
       header: t('matrix.col.product'),
       width: 24,
-      cell: p => {
+      cell: (p) => {
         const Icon = categoryIcons[p.category.code] || Archive;
         return (
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p)}>
-            <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(p.category.code) }} />
+            <Icon
+              className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0"
+              style={{ color: getCategoryColorVar(p.category.code) }}
+            />
             <span className="truncate text-xs sm:text-sm">{displayProductName(p)}</span>
           </div>
         );
@@ -241,8 +327,12 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       key: 'cat',
       header: t('matrix.col.cat'),
       width: 10,
-      cell: p => (
-        <span className="text-[11px] sm:text-xs truncate block" style={{ color: getCategoryColorVar(p.category.code) }} title={displaySource(p.category, language)}>
+      cell: (p) => (
+        <span
+          className="text-[11px] sm:text-xs truncate block"
+          style={{ color: getCategoryColorVar(p.category.code) }}
+          title={displaySource(p.category, language)}
+        >
           {displaySource(p.category, language)}
         </span>
       ),
@@ -251,49 +341,79 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       key: 'model',
       header: t('matrix.col.model'),
       width: 14,
-      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block" title={displaySource(p.model, language)}>{displaySource(p.model, language)}</span>,
+      cell: (p) => (
+        <span
+          className="text-[11px] sm:text-xs text-text-secondary truncate block"
+          title={displaySource(p.model, language)}
+        >
+          {displaySource(p.model, language)}
+        </span>
+      ),
     },
     {
       key: 'power',
       header: t('matrix.col.power'),
       width: 8,
       nowrap: true,
-      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.powerW ? `${p.powerW}W` : '—'}</span>,
+      cell: (p) => (
+        <span className="text-[11px] sm:text-xs text-text-secondary truncate block">
+          {p.powerW ? `${p.powerW}W` : '—'}
+        </span>
+      ),
     },
     {
       key: 'length',
       header: t('matrix.col.length'),
       width: 8,
       nowrap: true,
-      cell: p => <span className="text-[11px] sm:text-xs text-text-secondary truncate block">{p.lengthM ? `${p.lengthM}м` : '—'}</span>,
+      cell: (p) => (
+        <span className="text-[11px] sm:text-xs text-text-secondary truncate block">
+          {p.lengthM ? `${p.lengthM}м` : '—'}
+        </span>
+      ),
     },
     {
       key: 'color',
       header: t('matrix.col.color'),
       width: 12,
-      cell: p => p.color ? (
-        <div className="flex items-center gap-1 sm:gap-1.5 min-w-0" title={displaySource(p.color, language)}>
-          <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0" style={{
-            background: p.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : p.color.hexValue,
-            border: p.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
-          }} />
-          <span className="truncate text-[11px] sm:text-xs text-text-secondary">{displaySource(p.color, language)}</span>
-        </div>
-      ) : null,
+      cell: (p) =>
+        p.color ? (
+          <div
+            className="flex items-center gap-1 sm:gap-1.5 min-w-0"
+            title={displaySource(p.color, language)}
+          >
+            <div
+              className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0"
+              style={{
+                background:
+                  p.color.hexValue === 'gradient'
+                    ? 'conic-gradient(in hsl longer hue, red, red)'
+                    : p.color.hexValue,
+                border:
+                  p.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+              }}
+            />
+            <span className="truncate text-[11px] sm:text-xs text-text-secondary">
+              {displaySource(p.color, language)}
+            </span>
+          </div>
+        ) : null,
     },
     {
       key: 'sup',
       header: t('matrix.col.sup'),
       width: 8,
       nowrap: true,
-      cell: p => supplierBadge(p.supplier?.code),
+      cell: (p) => supplierBadge(p.supplier?.code),
     },
     {
       key: 'view',
       header: '',
       width: 4,
       align: 'right',
-      cell: () => <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />,
+      cell: () => (
+        <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />
+      ),
     },
   ];
 
@@ -303,14 +423,20 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
       <div className="flex items-start sm:items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('matrix.title')}</h2>
-          <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{filteredProducts.length} {t('matrix.subtitle')}</p>
+          <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
+            {filteredProducts.length} {t('matrix.subtitle')}
+          </p>
         </div>
         <button
           onClick={handleExport}
           disabled={exporting || filteredProducts.length === 0}
           className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
-          {exporting ? <Check className="w-3.5 h-3.5 text-success" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? (
+            <Check className="w-3.5 h-3.5 text-success" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
+          )}
           {exporting ? t('matrix.exporting') : t('matrix.export')}
         </button>
       </div>
@@ -322,7 +448,11 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             type="text"
             placeholder={t('matrix.search')}
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); setTableKey(k => k + 1); }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+              setTableKey((k) => k + 1);
+            }}
             className="w-full px-4 text-text-primary transition-all duration-150 h-11 sm:h-10"
           />
         </div>
@@ -334,7 +464,9 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
               : 'bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary'
           }`}
         >
-          <SlidersHorizontal className={`w-3.5 h-3.5 transition-transform duration-150 ${showFilters ? 'rotate-180' : ''}`} />
+          <SlidersHorizontal
+            className={`w-3.5 h-3.5 transition-transform duration-150 ${showFilters ? 'rotate-180' : ''}`}
+          />
           {t('matrix.filters')}
           {activeFiltersCount > 0 && (
             <span className="ml-1 w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center transition-all duration-150 scale-in">
@@ -369,7 +501,7 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.cat')}</p>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <button
                     key={cat.code}
                     onClick={() => toggleCategory(cat.code)}
@@ -378,7 +510,11 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
                         ? 'text-white border border-transparent'
                         : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
                     }`}
-                    style={selectedCategories.includes(cat.code) ? { background: getCategoryColorVar(cat.code) } : {}}
+                    style={
+                      selectedCategories.includes(cat.code)
+                        ? { background: getCategoryColorVar(cat.code) }
+                        : {}
+                    }
                   >
                     {displaySource(cat, language)}
                   </button>
@@ -389,7 +525,7 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.sup')}</p>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {suppliers.map(sup => (
+                {suppliers.map((sup) => (
                   <button
                     key={sup.code}
                     onClick={() => toggleSupplier(sup.code)}
@@ -408,7 +544,7 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             <div>
               <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.color')}</p>
               <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                {uniqueColors.map(c => (
+                {uniqueColors.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => toggleColor(c.code)}
@@ -431,9 +567,11 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.power')}</p>
+                <p className="text-xs text-text-tertiary font-medium mb-2">
+                  {t('matrix.col.power')}
+                </p>
                 <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                  {uniquePowerValues.map(val => (
+                  {uniquePowerValues.map((val) => (
                     <button
                       key={val}
                       onClick={() => togglePower(val)}
@@ -449,9 +587,11 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
                 </div>
               </div>
               <div>
-                <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.length')}</p>
+                <p className="text-xs text-text-tertiary font-medium mb-2">
+                  {t('matrix.col.length')}
+                </p>
                 <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                  {uniqueLengthValues.map(val => (
+                  {uniqueLengthValues.map((val) => (
                     <button
                       key={val}
                       onClick={() => toggleLength(val)}
@@ -479,12 +619,12 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             key={tableKey}
             columns={productColumns}
             rows={paginatedProducts}
-            rowKey={p => p.id}
+            rowKey={(p) => p.id}
             minWidth={720}
             emptyMessage={t('matrix.empty')}
             bodyClassName="table-fade-in"
             rowClassName={() => 'table-row-hover cursor-pointer'}
-            onRowClick={p => setSelectedProduct(p)}
+            onRowClick={(p) => setSelectedProduct(p)}
           />
         </div>
 
@@ -501,8 +641,14 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
               >
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: getCategoryColorVar(product.category.code) }} />
-                    <span className="text-[11px] font-medium truncate" style={{ color: getCategoryColorVar(product.category.code) }}>
+                    <Icon
+                      className="w-3.5 h-3.5 flex-shrink-0"
+                      style={{ color: getCategoryColorVar(product.category.code) }}
+                    />
+                    <span
+                      className="text-[11px] font-medium truncate"
+                      style={{ color: getCategoryColorVar(product.category.code) }}
+                    >
                       {displaySource(product.category, language)}
                     </span>
                   </div>
@@ -511,7 +657,9 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <code className="text-[11px] text-accent truncate">{product.sku}</code>
                   {product.isKit && (
-                    <span className="text-[9px] px-1 py-0.5 rounded bg-warning/10 text-warning flex-shrink-0">KIT</span>
+                    <span className="text-[9px] px-1 py-0.5 rounded bg-warning/10 text-warning flex-shrink-0">
+                      KIT
+                    </span>
                   )}
                 </div>
                 <p className="text-sm font-medium text-text-primary line-clamp-2 mb-2">
@@ -536,11 +684,19 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
                       <span
                         className="inline-block w-2.5 h-2.5 rounded-full border border-border-subtle shrink-0"
                         style={{
-                          background: product.color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : product.color.hexValue,
-                          border: product.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+                          background:
+                            product.color.hexValue === 'gradient'
+                              ? 'conic-gradient(in hsl longer hue, red, red)'
+                              : product.color.hexValue,
+                          border:
+                            product.color.hexValue === 'gradient'
+                              ? 'none'
+                              : '1px solid var(--color-border-subtle)',
                         }}
                       />
-                      <span className="truncate max-w-[80px]">{displaySource(product.color, language)}</span>
+                      <span className="truncate max-w-[80px]">
+                        {displaySource(product.color, language)}
+                      </span>
                     </span>
                   )}
                 </div>
@@ -548,9 +704,7 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
             );
           })}
           {paginatedProducts.length === 0 && (
-            <div className="py-8 text-center text-xs text-text-tertiary">
-              {t('matrix.empty')}
-            </div>
+            <div className="py-8 text-center text-xs text-text-tertiary">{t('matrix.empty')}</div>
           )}
         </div>
 
@@ -558,11 +712,13 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
         {totalPages > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 border-t border-border-subtle">
             <p className="text-[10px] sm:text-xs text-text-tertiary text-center">
-              {t('matrix.showing')} {(currentPage - 1) * pageSize + 1} {t('matrix.to')} {Math.min(currentPage * pageSize, filteredProducts.length)} {t('matrix.of')} {filteredProducts.length}
+              {t('matrix.showing')} {(currentPage - 1) * pageSize + 1} {t('matrix.to')}{' '}
+              {Math.min(currentPage * pageSize, filteredProducts.length)} {t('matrix.of')}{' '}
+              {filteredProducts.length}
             </p>
             <div className="flex items-center gap-0.5 sm:gap-1 flex-nowrap justify-center overflow-x-auto scrollbar-hide">
               <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Previous page"
@@ -573,7 +729,10 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
               {getPageNumbers().map((page, index) => {
                 if (page === '...') {
                   return (
-                    <span key={`ellipsis-${index}`} className="w-9 text-center text-xs text-text-tertiary select-none">
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="w-9 text-center text-xs text-text-tertiary select-none"
+                    >
                       ...
                     </span>
                   );
@@ -595,7 +754,7 @@ export default function ProductMatrix({ initialFilters, onInitialFiltersApplied 
               })}
 
               <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="h-9 w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed text-text-secondary cursor-pointer flex items-center justify-center"
                 aria-label="Next page"

@@ -29,7 +29,9 @@ export function Toast({ data, onClose }: { data: ToastData | null; onClose: () =
           className={`fixed top-20 right-4 z-[60] flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs shadow-lg cursor-pointer max-w-[min(90vw,400px)] ${bgMap[data.type]}`}
         >
           <Icon className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate" title={data.message}>{data.message}</span>
+          <span className="truncate" title={data.message}>
+            {data.message}
+          </span>
         </motion.div>
       )}
     </AnimatePresence>

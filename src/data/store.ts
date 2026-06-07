@@ -30,15 +30,15 @@ export function removeFromStore(key: StoreKey): void {
 
 export function clearAllStore(): void {
   (Object.keys(localStorage) as string[])
-    .filter(k => k.startsWith(STORAGE_PREFIX))
-    .forEach(k => localStorage.removeItem(k));
+    .filter((k) => k.startsWith(STORAGE_PREFIX))
+    .forEach((k) => localStorage.removeItem(k));
 }
 
 export function exportAllData(): string {
   const data: Record<string, any> = {};
   (Object.keys(localStorage) as string[])
-    .filter(k => k.startsWith(STORAGE_PREFIX))
-    .forEach(k => {
+    .filter((k) => k.startsWith(STORAGE_PREFIX))
+    .forEach((k) => {
       try {
         data[k] = JSON.parse(localStorage.getItem(k) || '{}');
       } catch {

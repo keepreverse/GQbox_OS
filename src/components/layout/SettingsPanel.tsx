@@ -44,20 +44,20 @@ export default function SettingsPanel({
     if (pendingDevMode && wasDevModeOff) {
       console.info(
         '%c[Developer Mode] Активирован (демо)\n' +
-        'Что происходит: переключатель зафиксировал, что вы вошли в режим разработчика.\n' +
-        'Что будет дальше (итерация 2): при включении режима данные текущей тестовой сессии\n' +
-        '  остаются в localStorage (gqbox_test_*), а приложение начнёт работать с PostgreSQL.\n' +
-        '  При выключении — возврат к тестовой сессии без потерь.\n' +
-        'Зачем: позволяет параллельно тестировать визуальные фичи в браузере и реальную\n' +
-        '  работу с БД в dev-сессии, не перемешивая данные.',
+          'Что происходит: переключатель зафиксировал, что вы вошли в режим разработчика.\n' +
+          'Что будет дальше (итерация 2): при включении режима данные текущей тестовой сессии\n' +
+          '  остаются в localStorage (gqbox_test_*), а приложение начнёт работать с PostgreSQL.\n' +
+          '  При выключении — возврат к тестовой сессии без потерь.\n' +
+          'Зачем: позволяет параллельно тестировать визуальные фичи в браузере и реальную\n' +
+          '  работу с БД в dev-сессии, не перемешивая данные.',
         'color: #7dd3fc; font-weight: 500;'
       );
       window.alert(
         'Вы вошли в режим разработчика (демо).\n\n' +
-        'Что происходит:\n' +
-        '— Переключатель зафиксирован. Реальное подключение к PostgreSQL появится в следующей итерации.\n\n' +
-        'Зачем нужен этот режим:\n' +
-        '— Тестовая сессия (localStorage) и dev-сессия (PostgreSQL) хранятся отдельно. Можно тестировать визуальные фичи в браузере и реальную работу с БД параллельно, не теряя данные.'
+          'Что происходит:\n' +
+          '— Переключатель зафиксирован. Реальное подключение к PostgreSQL появится в следующей итерации.\n\n' +
+          'Зачем нужен этот режим:\n' +
+          '— Тестовая сессия (localStorage) и dev-сессия (PostgreSQL) хранятся отдельно. Можно тестировать визуальные фичи в браузере и реальную работу с БД параллельно, не теряя данные.'
       );
     }
     onOpenChange(false);
@@ -113,7 +113,9 @@ export default function SettingsPanel({
         </div>
 
         <div className="space-y-3">
-          <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.system_params')}</h4>
+          <h4 className="text-xs font-medium text-text-tertiary">
+            {t('header.settings.system_params')}
+          </h4>
 
           <SettingsRow
             label={t('header.settings.interface_lang')}
@@ -189,7 +191,9 @@ export default function SettingsPanel({
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-xs font-medium text-text-tertiary">{t('header.settings.integrations')}</h4>
+          <h4 className="text-xs font-medium text-text-tertiary">
+            {t('header.settings.integrations')}
+          </h4>
           <div className="flex items-center justify-between p-2 rounded bg-bg-tertiary text-xs">
             <span className="flex items-center gap-1.5 text-text-secondary">
               <Key className="w-3.5 h-3.5 text-warning" /> Supabase API

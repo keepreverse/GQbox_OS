@@ -40,7 +40,10 @@ export default function DevModeBadge({ active }: DevModeBadgeProps) {
         DEV
       </span>
 
-      <span className="relative hidden lg:inline text-warning/30 text-[10px] leading-none" aria-hidden>
+      <span
+        className="relative hidden lg:inline text-warning/30 text-[10px] leading-none"
+        aria-hidden
+      >
         ·
       </span>
 

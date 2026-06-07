@@ -15,7 +15,17 @@ function getInitialView(): ViewType {
   try {
     const saved = localStorage.getItem('gqbox_view');
     if (saved) {
-      const validViews: ViewType[] = ['dashboard', 'architecture', 'matrix', 'sku-constructor', 'dictionary', 'product-detail', 'kit-builder', 'media', 'ai-hub'];
+      const validViews: ViewType[] = [
+        'dashboard',
+        'architecture',
+        'matrix',
+        'sku-constructor',
+        'dictionary',
+        'product-detail',
+        'kit-builder',
+        'media',
+        'ai-hub',
+      ];
       if (validViews.includes(saved as ViewType)) return saved as ViewType;
     }
   } catch {}
@@ -29,7 +39,9 @@ export default function App() {
   viewRef.current = currentView;
 
   useEffect(() => {
-    try { localStorage.setItem('gqbox_view', viewRef.current); } catch {}
+    try {
+      localStorage.setItem('gqbox_view', viewRef.current);
+    } catch {}
   }, [currentView]);
 
   const navigateToMatrix = useCallback((filters: MatrixFilters) => {
@@ -48,7 +60,12 @@ export default function App() {
       case 'architecture':
         return <Architecture />;
       case 'matrix':
-        return <ProductMatrix initialFilters={pendingMatrixFilters} onInitialFiltersApplied={handleInitialFiltersApplied} />;
+        return (
+          <ProductMatrix
+            initialFilters={pendingMatrixFilters}
+            onInitialFiltersApplied={handleInitialFiltersApplied}
+          />
+        );
       case 'sku-constructor':
         return <SKUConstructor />;
       case 'dictionary':

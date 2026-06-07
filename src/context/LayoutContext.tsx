@@ -23,9 +23,5 @@ interface LayoutProviderProps {
 }
 
 export function LayoutProvider({ value, children }: LayoutProviderProps) {
-  return (
-    <LayoutContext.Provider value={value}>
-      {children}
-    </LayoutContext.Provider>
-  );
+  return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 }

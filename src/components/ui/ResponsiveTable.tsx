@@ -58,28 +58,29 @@ export function ResponsiveTable<T>({
   const table = (
     <table className="w-full text-sm table-fixed">
       <colgroup>
-        {columns.map(c => {
+        {columns.map((c) => {
           const hide = c.hideBelow ? HIDE_BELOW_COL_CLASS[c.hideBelow] : '';
           return <col key={c.key} style={{ width: `${c.width}%` }} className={hide} />;
         })}
       </colgroup>
       <thead>
         <tr className="border-b border-border-subtle">
-          {columns.map(c => (
+          {columns.map((c) => (
             <HeaderCell key={c.key} col={c} />
           ))}
         </tr>
       </thead>
       <tbody className={bodyClassName}>
         {rows.map((row, i) => {
-          const extra = typeof rowClassName === 'function' ? rowClassName(row, i) : rowClassName ?? '';
+          const extra =
+            typeof rowClassName === 'function' ? rowClassName(row, i) : (rowClassName ?? '');
           return (
             <tr
               key={rowKey(row)}
               className={`border-b border-border-subtle/50 ${extra}`}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
-              {columns.map(c => (
+              {columns.map((c) => (
                 <BodyCell key={c.key} col={c} row={row} index={i} />
               ))}
             </tr>
@@ -87,7 +88,10 @@ export function ResponsiveTable<T>({
         })}
         {rows.length === 0 && emptyMessage !== undefined && (
           <tr>
-            <td colSpan={columns.length} className="px-3 sm:px-4 py-10 text-center text-xs text-text-tertiary">
+            <td
+              colSpan={columns.length}
+              className="px-3 sm:px-4 py-10 text-center text-xs text-text-tertiary"
+            >
               {emptyMessage}
             </td>
           </tr>

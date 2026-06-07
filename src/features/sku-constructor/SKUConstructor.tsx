@@ -1,12 +1,28 @@
 import { Fragment, useState, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronRight, ChevronLeft, Check, Hash, Type,
-  Copy, Sparkles, RotateCcw, AlertCircle, Table2,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Hash,
+  Type,
+  Copy,
+  Sparkles,
+  RotateCcw,
+  AlertCircle,
+  Table2,
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '@data/dictionaries';
+import {
+  categories,
+  models,
+  colors,
+  suppliers,
+  connectors,
+  chargingProtocols,
+  materials,
+} from '@data/dictionaries';
 import { getModelsByCategory } from '@data/dictionaries';
 import { products, addProduct } from '@data/products';
 import { subscribeToProducts, getProductsVersion } from '@data/products';
@@ -35,11 +51,23 @@ interface SKUFormData {
 }
 
 const initialForm: SKUFormData = {
-  categoryId: '', modelId: '', baseNumber: '', variantCode: '',
-  colorId: '', lengthM: '', lengthVariant: '', supplierId: '',
-  isKit: false, powerW: '', currentA: '', voltageV: '',
-  connectorFemaleId: '', connectorMaleId: '', protocolId: '',
-  bodyMaterialId: '', wireMaterialId: '',
+  categoryId: '',
+  modelId: '',
+  baseNumber: '',
+  variantCode: '',
+  colorId: '',
+  lengthM: '',
+  lengthVariant: '',
+  supplierId: '',
+  isKit: false,
+  powerW: '',
+  currentA: '',
+  voltageV: '',
+  connectorFemaleId: '',
+  connectorMaleId: '',
+  protocolId: '',
+  bodyMaterialId: '',
+  wireMaterialId: '',
 };
 
 export default function SKUConstructor() {
@@ -66,10 +94,10 @@ export default function SKUConstructor() {
     return form.categoryId ? getModelsByCategory(form.categoryId) : [];
   }, [form.categoryId]);
 
-  const selectedCategory = categories.find(c => c.id === form.categoryId);
-  const selectedModel = models.find(m => m.id === form.modelId);
-  const selectedColor = colors.find(c => c.id === form.colorId);
-  const selectedSupplier = suppliers.find(s => s.id === form.supplierId);
+  const selectedCategory = categories.find((c) => c.id === form.categoryId);
+  const selectedModel = models.find((m) => m.id === form.modelId);
+  const selectedColor = colors.find((c) => c.id === form.colorId);
+  const selectedSupplier = suppliers.find((s) => s.id === form.supplierId);
 
   const generateSKU = () => {
     let sku = 'S' + (form.baseNumber || 'XXXXX');
@@ -85,27 +113,27 @@ export default function SKUConstructor() {
     if (!selectedCategory) return '';
     const catName = displayName(selectedCategory, language);
     const parts: string[] = [catName + '.'];
-    
+
     if (form.connectorFemaleId) {
-      const conn = connectors.find(c => c.id === form.connectorFemaleId);
+      const conn = connectors.find((c) => c.id === form.connectorFemaleId);
       if (conn) parts.push(conn.code);
     }
     if (form.connectorMaleId) {
-      const conn = connectors.find(c => c.id === form.connectorMaleId);
+      const conn = connectors.find((c) => c.id === form.connectorMaleId);
       if (conn) parts.push('-' + conn.code);
     }
     if (selectedModel) parts.push(displayName(selectedModel, language));
     if (form.lengthM) parts.push(form.lengthM + 'м');
     if (selectedColor) parts.push(displayName(selectedColor, language).toUpperCase());
     if (form.powerW) parts.push(form.powerW + 'W');
-    
+
     return parts.join(' ');
   };
 
   const handleGenerate = () => {
     const sku = generateSKU();
     const name = generateName();
-    const existingSkus = new Set(products.map(p => p.sku));
+    const existingSkus = new Set(products.map((p) => p.sku));
     setAddSuccess(false);
 
     if (existingSkus.has(sku)) {
@@ -119,7 +147,8 @@ export default function SKUConstructor() {
         if (form.variantCode) altSku += '-' + form.variantCode;
         if (form.lengthVariant && !form.variantCode) altSku += '-' + form.lengthVariant;
         if (selectedColor) altSku += '/' + selectedColor.code;
-        if (selectedSupplier && selectedSupplier.code !== '-') altSku += '-' + selectedSupplier.code;
+        if (selectedSupplier && selectedSupplier.code !== '-')
+          altSku += '-' + selectedSupplier.code;
         if (form.isKit) altSku += '-K';
         if (!existingSkus.has(altSku)) {
           suggestion = altSku;
@@ -146,7 +175,7 @@ export default function SKUConstructor() {
     handleGenerate();
     // Synchronous safety check — catches edge cases where state hasn't propagated
     const freshSku = generateSKU();
-    const existingSkus = new Set(products.map(p => p.sku));
+    const existingSkus = new Set(products.map((p) => p.sku));
     if (!freshSku || existingSkus.has(freshSku)) return;
     if (skuDuplicate || !generatedSKU) return;
     const draft = {
@@ -191,7 +220,7 @@ export default function SKUConstructor() {
   };
 
   const updateForm = (key: keyof SKUFormData, value: string | boolean) => {
-    setForm(prev => ({ ...prev, [key]: value }));
+    setForm((prev) => ({ ...prev, [key]: value }));
     setSkuDuplicate(false);
     setSkuSuggestion('');
     setAddSuccess(false);
@@ -200,9 +229,9 @@ export default function SKUConstructor() {
   const toggleCategory = (catId: string) => {
     if (form.categoryId === catId) {
       // Снять выбор если кликнули на ту же категорию
-      setForm(prev => ({ ...prev, categoryId: '', modelId: '' }));
+      setForm((prev) => ({ ...prev, categoryId: '', modelId: '' }));
     } else {
-      setForm(prev => ({ ...prev, categoryId: catId, modelId: '' }));
+      setForm((prev) => ({ ...prev, categoryId: catId, modelId: '' }));
       // Плавный скролл вверх при смене категории
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -213,9 +242,9 @@ export default function SKUConstructor() {
   const toggleModel = (modelId: string) => {
     if (form.modelId === modelId) {
       // Снять выбор если кликнули на ту же модель
-      setForm(prev => ({ ...prev, modelId: '' }));
+      setForm((prev) => ({ ...prev, modelId: '' }));
     } else {
-      setForm(prev => ({ ...prev, modelId: modelId }));
+      setForm((prev) => ({ ...prev, modelId: modelId }));
     }
   };
 
@@ -229,11 +258,16 @@ export default function SKUConstructor() {
 
   const isStepValid = () => {
     switch (step) {
-      case 1: return form.categoryId && form.modelId;
-      case 2: return form.baseNumber.length === 5;
-      case 3: return true;
-      case 4: return form.colorId;
-      default: return true;
+      case 1:
+        return form.categoryId && form.modelId;
+      case 2:
+        return form.baseNumber.length === 5;
+      case 3:
+        return true;
+      case 4:
+        return form.colorId;
+      default:
+        return true;
     }
   };
 
@@ -248,17 +282,24 @@ export default function SKUConstructor() {
       <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2">
         {steps.map((s, i) => (
           <Fragment key={s.id}>
-                <div className={`flex h-11 sm:h-10 min-w-[100px] sm:min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-all ${
-              step === s.id
-                ? 'bg-accent/25 text-white border border-accent/40 font-medium'
-                : step > s.id
-                ? 'bg-success/10 text-success border border-success/30'
-                : 'bg-bg-secondary text-text-tertiary border border-border-subtle'
-            }`}>
-              <div className={`w-4 sm:w-5 h-4 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold flex-shrink-0 ${
-                step === s.id ? 'bg-accent text-white' :
-                step > s.id ? 'bg-success text-white' : 'bg-bg-elevated text-text-muted'
-              }`}>
+            <div
+              className={`flex h-11 sm:h-10 min-w-[100px] sm:min-w-[120px] flex-shrink-0 items-center gap-1.5 sm:gap-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-all ${
+                step === s.id
+                  ? 'bg-accent/25 text-white border border-accent/40 font-medium'
+                  : step > s.id
+                    ? 'bg-success/10 text-success border border-success/30'
+                    : 'bg-bg-secondary text-text-tertiary border border-border-subtle'
+              }`}
+            >
+              <div
+                className={`w-4 sm:w-5 h-4 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold flex-shrink-0 ${
+                  step === s.id
+                    ? 'bg-accent text-white'
+                    : step > s.id
+                      ? 'bg-success text-white'
+                      : 'bg-bg-elevated text-text-muted'
+                }`}
+              >
                 {step > s.id ? <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : s.id}
               </div>
               <span className="truncate">{s.label}</span>
@@ -282,14 +323,14 @@ export default function SKUConstructor() {
               className="space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step1')}</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-2 block">
                     {t('sku.category_label')}
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
-                    {categories.map(cat => (
+                    {categories.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
@@ -300,12 +341,17 @@ export default function SKUConstructor() {
                         }`}
                       >
                         <div className="flex items-center gap-1 sm:gap-2">
-                          <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full flex-shrink-0" style={{ background: getCategoryColorVar(cat.code) }} />
+                          <div
+                            className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full flex-shrink-0"
+                            style={{ background: getCategoryColorVar(cat.code) }}
+                          />
                           <span className="text-[11px] sm:text-sm font-medium truncate">
                             {displaySource(cat, language)}
                           </span>
                         </div>
-                        <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 sm:mt-1 truncate">{cat.code}</p>
+                        <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 sm:mt-1 truncate">
+                          {cat.code}
+                        </p>
                       </button>
                     ))}
                   </div>
@@ -317,20 +363,22 @@ export default function SKUConstructor() {
                       {t('sku.model_label')}
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3">
-                      {availableModels.map(model => (
+                      {availableModels.map((model) => (
                         <button
                           key={model.id}
                           onClick={() => toggleModel(model.id)}
                           className={`min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg border text-left transition-all cursor-pointer ${
                             form.modelId === model.id
-                            ? 'border-accent/50 bg-accent/20'
-                            : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
+                              ? 'border-accent/50 bg-accent/20'
+                              : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                           }`}
                         >
                           <span className="text-[11px] sm:text-sm font-medium block truncate">
                             {displaySource(model, language)}
                           </span>
-                          <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 truncate">{model.code}</p>
+                          <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 truncate">
+                            {model.code}
+                          </p>
                         </button>
                       ))}
                     </div>
@@ -349,7 +397,7 @@ export default function SKUConstructor() {
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step2')}</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
@@ -358,7 +406,9 @@ export default function SKUConstructor() {
                   <input
                     type="text"
                     value={form.baseNumber}
-                    onChange={e => updateForm('baseNumber', e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    onChange={(e) =>
+                      updateForm('baseNumber', e.target.value.replace(/\D/g, '').slice(0, 5))
+                    }
                     placeholder="10000"
                     className="w-full text-text-primary h-11 sm:h-10"
                     maxLength={5}
@@ -375,7 +425,7 @@ export default function SKUConstructor() {
                   <input
                     type="text"
                     value={form.variantCode}
-                    onChange={e => updateForm('variantCode', e.target.value.toUpperCase())}
+                    onChange={(e) => updateForm('variantCode', e.target.value.toUpperCase())}
                     placeholder="ST, PR, ORG, E"
                     className="w-full text-text-primary h-11 sm:h-10"
                   />
@@ -391,7 +441,7 @@ export default function SKUConstructor() {
                   <input
                     type="text"
                     value={form.lengthVariant}
-                    onChange={e => updateForm('lengthVariant', e.target.value)}
+                    onChange={(e) => updateForm('lengthVariant', e.target.value)}
                     placeholder="2, 3, 025"
                     className="w-full text-text-primary h-11 sm:h-10"
                   />
@@ -401,11 +451,14 @@ export default function SKUConstructor() {
                 </div>
 
                 <div className="sm:col-span-2 pt-2">
-                  <label className="flex items-center gap-3 min-h-[44px] sm:min-h-0 text-xs sm:text-sm text-text-secondary cursor-pointer" onClick={() => {}}>
+                  <label
+                    className="flex items-center gap-3 min-h-[44px] sm:min-h-0 text-xs sm:text-sm text-text-secondary cursor-pointer"
+                    onClick={() => {}}
+                  >
                     <input
                       type="checkbox"
                       checked={form.isKit}
-                      onChange={e => updateForm('isKit', e.target.checked)}
+                      onChange={(e) => updateForm('isKit', e.target.checked)}
                       className="w-4 h-4 rounded accent-accent"
                     />
                     {t('sku.is_kit_label')}
@@ -419,7 +472,9 @@ export default function SKUConstructor() {
                   {t('sku.preview_label')}
                 </p>
                 <code className="text-lg sm:text-xl text-accent">
-                  S{form.baseNumber || 'XXXXX'}{form.variantCode ? '-' + form.variantCode : ''}{form.lengthVariant && !form.variantCode ? '-' + form.lengthVariant : ''}
+                  S{form.baseNumber || 'XXXXX'}
+                  {form.variantCode ? '-' + form.variantCode : ''}
+                  {form.lengthVariant && !form.variantCode ? '-' + form.lengthVariant : ''}
                 </code>
               </div>
             </motion.div>
@@ -434,25 +489,43 @@ export default function SKUConstructor() {
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step3')}</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.power_label')}
                   </label>
-                  <input type="text" value={form.powerW} onChange={e => updateForm('powerW', e.target.value)} placeholder="20" className="w-full text-text-primary h-11 sm:h-10" />
+                  <input
+                    type="text"
+                    value={form.powerW}
+                    onChange={(e) => updateForm('powerW', e.target.value)}
+                    placeholder="20"
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.current_label')}
                   </label>
-                  <input type="text" value={form.currentA} onChange={e => updateForm('currentA', e.target.value)} placeholder="3" className="w-full text-text-primary h-11 sm:h-10" />
+                  <input
+                    type="text"
+                    value={form.currentA}
+                    onChange={(e) => updateForm('currentA', e.target.value)}
+                    placeholder="3"
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  />
                 </div>
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.voltage_label')}
                   </label>
-                  <input type="text" value={form.voltageV} onChange={e => updateForm('voltageV', e.target.value)} placeholder="5" className="w-full text-text-primary h-11 sm:h-10" />
+                  <input
+                    type="text"
+                    value={form.voltageV}
+                    onChange={(e) => updateForm('voltageV', e.target.value)}
+                    placeholder="5"
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  />
                 </div>
               </div>
 
@@ -461,10 +534,16 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.connector_female_label')}
                   </label>
-                  <select value={form.connectorFemaleId} onChange={e => updateForm('connectorFemaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
+                  <select
+                    value={form.connectorFemaleId}
+                    onChange={(e) => updateForm('connectorFemaleId', e.target.value)}
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  >
                     <option value="">{t('sku.select_placeholder')}</option>
-                    {connectors.map(c => (
-                      <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
+                    {connectors.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {displaySource(c, language)} ({c.code})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -472,10 +551,16 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.connector_male_label')}
                   </label>
-                  <select value={form.connectorMaleId} onChange={e => updateForm('connectorMaleId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
+                  <select
+                    value={form.connectorMaleId}
+                    onChange={(e) => updateForm('connectorMaleId', e.target.value)}
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  >
                     <option value="">{t('sku.select_placeholder')}</option>
-                    {connectors.map(c => (
-                      <option key={c.id} value={c.id}>{displaySource(c, language)} ({c.code})</option>
+                    {connectors.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {displaySource(c, language)} ({c.code})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -483,10 +568,16 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.protocol_label')}
                   </label>
-                  <select value={form.protocolId} onChange={e => updateForm('protocolId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
+                  <select
+                    value={form.protocolId}
+                    onChange={(e) => updateForm('protocolId', e.target.value)}
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  >
                     <option value="">{t('sku.select_placeholder')}</option>
-                    {chargingProtocols.map(p => (
-                      <option key={p.id} value={p.id}>{displaySource(p, language)}</option>
+                    {chargingProtocols.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {displaySource(p, language)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -494,10 +585,16 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.body_material_label')}
                   </label>
-                  <select value={form.bodyMaterialId} onChange={e => updateForm('bodyMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
+                  <select
+                    value={form.bodyMaterialId}
+                    onChange={(e) => updateForm('bodyMaterialId', e.target.value)}
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  >
                     <option value="">{t('sku.select_placeholder')}</option>
-                    {materials.map(m => (
-                      <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
+                    {materials.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {displaySource(m, language)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -505,10 +602,16 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.wire_material_label')}
                   </label>
-                  <select value={form.wireMaterialId} onChange={e => updateForm('wireMaterialId', e.target.value)} className="w-full text-text-primary h-11 sm:h-10">
+                  <select
+                    value={form.wireMaterialId}
+                    onChange={(e) => updateForm('wireMaterialId', e.target.value)}
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  >
                     <option value="">{t('sku.select_placeholder')}</option>
-                    {materials.map(m => (
-                      <option key={m.id} value={m.id}>{displaySource(m, language)}</option>
+                    {materials.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {displaySource(m, language)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -516,7 +619,13 @@ export default function SKUConstructor() {
                   <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
                     {t('sku.length_label')}
                   </label>
-                  <input type="text" value={form.lengthM} onChange={e => updateForm('lengthM', e.target.value)} placeholder="1" className="w-full text-text-primary h-11 sm:h-10" />
+                  <input
+                    type="text"
+                    value={form.lengthM}
+                    onChange={(e) => updateForm('lengthM', e.target.value)}
+                    placeholder="1"
+                    className="w-full text-text-primary h-11 sm:h-10"
+                  />
                 </div>
               </div>
             </motion.div>
@@ -531,14 +640,14 @@ export default function SKUConstructor() {
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step4')}</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3 block">
                     {t('sku.color_label')}
                   </label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
-                    {colors.map(color => (
+                    {colors.map((color) => (
                       <button
                         key={color.id}
                         onClick={() => updateForm('colorId', color.id)}
@@ -548,10 +657,19 @@ export default function SKUConstructor() {
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                         }`}
                       >
-                        <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-full mx-auto mb-1 flex-shrink-0" style={{
-                          background: color.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : color.hexValue,
-                          border: color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
-                        }} />
+                        <div
+                          className="w-7 sm:w-8 h-7 sm:h-8 rounded-full mx-auto mb-1 flex-shrink-0"
+                          style={{
+                            background:
+                              color.hexValue === 'gradient'
+                                ? 'conic-gradient(in hsl longer hue, red, red)'
+                                : color.hexValue,
+                            border:
+                              color.hexValue === 'gradient'
+                                ? 'none'
+                                : '1px solid var(--color-border-subtle)',
+                          }}
+                        />
                         <span className="text-[9px] sm:text-[10px] block truncate">
                           {displaySource(color, language)}
                         </span>
@@ -565,7 +683,7 @@ export default function SKUConstructor() {
                     {t('sku.supplier_label')}
                   </label>
                   <div className="space-y-2">
-                    {suppliers.map(sup => (
+                    {suppliers.map((sup) => (
                       <button
                         key={sup.id}
                         onClick={() => updateForm('supplierId', sup.id)}
@@ -575,19 +693,24 @@ export default function SKUConstructor() {
                             : 'border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover hover:border-border-default'
                         }`}
                       >
-                        <div className={`w-7 sm:w-8 h-7 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                          sup.code === 'A' ? 'bg-supplier-a-bg text-supplier-a' :
-                          sup.code === 'W' ? 'bg-supplier-w-bg text-supplier-w' :
-                          sup.code === 'AW' ? 'bg-supplier-aw-bg text-supplier-aw' :
-                          'bg-bg-elevated text-text-muted'
-                        }`}>
+                        <div
+                          className={`w-7 sm:w-8 h-7 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                            sup.code === 'A'
+                              ? 'bg-supplier-a-bg text-supplier-a'
+                              : sup.code === 'W'
+                                ? 'bg-supplier-w-bg text-supplier-w'
+                                : sup.code === 'AW'
+                                  ? 'bg-supplier-aw-bg text-supplier-aw'
+                                  : 'bg-bg-elevated text-text-muted'
+                          }`}
+                        >
                           {sup.code === '-' ? '—' : sup.code}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs sm:text-sm font-medium truncate">
-                            {sup.name}
+                          <p className="text-xs sm:text-sm font-medium truncate">{sup.name}</p>
+                          <p className="text-[9px] sm:text-[10px] text-text-tertiary truncate">
+                            {sup.contactInfo}
                           </p>
-                          <p className="text-[9px] sm:text-[10px] text-text-tertiary truncate">{sup.contactInfo}</p>
                         </div>
                       </button>
                     ))}
@@ -606,13 +729,11 @@ export default function SKUConstructor() {
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step5')}</h3>
-              
+
               {!generatedSKU ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-8 h-8 text-accent mx-auto mb-3 animate-pulse" />
-                  <p className="text-text-secondary text-sm">
-                    {t('sku.auto_generated_hint')}
-                  </p>
+                  <p className="text-text-secondary text-sm">{t('sku.auto_generated_hint')}</p>
                 </div>
               ) : (
                 <motion.div
@@ -624,7 +745,9 @@ export default function SKUConstructor() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <Hash className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-accent flex-shrink-0" />
-                        <span className="text-[10px] sm:text-xs text-text-tertiary tracking-wide">SKU</span>
+                        <span className="text-[10px] sm:text-xs text-text-tertiary tracking-wide">
+                          SKU
+                        </span>
                       </div>
                       <button
                         onClick={handleCopy}
@@ -634,35 +757,42 @@ export default function SKUConstructor() {
                         {copied ? t('sku.copied') : t('sku.copy')}
                       </button>
                     </div>
-                    <code className={`text-xl sm:text-2xl block overflow-x-auto ${addSuccess ? 'text-success' : skuDuplicate ? 'text-danger' : 'text-accent'}`}>{generatedSKU}</code>
+                    <code
+                      className={`text-xl sm:text-2xl block overflow-x-auto ${addSuccess ? 'text-success' : skuDuplicate ? 'text-danger' : 'text-accent'}`}
+                    >
+                      {generatedSKU}
+                    </code>
                     {addSuccess ? (
                       <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-success">
                         <Check className="w-3 h-3 flex-shrink-0" />
                         {t('sku.add_success')}
                       </div>
-                    ) : skuDuplicate && (
-                      <div className="space-y-2">
-                        <p className="text-[11px] sm:text-xs text-danger flex items-center gap-1.5">
-                          <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                          {t('sku.duplicate_warning')}
-                        </p>
-                        {skuSuggestion && (
-                          <button
-                            onClick={() => {
-                              setGeneratedSKU(skuSuggestion);
-                              const match = skuSuggestion.match(/S(\d+)/);
-                              if (match) updateForm('baseNumber', match[1]);
-                              setSkuDuplicate(false);
-                              setSkuSuggestion('');
-                              setCopied(false);
-                            }}
-                            className="flex items-center gap-1.5 text-xs text-accent hover:bg-accent/10 px-2 py-1 rounded-lg transition-colors cursor-pointer border border-accent/20"
-                          >
-                            <Sparkles className="w-3 h-3" />
-                            {t('sku.use_suggestion')}: <code className="font-medium">{skuSuggestion}</code>
-                          </button>
-                        )}
-                      </div>
+                    ) : (
+                      skuDuplicate && (
+                        <div className="space-y-2">
+                          <p className="text-[11px] sm:text-xs text-danger flex items-center gap-1.5">
+                            <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                            {t('sku.duplicate_warning')}
+                          </p>
+                          {skuSuggestion && (
+                            <button
+                              onClick={() => {
+                                setGeneratedSKU(skuSuggestion);
+                                const match = skuSuggestion.match(/S(\d+)/);
+                                if (match) updateForm('baseNumber', match[1]);
+                                setSkuDuplicate(false);
+                                setSkuSuggestion('');
+                                setCopied(false);
+                              }}
+                              className="flex items-center gap-1.5 text-xs text-accent hover:bg-accent/10 px-2 py-1 rounded-lg transition-colors cursor-pointer border border-accent/20"
+                            >
+                              <Sparkles className="w-3 h-3" />
+                              {t('sku.use_suggestion')}:{' '}
+                              <code className="font-medium">{skuSuggestion}</code>
+                            </button>
+                          )}
+                        </div>
+                      )
                     )}
                   </div>
 
@@ -695,7 +825,7 @@ export default function SKUConstructor() {
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary uppercase truncate">
-                    {t('sku.color_label')}
+                        {t('sku.color_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
                         {selectedColor ? displaySource(selectedColor, language) : ''}
@@ -718,7 +848,7 @@ export default function SKUConstructor() {
       {/* Navigation */}
       <div className="flex items-center justify-between gap-2">
         <button
-          onClick={() => setStep(s => Math.max(1, s - 1))}
+          onClick={() => setStep((s) => Math.max(1, s - 1))}
           disabled={step === 1}
           className="flex items-center gap-1.5 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
         >
@@ -727,7 +857,7 @@ export default function SKUConstructor() {
 
         {step < 5 ? (
           <button
-            onClick={() => setStep(s => s + 1)}
+            onClick={() => setStep((s) => s + 1)}
             disabled={!isStepValid()}
             className="flex items-center gap-1.5 sm:gap-2 min-h-[44px] sm:min-h-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium border border-accent/40 cursor-pointer"
           >
@@ -736,7 +866,15 @@ export default function SKUConstructor() {
         ) : (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm(initialForm); setStep(1); setGeneratedSKU(''); setGeneratedName(''); setSkuDuplicate(false); setSkuSuggestion(''); setAddSuccess(false); }}
+              onClick={() => {
+                setForm(initialForm);
+                setStep(1);
+                setGeneratedSKU('');
+                setGeneratedName('');
+                setSkuDuplicate(false);
+                setSkuSuggestion('');
+                setAddSuccess(false);
+              }}
               className="flex items-center gap-1 sm:gap-2 min-h-[44px] sm:min-h-0 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border-subtle text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> {t('sku.reset')}

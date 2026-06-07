@@ -1,17 +1,41 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Database, Link2, Hash, Type, FileCode, Layers, ArrowRight,
-  Box, GitBranch, Table, Key,
-  Shield, Zap, Search, Server
+  Database,
+  Link2,
+  Hash,
+  Type,
+  FileCode,
+  Layers,
+  ArrowRight,
+  Box,
+  GitBranch,
+  Table,
+  Key,
+  Shield,
+  Zap,
+  Search,
+  Server,
 } from 'lucide-react';
-import { architectureNotes, skuLogic, namingLogic, entities, relationships, skuLogicEn, namingLogicEn, architectureNotesEn, entitiesEn } from '@data/architecture';
+import {
+  architectureNotes,
+  skuLogic,
+  namingLogic,
+  entities,
+  relationships,
+  skuLogicEn,
+  namingLogicEn,
+  architectureNotesEn,
+  entitiesEn,
+} from '@data/architecture';
 import { useLanguage } from '@context/LanguageContext';
 
 export default function Architecture() {
   const { t, language } = useLanguage();
   const [expandedEntity, setExpandedEntity] = useState<string | null>('product_bases');
-  const [activeTab, setActiveTab] = useState<'overview' | 'sku' | 'naming' | 'schema' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'sku' | 'naming' | 'schema' | 'system'>(
+    'overview'
+  );
 
   // Используем русские или английские данные в зависимости от языка
   const currentSkuLogic = language === 'ru' ? skuLogic : skuLogicEn;
@@ -31,7 +55,9 @@ export default function Architecture() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('arch.title')}</h2>
-        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">{t('arch.subtitle')}</p>
+        <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
+          {t('arch.subtitle')}
+        </p>
       </div>
 
       {/* Tabs */}
@@ -69,27 +95,57 @@ export default function Architecture() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { icon: Database, label: t('arch.summary.entities'), value: currentEntities.length, desc: t('arch.summary.normalized_tables') },
-              { icon: Link2, label: t('arch.summary.relationships'), value: relationships.length, desc: t('arch.summary.foreign_keys') },
-              { icon: Box, label: t('arch.summary.categories'), value: '12', desc: t('arch.summary.product_types') },
-              { icon: Hash, label: t('arch.summary.sku_pattern'), value: '6', desc: t('arch.summary.encoding_segments') },
-              { icon: Type, label: t('arch.summary.name_templates'), value: '10', desc: t('arch.summary.auto_generation_rules') },
-              { icon: Shield, label: t('arch.summary.validation_rules'), value: '8', desc: t('arch.summary.data_integrity') },
+              {
+                icon: Database,
+                label: t('arch.summary.entities'),
+                value: currentEntities.length,
+                desc: t('arch.summary.normalized_tables'),
+              },
+              {
+                icon: Link2,
+                label: t('arch.summary.relationships'),
+                value: relationships.length,
+                desc: t('arch.summary.foreign_keys'),
+              },
+              {
+                icon: Box,
+                label: t('arch.summary.categories'),
+                value: '12',
+                desc: t('arch.summary.product_types'),
+              },
+              {
+                icon: Hash,
+                label: t('arch.summary.sku_pattern'),
+                value: '6',
+                desc: t('arch.summary.encoding_segments'),
+              },
+              {
+                icon: Type,
+                label: t('arch.summary.name_templates'),
+                value: '10',
+                desc: t('arch.summary.auto_generation_rules'),
+              },
+              {
+                icon: Shield,
+                label: t('arch.summary.validation_rules'),
+                value: '8',
+                desc: t('arch.summary.data_integrity'),
+              },
             ].map((item) => (
-                <div
-                  key={item.label}
-                  className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 min-h-[44px] sm:min-h-0"
-                >
-                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-lg sm:text-xl font-bold">{item.value}</p>
-                    <p className="text-[11px] sm:text-xs text-text-tertiary truncate">{item.label}</p>
-                    <p className="text-[9px] sm:text-[10px] text-text-muted truncate">{item.desc}</p>
-                  </div>
+              <div
+                key={item.label}
+                className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 min-h-[44px] sm:min-h-0"
+              >
+                <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-bg-tertiary border border-border-default flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                 </div>
-              ))}
+                <div className="min-w-0">
+                  <p className="text-lg sm:text-xl font-bold">{item.value}</p>
+                  <p className="text-[11px] sm:text-xs text-text-tertiary truncate">{item.label}</p>
+                  <p className="text-[9px] sm:text-[10px] text-text-muted truncate">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -102,8 +158,10 @@ export default function Architecture() {
               <Hash className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.sku.title')}
             </h3>
-            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">{currentSkuLogic.pattern}</p>
-            
+            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">
+              {currentSkuLogic.pattern}
+            </p>
+
             <div className="space-y-3">
               {currentSkuLogic.segments.map((seg) => (
                 <div
@@ -115,7 +173,10 @@ export default function Architecture() {
                     <p className="text-sm text-text-primary">{seg.description}</p>
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {seg.examples.map((ex) => (
-                        <span key={ex} className="text-[11px] px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle">
+                        <span
+                          key={ex}
+                          className="text-[11px] px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle"
+                        >
                           {ex}
                         </span>
                       ))}
@@ -153,8 +214,10 @@ export default function Architecture() {
               <Type className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
               {t('arch.naming.title')}
             </h3>
-            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">{currentNamingLogic.pattern}</p>
-            
+            <p className="text-xs sm:text-sm text-text-secondary mb-3 sm:mb-4">
+              {currentNamingLogic.pattern}
+            </p>
+
             <div className="space-y-3">
               {currentNamingLogic.segments.map((seg) => (
                 <div
@@ -166,7 +229,10 @@ export default function Architecture() {
                     <p className="text-sm text-text-primary">{seg.description}</p>
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {seg.examples.map((ex) => (
-                        <span key={ex} className="text-[11px] px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle">
+                        <span
+                          key={ex}
+                          className="text-[11px] px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle"
+                        >
                           {ex}
                         </span>
                       ))}
@@ -215,13 +281,17 @@ export default function Architecture() {
                       ? 'border-accent/50 bg-accent/15'
                       : 'border-border-subtle bg-bg-tertiary/50 hover:border-border-default'
                   }`}
-                  onClick={() => setExpandedEntity(expandedEntity === entity.name ? null : entity.name)}
+                  onClick={() =>
+                    setExpandedEntity(expandedEntity === entity.name ? null : entity.name)
+                  }
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Table className="w-3.5 h-3.5 text-accent flex-shrink-0" />
                     <span className="text-xs font-medium truncate">{entity.name}</span>
                   </div>
-                  <p className="text-[10px] text-text-tertiary">{entity.fields.length} {t('arch.schema.fields')}</p>
+                  <p className="text-[10px] text-text-tertiary">
+                    {entity.fields.length} {t('arch.schema.fields')}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -236,7 +306,9 @@ export default function Architecture() {
                   <div key={i} className="flex items-center gap-3 text-sm">
                     <span className="text-accent">{rel.from}</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle">{rel.type}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle">
+                        {rel.type}
+                      </span>
                       <ArrowRight className="w-3 h-3 text-text-muted" />
                     </div>
                     <span className="text-accent">{rel.to}</span>
@@ -252,7 +324,8 @@ export default function Architecture() {
             style={{
               display: 'grid',
               gridTemplateRows: expandedEntity ? '1fr' : '0fr',
-              transition: 'grid-template-rows 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease',
+              transition:
+                'grid-template-rows 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease',
               opacity: expandedEntity ? 1 : 0,
             }}
           >
@@ -272,18 +345,25 @@ export default function Architecture() {
                 </div>
                 <div className="overflow-x-auto">
                   <div className="min-w-[350px] sm:min-w-[500px]">
-                    {currentEntities.find(e => e.name === expandedEntity)?.fields.map((field) => (
-                      <div key={field.name} className="flex items-center gap-4 py-2 border-b border-border-subtle last:border-0">
-                        <div className="flex items-center gap-2 w-48 flex-shrink-0">
-                          <Key className={`w-3 h-3 ${field.name === 'id' ? 'text-warning' : 'text-text-muted'}`} />
-                          <span className="text-sm">{field.name}</span>
+                    {currentEntities
+                      .find((e) => e.name === expandedEntity)
+                      ?.fields.map((field) => (
+                        <div
+                          key={field.name}
+                          className="flex items-center gap-4 py-2 border-b border-border-subtle last:border-0"
+                        >
+                          <div className="flex items-center gap-2 w-48 flex-shrink-0">
+                            <Key
+                              className={`w-3 h-3 ${field.name === 'id' ? 'text-warning' : 'text-text-muted'}`}
+                            />
+                            <span className="text-sm">{field.name}</span>
+                          </div>
+                          <code className="text-xs px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle w-32 flex-shrink-0">
+                            {field.type}
+                          </code>
+                          <span className="text-xs text-text-tertiary">{field.description}</span>
                         </div>
-                        <code className="text-xs px-2 py-0.5 rounded bg-bg-elevated text-text-secondary border border-border-subtle w-32 flex-shrink-0">
-                          {field.type}
-                        </code>
-                        <span className="text-xs text-text-tertiary">{field.description}</span>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               </div>
@@ -354,12 +434,36 @@ export default function Architecture() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { title: t('arch.system.vector_embeddings'), desc: t('arch.system.ai_vector_desc'), icon: Database },
-                { title: t('arch.system.structured_metadata'), desc: t('arch.system.ai_metadata_desc'), icon: FileCode },
-                { title: t('arch.system.content_templates'), desc: t('arch.system.ai_templates_desc'), icon: Type },
-                { title: t('arch.system.attribute_graph'), desc: t('arch.system.ai_graph_desc'), icon: GitBranch },
-                { title: t('arch.system.media_analysis'), desc: t('arch.system.ai_media_desc'), icon: Search },
-                { title: t('arch.system.multi_language'), desc: t('arch.system.ai_i18n_desc'), icon: Layers },
+                {
+                  title: t('arch.system.vector_embeddings'),
+                  desc: t('arch.system.ai_vector_desc'),
+                  icon: Database,
+                },
+                {
+                  title: t('arch.system.structured_metadata'),
+                  desc: t('arch.system.ai_metadata_desc'),
+                  icon: FileCode,
+                },
+                {
+                  title: t('arch.system.content_templates'),
+                  desc: t('arch.system.ai_templates_desc'),
+                  icon: Type,
+                },
+                {
+                  title: t('arch.system.attribute_graph'),
+                  desc: t('arch.system.ai_graph_desc'),
+                  icon: GitBranch,
+                },
+                {
+                  title: t('arch.system.media_analysis'),
+                  desc: t('arch.system.ai_media_desc'),
+                  icon: Search,
+                },
+                {
+                  title: t('arch.system.multi_language'),
+                  desc: t('arch.system.ai_i18n_desc'),
+                  icon: Layers,
+                },
               ].map((item) => (
                 <div
                   key={item.title}

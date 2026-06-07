@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import {
-  Sparkles, FileText, Image, Languages, BarChart3,
-  Send, Brain, User
-} from 'lucide-react';
+import { Sparkles, FileText, Image, Languages, BarChart3, Send, Brain, User } from 'lucide-react';
 import { useLanguage } from '@context/LanguageContext';
 
 interface ChatMessage {
@@ -105,7 +102,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
         id: '1',
         role: 'assistant',
         content: t('ai.welcome'),
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
   }, [language]);
@@ -120,9 +117,9 @@ This SKU represents a 2-meter black ZS-standard cable.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
-    setPendingCount(prev => prev + 1);
+    setPendingCount((prev) => prev + 1);
 
     setTimeout(() => {
       const responses = language === 'ru' ? mockResponsesRu : mockResponsesEn;
@@ -137,8 +134,8 @@ This SKU represents a 2-meter black ZS-standard cable.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      setMessages(prev => [...prev, aiMsg]);
-      setPendingCount(prev => prev - 1);
+      setMessages((prev) => [...prev, aiMsg]);
+      setPendingCount((prev) => prev - 1);
     }, 1200);
   };
 
@@ -185,15 +182,13 @@ This SKU represents a 2-meter black ZS-standard cable.`,
 
       {/* Glass container — messages + input only */}
       <div className="flex-1 flex flex-col glass rounded-xl overflow-hidden min-h-0">
-
         {/* Messages — scrollable, fills remaining space */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-3 sm:p-4">
           <div className="space-y-3 sm:space-y-4">
-
             {/* Group consecutive same-role messages — avatar on first, timestamp on last */}
             {(function renderGroups() {
               const groups: { msgs: ChatMessage[] }[] = [];
-              messages.forEach(msg => {
+              messages.forEach((msg) => {
                 const last = groups[groups.length - 1];
                 if (last && last.msgs[0].role === msg.role) {
                   last.msgs.push(msg);
@@ -201,35 +196,52 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                   groups.push({ msgs: [msg] });
                 }
               });
-              const lastUserIdx = messages.map(m => m.role).lastIndexOf('user');
-              const lastAssistantIdx = messages.map(m => m.role).lastIndexOf('assistant');
-              return groups.map(group =>
+              const lastUserIdx = messages.map((m) => m.role).lastIndexOf('user');
+              const lastAssistantIdx = messages.map((m) => m.role).lastIndexOf('assistant');
+              return groups.map((group) =>
                 group.msgs.map((msg, idx) => {
                   const isLastInGroup = idx === group.msgs.length - 1;
-                  const globalIdx = messages.findIndex(m => m.id === msg.id);
+                  const globalIdx = messages.findIndex((m) => m.id === msg.id);
                   const alwaysShow = globalIdx === lastUserIdx || globalIdx === lastAssistantIdx;
                   return (
-                    <div key={msg.id} className={`flex gap-2 sm:gap-3 group ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <div className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                        <div className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div
+                      key={msg.id}
+                      className={`flex gap-2 sm:gap-3 group ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                    >
+                      <div
+                        className={`max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}
+                      >
+                        <div
+                          className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                        >
                           {isLastInGroup ? (
                             <div className="hidden sm:flex w-6 sm:w-7 h-6 sm:h-7 rounded-full items-center justify-center flex-shrink-0 self-end bg-bg-elevated border border-border-subtle">
-                              {msg.role === 'user' ? <User className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" /> : <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />}
+                              {msg.role === 'user' ? (
+                                <User className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
+                              ) : (
+                                <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-accent" />
+                              )}
                             </div>
                           ) : (
                             <div className="hidden sm:block w-6 sm:w-7 flex-shrink-0" />
                           )}
-                          <div className={`min-w-0 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm whitespace-pre-wrap break-words text-left ${
-                            msg.role === 'user'
-                              ? 'bg-accent/15 border border-accent/30 text-text-primary'
-                              : 'bg-bg-tertiary border border-border-subtle text-text-primary'
-                          }`}>
+                          <div
+                            className={`min-w-0 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm whitespace-pre-wrap break-words text-left ${
+                              msg.role === 'user'
+                                ? 'bg-accent/15 border border-accent/30 text-text-primary'
+                                : 'bg-bg-tertiary border border-border-subtle text-text-primary'
+                            }`}
+                          >
                             {msg.content}
                           </div>
                         </div>
-                        <div className={`flex items-center gap-1.5 mt-0.5 ${msg.role === 'user' ? 'justify-end sm:mr-[2.5rem]' : 'justify-start sm:ml-[2.5rem]'} min-h-[14px] sm:min-h-[16px] ${alwaysShow ? '' : 'opacity-0 group-hover:opacity-100 transition-opacity'}`}>
+                        <div
+                          className={`flex items-center gap-1.5 mt-0.5 ${msg.role === 'user' ? 'justify-end sm:mr-[2.5rem]' : 'justify-start sm:ml-[2.5rem]'} min-h-[14px] sm:min-h-[16px] ${alwaysShow ? '' : 'opacity-0 group-hover:opacity-100 transition-opacity'}`}
+                        >
                           {isLastInGroup && (
-                            <span className="text-[9px] sm:text-[10px] text-text-muted leading-none">{msg.timestamp}</span>
+                            <span className="text-[9px] sm:text-[10px] text-text-muted leading-none">
+                              {msg.timestamp}
+                            </span>
                           )}
                           <button
                             onClick={() => handleCopy(msg.id, msg.content)}
@@ -253,9 +265,18 @@ This SKU represents a 2-meter black ZS-standard cable.`,
                 </div>
                 <div className="bg-bg-tertiary border border-border-subtle rounded-xl p-2.5 sm:p-3">
                   <div className="flex gap-1">
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div
+                      className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce"
+                      style={{ animationDelay: '0ms' }}
+                    />
+                    <div
+                      className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce"
+                      style={{ animationDelay: '150ms' }}
+                    />
+                    <div
+                      className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-text-muted animate-bounce"
+                      style={{ animationDelay: '300ms' }}
+                    />
                   </div>
                 </div>
               </div>
@@ -281,33 +302,36 @@ This SKU represents a 2-meter black ZS-standard cable.`,
 
         {/* Input area — pinned at bottom of glass */}
         <div className="flex-shrink-0 px-3 sm:px-4 pb-3 sm:pb-4 pt-3 border-t border-border-subtle">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder={t('ai.placeholder')}
-                className="flex-1 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
-              />
-              <button
-                onClick={() => handleSend()}
-                disabled={!input.trim() || isTyping}
-                className="h-11 w-11 sm:h-10 sm:w-10 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
-                aria-label={t('ai.send')}
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-[9px] sm:text-[10px] text-text-muted mt-1 text-center">
-              {t('ai.disclaimer').split('. ').map((s, i, a) => (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder={t('ai.placeholder')}
+              className="flex-1 h-11 sm:h-10 text-xs sm:text-sm text-text-primary"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isTyping}
+              className="h-11 w-11 sm:h-10 sm:w-10 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
+              aria-label={t('ai.send')}
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-[9px] sm:text-[10px] text-text-muted mt-1 text-center">
+            {t('ai.disclaimer')
+              .split('. ')
+              .map((s, i, a) => (
                 <span key={i} className="block sm:inline">
-                  {s}{i < a.length - 1 ? '.' : ''}{i < a.length - 1 && <span className="hidden sm:inline"> </span>}
+                  {s}
+                  {i < a.length - 1 ? '.' : ''}
+                  {i < a.length - 1 && <span className="hidden sm:inline"> </span>}
                 </span>
               ))}
-            </p>
+          </p>
         </div>
-
       </div>
     </div>
   );

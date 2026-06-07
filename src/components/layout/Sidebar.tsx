@@ -1,7 +1,16 @@
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard, Cpu, Grid3X3, Wrench, BookOpen, Package, Image,
-  Sparkles, ChevronLeft, ChevronRight, Settings,
+  LayoutDashboard,
+  Cpu,
+  Grid3X3,
+  Wrench,
+  BookOpen,
+  Package,
+  Image,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
 } from 'lucide-react';
 import type { ViewType } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
@@ -48,18 +57,23 @@ export function Sidebar({
         isMobile ? 'fixed top-0 bottom-0 left-0' : ''
       }`}
       style={{
-        width: isMobile ? (sidebarOpen ? sidebarWidth : 0) : (sidebarCollapsed ? 72 : 244),
-        transform: isMobile
-          ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)')
-          : 'none',
+        width: isMobile ? (sidebarOpen ? sidebarWidth : 0) : sidebarCollapsed ? 72 : 244,
+        transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
       }}
     >
-      <div className="flex-shrink-0 border-b border-border-subtle relative flex flex-col" style={{ height: 72 }}>
+      <div
+        className="flex-shrink-0 border-b border-border-subtle relative flex flex-col"
+        style={{ height: 72 }}
+      >
         <div className="flex items-center pl-[16px] pt-2">
           <span className="text-[26px] font-bold text-text-primary leading-none">GQ</span>
           <motion.span
             initial={false}
-            animate={{ maxWidth: sidebarCollapsed ? 0 : 88, opacity: sidebarCollapsed ? 0 : 1, marginLeft: sidebarCollapsed ? 0 : 2 }}
+            animate={{
+              maxWidth: sidebarCollapsed ? 0 : 88,
+              opacity: sidebarCollapsed ? 0 : 1,
+              marginLeft: sidebarCollapsed ? 0 : 2,
+            }}
             transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="text-[28px] font-bold text-text-primary leading-none overflow-hidden whitespace-nowrap inline-block"
           >
@@ -118,12 +132,18 @@ export function Sidebar({
               style={{ transform: 'translateZ(0)' }}
               title={sidebarCollapsed ? item.label : ''}
             >
-              <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-accent' : 'text-text-tertiary'}`} />
-              <span className={`flex-1 text-left truncate ml-3 transition-opacity duration-150 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden ml-0' : 'opacity-100 ml-3'}`}>
+              <item.icon
+                className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-accent' : 'text-text-tertiary'}`}
+              />
+              <span
+                className={`flex-1 text-left truncate ml-3 transition-opacity duration-150 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden ml-0' : 'opacity-100 ml-3'}`}
+              >
                 {item.label}
               </span>
               {!sidebarCollapsed && item.badge && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${isActive ? 'bg-accent/20 text-accent' : 'bg-bg-elevated text-text-tertiary'}`}>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${isActive ? 'bg-accent/20 text-accent' : 'bg-bg-elevated text-text-tertiary'}`}
+                >
                   {item.badge}
                 </span>
               )}
@@ -139,7 +159,11 @@ export function Sidebar({
           </div>
           <motion.div
             initial={false}
-            animate={{ opacity: sidebarCollapsed ? 0 : 1, maxWidth: sidebarCollapsed ? 0 : 170, marginLeft: sidebarCollapsed ? 0 : 12 }}
+            animate={{
+              opacity: sidebarCollapsed ? 0 : 1,
+              maxWidth: sidebarCollapsed ? 0 : 170,
+              marginLeft: sidebarCollapsed ? 0 : 12,
+            }}
             transition={{ duration: 0.15 }}
             className="overflow-hidden flex items-center justify-between flex-1"
           >
