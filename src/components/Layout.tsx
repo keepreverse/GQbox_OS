@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import type { ViewType } from '@app-types';
+import { MOBILE_BREAKPOINT_PX } from '@constants/breakpoints';
 import { useLanguage } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
 import SettingsPanel from './SettingsPanel';
@@ -71,7 +72,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT_PX;
       setIsMobile(mobile);
       if (mobile) {
         setSidebarOpen(false);

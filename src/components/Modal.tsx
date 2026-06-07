@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import {
+  MODAL_BACKDROP_DURATION_S,
+  MODAL_SHEET_DURATION_S,
+  LAYOUT_EASE,
+} from '@constants/timing';
 
 type ModalVariant = 'auto' | 'centered' | 'bottom-sheet';
 type ModalWidth = 'sm' | 'md' | 'lg' | 'xl';
@@ -33,10 +38,10 @@ const WIDTH_MAP: Record<ModalWidth, string> = {
   xl: 'max-w-xl',
 };
 
-const BACKDROP_EASE = [0.22, 1, 0.36, 1] as const;
-const BACKDROP_DUR = 0.15;
-const SHEET_EASE = [0.22, 1, 0.36, 1] as const;
-const SHEET_DUR = 0.25;
+const BACKDROP_EASE = LAYOUT_EASE;
+const BACKDROP_DUR = MODAL_BACKDROP_DURATION_S;
+const SHEET_EASE = LAYOUT_EASE;
+const SHEET_DUR = MODAL_SHEET_DURATION_S;
 
 function useIsNarrow(): boolean {
   const [isNarrow, setIsNarrow] = useState(true);
