@@ -1,0 +1,11 @@
+node_modules
+dist
+.vscode
+*.tsbuildinfo
+package-lock.json
+
+# Hand-aligned data tables — preserve columnar whitespace for readability
+src/data/products.ts
+src/data/dictionaries.ts
+src/data/architecture.ts
+src/data/marketplaces.ts
