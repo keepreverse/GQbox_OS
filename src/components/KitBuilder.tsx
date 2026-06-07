@@ -5,8 +5,8 @@ import {
   Hash, Layers, ArrowLeft, Cable, Wifi, Car, Headphones,
   ArrowLeftRight, Pin, GripVertical, Smartphone, Archive, Monitor, Check, AlertCircle
 } from 'lucide-react';
-import { useToast } from './useToast';
-import { Toast } from './Toast';
+import { useToast } from '@hooks/useToast';
+import { Toast } from '@components/ui/Toast';
 import Modal from './Modal';
 import { products, addProduct } from '../data/products';
 import { subscribeToProducts, getProductsVersion } from '../data/products';

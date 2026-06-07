@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Cpu, Grid3X3, Wrench, BookOpen, Package, Image,
@@ -9,6 +9,9 @@ import type { ViewType } from '@app-types';
 import { MOBILE_BREAKPOINT_PX } from '@constants/breakpoints';
 import { useLanguage } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
+import { useMediaQuery } from '@hooks/useMediaQuery';
+import { useClickOutside } from '@hooks/useClickOutside';
+import { useEscapeKey } from '@hooks/useEscapeKey';
 import SettingsPanel from './SettingsPanel';
 import DevModeBadge from './DevModeBadge';
 
@@ -47,45 +50,31 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   };
 
   // Close dropdown on outside click
-  useEffect(() => {
-    if (!notificationsOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setNotificationsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [notificationsOpen]);
+  useClickOutside(
+    dropdownRef,
+    useCallback(() => setNotificationsOpen(false), []),
+    notificationsOpen,
+  );
 
   // Close dropdown / settings on Escape
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (notificationsOpen) setNotificationsOpen(false);
-        if (settingsOpen) setSettingsOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [notificationsOpen, settingsOpen]);
+  useEscapeKey(
+    useCallback(() => {
+      if (notificationsOpen) setNotificationsOpen(false);
+      if (settingsOpen) setSettingsOpen(false);
+    }, [notificationsOpen, settingsOpen]),
+  );
+
+  const isMobileMedia = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < MOBILE_BREAKPOINT_PX;
-      setIsMobile(mobile);
-      if (mobile) {
-        setSidebarOpen(false);
-        setSidebarCollapsed(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    setIsMobile(isMobileMedia);
+    if (isMobileMedia) {
+      setSidebarOpen(false);
+      setSidebarCollapsed(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [isMobileMedia]);
 
   const navItems = [
     { id: 'dashboard' as ViewType, label: t('nav.dashboard'), icon: LayoutDashboard },

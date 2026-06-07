@@ -3,8 +3,8 @@ import {
   Palette, Plug, Zap, Truck, Layers, Tag,
   Plus, Edit3, X, Check, Box
 } from 'lucide-react';
-import { useToast } from './useToast';
-import { Toast } from './Toast';
+import { useToast } from '@hooks/useToast';
+import { Toast } from '@components/ui/Toast';
 import {
   categories, models, colors, suppliers, connectors, chargingProtocols, materials,
   addCategory, addModel, addColor, addSupplier, addConnector, addProtocol, addMaterial,

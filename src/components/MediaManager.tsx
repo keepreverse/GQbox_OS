@@ -4,8 +4,8 @@ import {
   FileImage, FileVideo, Trash2, Download,
   Check
 } from 'lucide-react';
-import { useToast } from './useToast';
-import { Toast } from './Toast';
+import { useToast } from '@hooks/useToast';
+import { Toast } from '@components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import Modal from './Modal';

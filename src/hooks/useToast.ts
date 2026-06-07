@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import type { ToastData, ToastType } from './Toast';
+import type { ToastData, ToastType } from '@components/ui/Toast';
 
 export function useToast(duration = 3000) {
   const [toast, setToast] = useState<ToastData | null>(null);

@@ -4,8 +4,8 @@ import {
   ChevronRight, ChevronLeft, Check, Hash, Type,
   Copy, Sparkles, RotateCcw, AlertCircle, Table2,
 } from 'lucide-react';
-import { useToast } from './useToast';
-import { Toast } from './Toast';
+import { useToast } from '@hooks/useToast';
+import { Toast } from '@components/ui/Toast';
 import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '../data/dictionaries';
 import { getModelsByCategory } from '../data/dictionaries';
 import { products, addProduct } from '../data/products';
