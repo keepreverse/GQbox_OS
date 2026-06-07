@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import Layout from './components/Layout';
+import Layout from '@components/layout/Layout';
 import Dashboard from './components/Dashboard';
 import Architecture from './components/Architecture';
 import ProductMatrix from './components/ProductMatrix';

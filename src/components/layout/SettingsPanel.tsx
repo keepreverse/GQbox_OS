@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Settings, LogOut, Shield, Code2, Key } from 'lucide-react';
 import Modal from '@components/ui/Modal';
-import Toggle from './ui/Toggle';
-import SettingsRow from './ui/SettingsRow';
-import { useLanguage } from '../context/LanguageContext';
-import type { Language } from '../context/LanguageContext';
+import Toggle from '@components/ui/Toggle';
+import SettingsRow from '@components/ui/SettingsRow';
+import { useLanguage } from '@context/LanguageContext';
+import type { Language } from '@context/LanguageContext';
 
 interface SettingsPanelProps {
   open: boolean;

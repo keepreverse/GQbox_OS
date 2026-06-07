@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 
 interface DevModeBadgeProps {
   active: boolean;
