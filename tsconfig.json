@@ -26,7 +26,8 @@
       "@context/*": ["./src/context/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@utils/*": ["./src/utils/*"],
-      "@constants/*": ["./src/constants/*"]
+      "@constants/*": ["./src/constants/*"],
+      "@api/*": ["./src/api/*"]
     },
 
     /* Linting */

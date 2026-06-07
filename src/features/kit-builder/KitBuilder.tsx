@@ -8,13 +8,13 @@ import {
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
 import Modal from '@components/ui/Modal';
-import { products, addProduct } from '../data/products';
-import { subscribeToProducts, getProductsVersion } from '../data/products';
-import { categories, colors } from '../data/dictionaries';
+import { products, addProduct } from '@data/products';
+import { subscribeToProducts, getProductsVersion } from '@data/products';
+import { categories, colors } from '@data/dictionaries';
 import type { ProductWithRelations } from '@app-types';
-import { useLanguage } from '../context/LanguageContext';
-import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
-import { productsApi } from '../api/products';
+import { useLanguage } from '@context/LanguageContext';
+import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
+import { productsApi } from '@api/products';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable, szu: Zap, bzu: Wifi, azu: Car, headphones: Headphones,

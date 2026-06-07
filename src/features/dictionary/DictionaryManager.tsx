@@ -9,13 +9,13 @@ import {
   categories, models, colors, suppliers, connectors, chargingProtocols, materials,
   addCategory, addModel, addColor, addSupplier, addConnector, addProtocol, addMaterial,
   updateCategory, updateModel, updateColor, updateSupplier, updateConnector, updateProtocol, updateMaterial,
-} from '../data/dictionaries';
-import { rebuildProducts } from '../data/products';
+} from '@data/dictionaries';
+import { rebuildProducts } from '@data/products';
 import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '@app-types';
-import { useLanguage } from '../context/LanguageContext';
-import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
+import { useLanguage } from '@context/LanguageContext';
+import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
 import Modal from '@components/ui/Modal';
-import { dictionariesApi } from '../api/dictionaries';
+import { dictionariesApi } from '@api/dictionaries';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 

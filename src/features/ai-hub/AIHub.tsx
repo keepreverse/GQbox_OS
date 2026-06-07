@@ -3,7 +3,7 @@ import {
   Sparkles, FileText, Image, Languages, BarChart3,
   Send, Brain, User
 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 
 interface ChatMessage {
   id: string;

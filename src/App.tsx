@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Layout from '@components/layout/Layout';
-import Dashboard from './components/Dashboard';
-import Architecture from './components/Architecture';
-import ProductMatrix from './components/ProductMatrix';
-import SKUConstructor from './components/SKUConstructor';
-import DictionaryManager from './components/DictionaryManager';
-import KitBuilder from './components/KitBuilder';
-import MediaManager from './components/MediaManager';
-import AIHub from './components/AIHub';
+import Dashboard from '@features/dashboard/Dashboard';
+import Architecture from '@features/architecture/Architecture';
+import ProductMatrix from '@features/product-matrix/ProductMatrix';
+import SKUConstructor from '@features/sku-constructor/SKUConstructor';
+import DictionaryManager from '@features/dictionary/DictionaryManager';
+import KitBuilder from '@features/kit-builder/KitBuilder';
+import MediaManager from '@features/media/MediaManager';
+import AIHub from '@features/ai-hub/AIHub';
 import type { ViewType, MatrixFilters } from '@app-types';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider } from '@context/LanguageContext';
 
 function getInitialView(): ViewType {
   try {

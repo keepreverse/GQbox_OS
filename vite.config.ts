@@ -23,6 +23,7 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "src/hooks"),
       "@utils": path.resolve(__dirname, "src/utils"),
       "@constants": path.resolve(__dirname, "src/constants"),
+      "@api": path.resolve(__dirname, "src/api"),
     },
   },
   server: {

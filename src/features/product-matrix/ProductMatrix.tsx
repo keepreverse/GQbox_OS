@@ -5,12 +5,12 @@ import {
   ArrowLeftRight, Pin, GripVertical, Smartphone, Package, Archive, Monitor,
   ChevronLeft, ChevronRight, SlidersHorizontal, Check
 } from 'lucide-react';
-import { products, subscribeToProducts, getProductsVersion } from '../data/products';
-import { categories, suppliers, colors } from '../data/dictionaries';
+import { products, subscribeToProducts, getProductsVersion } from '@data/products';
+import { categories, suppliers, colors } from '@data/dictionaries';
 import type { ProductWithRelations, MatrixFilters } from '@app-types';
-import { useLanguage } from '../context/LanguageContext';
-import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
-import ProductDetailCard from './ProductDetailCard';
+import { useLanguage } from '@context/LanguageContext';
+import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
+import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 

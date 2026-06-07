@@ -5,8 +5,8 @@ import {
   Box, GitBranch, Table, Key,
   Shield, Zap, Search, Server
 } from 'lucide-react';
-import { architectureNotes, skuLogic, namingLogic, entities, relationships, skuLogicEn, namingLogicEn, architectureNotesEn, entitiesEn } from '../data/architecture';
-import { useLanguage } from '../context/LanguageContext';
+import { architectureNotes, skuLogic, namingLogic, entities, relationships, skuLogicEn, namingLogicEn, architectureNotesEn, entitiesEn } from '@data/architecture';
+import { useLanguage } from '@context/LanguageContext';
 
 export default function Architecture() {
   const { t, language } = useLanguage();

@@ -6,13 +6,13 @@ import {
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '../data/dictionaries';
-import { getModelsByCategory } from '../data/dictionaries';
-import { products, addProduct } from '../data/products';
-import { subscribeToProducts, getProductsVersion } from '../data/products';
-import { useLanguage } from '../context/LanguageContext';
-import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
-import { productsApi } from '../api/products';
+import { categories, models, colors, suppliers, connectors, chargingProtocols, materials } from '@data/dictionaries';
+import { getModelsByCategory } from '@data/dictionaries';
+import { products, addProduct } from '@data/products';
+import { subscribeToProducts, getProductsVersion } from '@data/products';
+import { useLanguage } from '@context/LanguageContext';
+import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
+import { productsApi } from '@api/products';
 
 interface SKUFormData {
   categoryId: string;

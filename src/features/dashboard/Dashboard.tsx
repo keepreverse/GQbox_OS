@@ -6,18 +6,18 @@ import {
   TrendingUp, TrendingDown, Activity, Layers, Hash, FileText,
   ChevronRight, AlertCircle, Wrench, Upload, Ruler, Palette
 } from 'lucide-react';
-import { products } from '../data/products';
-import { subscribeToProducts, getProductsVersion } from '../data/products';
-import { categories, colors } from '../data/dictionaries';
+import { products } from '@data/products';
+import { subscribeToProducts, getProductsVersion } from '@data/products';
+import { categories, colors } from '@data/dictionaries';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, Customized
 } from 'recharts';
-import { useLanguage } from '../context/LanguageContext';
-import { useLayout } from '../context/LayoutContext';
+import { useLanguage } from '@context/LanguageContext';
+import { useLayout } from '@context/LayoutContext';
 import type { ViewType, MatrixFilters } from '@app-types';
-import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
-import ProductDetailCard from './ProductDetailCard';
+import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
+import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import type { ProductWithRelations } from '@app-types';
 
 const DASH_INITIAL_KEY = 'gqbox_dash_initial_v2';

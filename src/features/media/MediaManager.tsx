@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import { useLanguage } from '../context/LanguageContext';
-import { useLayout } from '../context/LayoutContext';
+import { useLanguage } from '@context/LanguageContext';
+import { useLayout } from '@context/LayoutContext';
 import Modal from '@components/ui/Modal';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
