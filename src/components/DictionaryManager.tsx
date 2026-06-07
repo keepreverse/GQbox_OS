@@ -14,9 +14,9 @@ import { rebuildProducts } from '../data/products';
 import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
-import Modal from './Modal';
+import Modal from '@components/ui/Modal';
 import { dictionariesApi } from '../api/dictionaries';
-import { ResponsiveTable } from './ResponsiveTable';
+import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'protocols' | 'materials';

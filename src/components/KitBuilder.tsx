@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import Modal from './Modal';
+import Modal from '@components/ui/Modal';
 import { products, addProduct } from '../data/products';
 import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, colors } from '../data/dictionaries';

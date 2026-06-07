@@ -11,7 +11,7 @@ import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
-import { ResponsiveTable } from './ResponsiveTable';
+import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 
 const categoryIcons: Record<string, React.ElementType> = {

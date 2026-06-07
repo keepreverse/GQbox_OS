@@ -3,7 +3,7 @@ import { X, Image as ImageIcon, Video, Tag, Zap, Ruler, Users, Plug, Battery, Li
 import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '../utils/display';
-import Modal from './Modal';
+import Modal from '@components/ui/Modal';
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;

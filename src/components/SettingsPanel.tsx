@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Settings, LogOut, Shield, Code2, Key } from 'lucide-react';
-import Modal from './Modal';
+import Modal from '@components/ui/Modal';
 import Toggle from './ui/Toggle';
 import SettingsRow from './ui/SettingsRow';
 import { useLanguage } from '../context/LanguageContext';
