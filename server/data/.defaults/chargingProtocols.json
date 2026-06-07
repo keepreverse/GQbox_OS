@@ -2,81 +2,71 @@
   {
     "id": "proto-gan",
     "code": "GaN",
-    "name": "GaN",
-    "nameRu": "GaN",
-    "nameEn": "GaN",
-    "description": ""
+    "description": "",
+    "name_source": "GaN",
+    "name_product": "GaN"
   },
   {
     "id": "proto-pd",
     "code": "PD",
-    "name": "PD",
-    "nameRu": "PD",
-    "nameEn": "PD",
-    "description": ""
+    "description": "",
+    "name_source": "PD",
+    "name_product": "PD"
   },
   {
     "id": "proto-pd-qc3",
     "code": "PD,QC3",
-    "name": "PD,QC3",
-    "nameRu": "PD,QC3",
-    "nameEn": "PD,QC3",
-    "description": ""
+    "description": "",
+    "name_source": "PD,QC3",
+    "name_product": "PD,QC3"
   },
   {
     "id": "proto-pps-ufcs",
     "code": "pd/pps/ufcs",
-    "name": "pd/pps/ufcs",
-    "nameRu": "pd/pps/ufcs",
-    "nameEn": "pd/pps/ufcs",
-    "description": ""
+    "description": "",
+    "name_source": "pd/pps/ufcs",
+    "name_product": "pd/pps/ufcs"
   },
   {
     "id": "proto-pd-qc3-bc",
     "code": "pd/qc3.0/bc",
-    "name": "pd/qc3.0/bc",
-    "nameRu": "pd/qc3.0/bc",
-    "nameEn": "pd/qc3.0/bc",
-    "description": ""
+    "description": "",
+    "name_source": "pd/qc3.0/bc",
+    "name_product": "pd/qc3.0/bc"
   },
   {
     "id": "proto-qc",
     "code": "QC",
-    "name": "QC",
-    "nameRu": "QC",
-    "nameEn": "QC",
-    "description": ""
+    "description": "",
+    "name_source": "QC",
+    "name_product": "QC"
   },
   {
     "id": "proto-qc3-pd",
     "code": "QC3.0+PD",
-    "name": "QC3.0+PD",
-    "nameRu": "QC3.0 22.5W+PD 30W",
-    "nameEn": "QC3.0 22.5W+PD 30W",
-    "description": ""
+    "description": "",
+    "name_source": "QC3.0+PD",
+    "name_product": "QC3.0 22.5W+PD 30W"
   },
   {
     "id": "proto-qi1",
     "code": "QI1",
-    "name": "QI1",
-    "nameRu": "QI1",
-    "nameEn": "QI1",
-    "description": ""
+    "description": "",
+    "name_source": "QI1",
+    "name_product": "QI1"
   },
   {
     "id": "proto-qi2",
     "code": "QI2",
-    "name": "QI2",
-    "nameRu": "QI2",
-    "nameEn": "QI2",
-    "description": ""
+    "description": "",
+    "name_source": "QI2",
+    "name_product": "QI2"
   },
   {
     "id": "proto-multi",
     "code": "multi",
-    "name": "multi",
-    "nameRu": "USB-TC:pd/qc3.0/bc; TC-TC:pd/pps/ufcs",
-    "nameEn": "USB-TC:pd/qc3.0/bc; TC-TC:pd/pps/ufcs",
-    "description": ""
+    "description": "",
+    "name_source": "multi",
+    "name_product": "USB-TC:pd/qc3.0/bc; TC-TC:pd/pps/ufcs"
   }
 ]

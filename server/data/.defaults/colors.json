@@ -2,329 +2,288 @@
   {
     "id": "col-01",
     "code": "01",
-    "name": "ЧЕРНЫЙ",
-    "nameRu": "ЧЕРНЫЙ",
-    "nameEn": "BLACK",
-    "hexValue": "#1a1a1a"
+    "hexValue": "#1a1a1a",
+    "name_source": "ЧЕРНЫЙ",
+    "name_product": "ЧЕРНЫЙ"
   },
   {
     "id": "col-22",
     "code": "22",
-    "name": "ТЕМНО-СЕРЫЙ",
-    "nameRu": "ТЕМНО-СЕРЫЙ",
-    "nameEn": "DARK GRAY",
-    "hexValue": "#374151"
+    "hexValue": "#374151",
+    "name_source": "ТЕМНО-СЕРЫЙ",
+    "name_product": "ТЕМНО-СЕРЫЙ"
   },
   {
     "id": "col-36",
     "code": "36",
-    "name": "СЕРЫЙ",
-    "nameRu": "СЕРЫЙ",
-    "nameEn": "GRAY",
-    "hexValue": "#6b7280"
+    "hexValue": "#6b7280",
+    "name_source": "СЕРЫЙ",
+    "name_product": "СЕРЫЙ"
   },
   {
     "id": "col-39",
     "code": "39",
-    "name": "СЕРЕБРО",
-    "nameRu": "СЕРЕБРО",
-    "nameEn": "SILVER",
-    "hexValue": "#c0c0c0"
+    "hexValue": "#c0c0c0",
+    "name_source": "СЕРЕБРО",
+    "name_product": "СЕРЕБРО"
   },
   {
     "id": "col-02",
     "code": "02",
-    "name": "БЕЛЫЙ",
-    "nameRu": "БЕЛЫЙ",
-    "nameEn": "WHITE",
-    "hexValue": "#f5f5f5"
+    "hexValue": "#f5f5f5",
+    "name_source": "БЕЛЫЙ",
+    "name_product": "БЕЛЫЙ"
   },
   {
     "id": "col-40",
     "code": "40",
-    "name": "АНТИЧНЫЙ БЕЛЫЙ",
-    "nameRu": "АНТИЧНЫЙ БЕЛЫЙ",
-    "nameEn": "ANTIQUE WHITE",
-    "hexValue": "#faebd7"
+    "hexValue": "#faebd7",
+    "name_source": "АНТИЧНЫЙ БЕЛЫЙ",
+    "name_product": "АНТИЧНЫЙ БЕЛЫЙ"
   },
   {
     "id": "col-32",
     "code": "32",
-    "name": "БОРДОВЫЙ",
-    "nameRu": "БОРДОВЫЙ",
-    "nameEn": "BURGUNDY",
-    "hexValue": "#800020"
+    "hexValue": "#800020",
+    "name_source": "БОРДОВЫЙ",
+    "name_product": "БОРДОВЫЙ"
   },
   {
     "id": "col-33",
     "code": "33",
-    "name": "МАЛИНОВЫЙ",
-    "nameRu": "МАЛИНОВЫЙ",
-    "nameEn": "CRIMSON",
-    "hexValue": "#dc143c"
+    "hexValue": "#dc143c",
+    "name_source": "МАЛИНОВЫЙ",
+    "name_product": "МАЛИНОВЫЙ"
   },
   {
     "id": "col-03",
     "code": "03",
-    "name": "КРАСНЫЙ",
-    "nameRu": "КРАСНЫЙ",
-    "nameEn": "RED",
-    "hexValue": "#dc2626"
+    "hexValue": "#dc2626",
+    "name_source": "КРАСНЫЙ",
+    "name_product": "КРАСНЫЙ"
   },
   {
     "id": "col-04",
     "code": "04",
-    "name": "КРАСНОЕ ЗОЛОТО",
-    "nameRu": "КРАСНОЕ ЗОЛОТО",
-    "nameEn": "RED GOLD",
-    "hexValue": "#c0392b"
+    "hexValue": "#c0392b",
+    "name_source": "КРАСНОЕ ЗОЛОТО",
+    "name_product": "КРАСНОЕ ЗОЛОТО"
   },
   {
     "id": "col-06",
     "code": "06",
-    "name": "КОРИЧНЕВЫЙ",
-    "nameRu": "КОРИЧНЕВЫЙ",
-    "nameEn": "BROWN",
-    "hexValue": "#92400e"
+    "hexValue": "#92400e",
+    "name_source": "КОРИЧНЕВЫЙ",
+    "name_product": "КОРИЧНЕВЫЙ"
   },
   {
     "id": "col-05",
     "code": "05",
-    "name": "КОРАЛЛОВЫЙ",
-    "nameRu": "КОРАЛЛОВЫЙ",
-    "nameEn": "CORAL",
-    "hexValue": "#ff7f50"
+    "hexValue": "#ff7f50",
+    "name_source": "КОРАЛЛОВЫЙ",
+    "name_product": "КОРАЛЛОВЫЙ"
   },
   {
     "id": "col-07",
     "code": "07",
-    "name": "ОРАНЖЕВЫЙ",
-    "nameRu": "ОРАНЖЕВЫЙ",
-    "nameEn": "ORANGE",
-    "hexValue": "#f97316"
+    "hexValue": "#f97316",
+    "name_source": "ОРАНЖЕВЫЙ",
+    "name_product": "ОРАНЖЕВЫЙ"
   },
   {
     "id": "col-38",
     "code": "38",
-    "name": "ТЕМНО-БЕЖЕВЫЙ",
-    "nameRu": "ТЕМНО-БЕЖЕВЫЙ",
-    "nameEn": "DARK BEIGE",
-    "hexValue": "#a1887f"
+    "hexValue": "#a1887f",
+    "name_source": "ТЕМНО-БЕЖЕВЫЙ",
+    "name_product": "ТЕМНО-БЕЖЕВЫЙ"
   },
   {
     "id": "col-09",
     "code": "09",
-    "name": "БЕЖЕВЫЙ",
-    "nameRu": "БЕЖЕВЫЙ",
-    "nameEn": "BEIGE",
-    "hexValue": "#d4b896"
+    "hexValue": "#d4b896",
+    "name_source": "БЕЖЕВЫЙ",
+    "name_product": "БЕЖЕВЫЙ"
   },
   {
     "id": "col-08",
     "code": "08",
-    "name": "ПЕРСИКОВЫЙ",
-    "nameRu": "ПЕРСИКОВЫЙ",
-    "nameEn": "PEACH",
-    "hexValue": "#ffdab9"
+    "hexValue": "#ffdab9",
+    "name_source": "ПЕРСИКОВЫЙ",
+    "name_product": "ПЕРСИКОВЫЙ"
   },
   {
     "id": "col-10",
     "code": "10",
-    "name": "ЗОЛОТОЙ",
-    "nameRu": "ЗОЛОТОЙ",
-    "nameEn": "GOLD",
-    "hexValue": "#fbbf24"
+    "hexValue": "#fbbf24",
+    "name_source": "ЗОЛОТОЙ",
+    "name_product": "ЗОЛОТОЙ"
   },
   {
     "id": "col-11",
     "code": "11",
-    "name": "ЖЕЛТЫЙ",
-    "nameRu": "ЖЕЛТЫЙ",
-    "nameEn": "YELLOW",
-    "hexValue": "#eab308"
+    "hexValue": "#eab308",
+    "name_source": "ЖЕЛТЫЙ",
+    "name_product": "ЖЕЛТЫЙ"
   },
   {
     "id": "col-12",
     "code": "12",
-    "name": "АНТИЧНОЕ ЗОЛОТО",
-    "nameRu": "АНТИЧНОЕ ЗОЛОТО",
-    "nameEn": "ANTIQUE GOLD",
-    "hexValue": "#cfb53b"
+    "hexValue": "#cfb53b",
+    "name_source": "АНТИЧНОЕ ЗОЛОТО",
+    "name_product": "АНТИЧНОЕ ЗОЛОТО"
   },
   {
     "id": "col-13",
     "code": "13",
-    "name": "БОЛОТНЫЙ",
-    "nameRu": "БОЛОТНЫЙ",
-    "nameEn": "MARSH",
-    "hexValue": "#556b2f"
+    "hexValue": "#556b2f",
+    "name_source": "БОЛОТНЫЙ",
+    "name_product": "БОЛОТНЫЙ"
   },
   {
     "id": "col-14",
     "code": "14",
-    "name": "САЛАТОВЫЙ",
-    "nameRu": "САЛАТОВЫЙ",
-    "nameEn": "LIGHT GREEN",
-    "hexValue": "#84cc16"
+    "hexValue": "#84cc16",
+    "name_source": "САЛАТОВЫЙ",
+    "name_product": "САЛАТОВЫЙ"
   },
   {
     "id": "col-15",
     "code": "15",
-    "name": "СЕРО-ЗЕЛЕНЫЙ",
-    "nameRu": "СЕРО-ЗЕЛЕНЫЙ",
-    "nameEn": "GRAY-GREEN",
-    "hexValue": "#8fbc8f"
+    "hexValue": "#8fbc8f",
+    "name_source": "СЕРО-ЗЕЛЕНЫЙ",
+    "name_product": "СЕРО-ЗЕЛЕНЫЙ"
   },
   {
     "id": "col-16",
     "code": "16",
-    "name": "ЗЕЛЕНЫЙ",
-    "nameRu": "ЗЕЛЕНЫЙ",
-    "nameEn": "GREEN",
-    "hexValue": "#16a34a"
+    "hexValue": "#16a34a",
+    "name_source": "ЗЕЛЕНЫЙ",
+    "name_product": "ЗЕЛЕНЫЙ"
   },
   {
     "id": "col-17",
     "code": "17",
-    "name": "МЯТНЫЙ",
-    "nameRu": "МЯТНЫЙ",
-    "nameEn": "MINT",
-    "hexValue": "#6ee7b7"
+    "hexValue": "#6ee7b7",
+    "name_source": "МЯТНЫЙ",
+    "name_product": "МЯТНЫЙ"
   },
   {
     "id": "col-18",
     "code": "18",
-    "name": "СИНЕ-ЗЕЛЕНЫЙ",
-    "nameRu": "СИНЕ-ЗЕЛЕНЫЙ",
-    "nameEn": "BLUE-GREEN",
-    "hexValue": "#0d9488"
+    "hexValue": "#0d9488",
+    "name_source": "СИНЕ-ЗЕЛЕНЫЙ",
+    "name_product": "СИНЕ-ЗЕЛЕНЫЙ"
   },
   {
     "id": "col-19",
     "code": "19",
-    "name": "СЕРО-БИРЮЗОВЫЙ",
-    "nameRu": "СЕРО-БИРЮЗОВЫЙ",
-    "nameEn": "GRAY-TURQUOISE",
-    "hexValue": "#5f9ea0"
+    "hexValue": "#5f9ea0",
+    "name_source": "СЕРО-БИРЮЗОВЫЙ",
+    "name_product": "СЕРО-БИРЮЗОВЫЙ"
   },
   {
     "id": "col-20",
     "code": "20",
-    "name": "БИРЮЗОВЫЙ",
-    "nameRu": "БИРЮЗОВЫЙ",
-    "nameEn": "TURQUOISE",
-    "hexValue": "#06b6d4"
+    "hexValue": "#06b6d4",
+    "name_source": "БИРЮЗОВЫЙ",
+    "name_product": "БИРЮЗОВЫЙ"
   },
   {
     "id": "col-21",
     "code": "21",
-    "name": "НЕБЕСНО-ГОЛУБОЙ",
-    "nameRu": "НЕБЕСНО-ГОЛУБОЙ",
-    "nameEn": "SKY BLUE",
-    "hexValue": "#0ea5e9"
+    "hexValue": "#0ea5e9",
+    "name_source": "НЕБЕСНО-ГОЛУБОЙ",
+    "name_product": "НЕБЕСНО-ГОЛУБОЙ"
   },
   {
     "id": "col-37",
     "code": "37",
-    "name": "СЕРО-СИНИЙ",
-    "nameRu": "СЕРО-СИНИЙ",
-    "nameEn": "BLUE-GRAY",
-    "hexValue": "#64748b"
+    "hexValue": "#64748b",
+    "name_source": "СЕРО-СИНИЙ",
+    "name_product": "СЕРО-СИНИЙ"
   },
   {
     "id": "col-23",
     "code": "23",
-    "name": "ГОЛУБОЙ",
-    "nameRu": "ГОЛУБОЙ",
-    "nameEn": "BLUE",
-    "hexValue": "#2563eb"
+    "hexValue": "#2563eb",
+    "name_source": "ГОЛУБОЙ",
+    "name_product": "ГОЛУБОЙ"
   },
   {
     "id": "col-24",
     "code": "24",
-    "name": "ЯРКО-СИНИЙ",
-    "nameRu": "ЯРКО-СИНИЙ",
-    "nameEn": "BRIGHT BLUE",
-    "hexValue": "#1d4ed8"
+    "hexValue": "#1d4ed8",
+    "name_source": "ЯРКО-СИНИЙ",
+    "name_product": "ЯРКО-СИНИЙ"
   },
   {
     "id": "col-25",
     "code": "25",
-    "name": "СИНИЙ",
-    "nameRu": "СИНИЙ",
-    "nameEn": "NAVY",
-    "hexValue": "#1e40af"
+    "hexValue": "#1e40af",
+    "name_source": "СИНИЙ",
+    "name_product": "СИНИЙ"
   },
   {
     "id": "col-26",
     "code": "26",
-    "name": "ФИАЛКОВЫЙ",
-    "nameRu": "ФИАЛКОВЫЙ",
-    "nameEn": "VIOLET",
-    "hexValue": "#917af7"
+    "hexValue": "#917af7",
+    "name_source": "ФИАЛКОВЫЙ",
+    "name_product": "ФИАЛКОВЫЙ"
   },
   {
     "id": "col-27",
     "code": "27",
-    "name": "СИРЕНЕВЫЙ",
-    "nameRu": "СИРЕНЕВЫЙ",
-    "nameEn": "LILAC",
-    "hexValue": "#c084fc"
+    "hexValue": "#c084fc",
+    "name_source": "СИРЕНЕВЫЙ",
+    "name_product": "СИРЕНЕВЫЙ"
   },
   {
     "id": "col-28",
     "code": "28",
-    "name": "ФИОЛЕТОВЫЙ",
-    "nameRu": "ФИОЛЕТОВЫЙ",
-    "nameEn": "PURPLE",
-    "hexValue": "#9333ea"
+    "hexValue": "#9333ea",
+    "name_source": "ФИОЛЕТОВЫЙ",
+    "name_product": "ФИОЛЕТОВЫЙ"
   },
   {
     "id": "col-31",
     "code": "31",
-    "name": "РОЗОВЫЙ",
-    "nameRu": "РОЗОВЫЙ",
-    "nameEn": "PINK",
-    "hexValue": "#ec4899"
+    "hexValue": "#ec4899",
+    "name_source": "РОЗОВЫЙ",
+    "name_product": "РОЗОВЫЙ"
   },
   {
     "id": "col-30",
     "code": "30",
-    "name": "ЯРКО-РОЗОВЫЙ",
-    "nameRu": "ЯРКО-РОЗОВЫЙ",
-    "nameEn": "BRIGHT PINK",
-    "hexValue": "#ff1493"
+    "hexValue": "#ff1493",
+    "name_source": "ЯРКО-РОЗОВЫЙ",
+    "name_product": "ЯРКО-РОЗОВЫЙ"
   },
   {
     "id": "col-29",
     "code": "29",
-    "name": "ПЫЛЬНО-РОЗОВЫЙ",
-    "nameRu": "ПЫЛЬНО-РОЗОВЫЙ",
-    "nameEn": "DUSTY PINK",
-    "hexValue": "#f9a8d4"
+    "hexValue": "#f9a8d4",
+    "name_source": "ПЫЛЬНО-РОЗОВЫЙ",
+    "name_product": "ПЫЛЬНО-РОЗОВЫЙ"
   },
   {
     "id": "col-35",
     "code": "35",
-    "name": "НЕЖНО-РОЗОВЫЙ",
-    "nameRu": "НЕЖНО-РОЗОВЫЙ",
-    "nameEn": "SOFT PINK",
-    "hexValue": "#ffb6c1"
+    "hexValue": "#ffb6c1",
+    "name_source": "НЕЖНО-РОЗОВЫЙ",
+    "name_product": "НЕЖНО-РОЗОВЫЙ"
   },
   {
     "id": "col-34",
     "code": "34",
-    "name": "РОЗОВОЕ ЗОЛОТО",
-    "nameRu": "РОЗОВОЕ ЗОЛОТО",
-    "nameEn": "ROSE GOLD",
-    "hexValue": "#b76e79"
+    "hexValue": "#b76e79",
+    "name_source": "РОЗОВОЕ ЗОЛОТО",
+    "name_product": "РОЗОВОЕ ЗОЛОТО"
   },
   {
     "id": "col-41",
     "code": "41",
-    "name": "РАЗНОЦВЕТНЫЙ",
-    "nameRu": "РАЗНОЦВЕТНЫЙ",
-    "nameEn": "MULTICOLOR",
-    "hexValue": "gradient"
+    "hexValue": "gradient",
+    "name_source": "РАЗНОЦВЕТНЫЙ",
+    "name_product": "РАЗНОЦВЕТНЫЙ"
   }
 ]

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Column, ResponsiveTableProps } from '@app-types/table';
 import { validateColumnWidths } from '@app-types/table';
 
@@ -44,7 +45,7 @@ function BodyCell<T>({ col, row, index }: { col: Column<T>; row: T; index: numbe
   );
 }
 
-export function ResponsiveTable<T>({
+function ResponsiveTableInner<T>({
   columns,
   rows,
   rowKey,
@@ -108,5 +109,7 @@ export function ResponsiveTable<T>({
     </div>
   );
 }
+
+export const ResponsiveTable = memo(ResponsiveTableInner) as typeof ResponsiveTableInner;
 
 export default ResponsiveTable;

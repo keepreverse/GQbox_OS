@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { Palette, Plug, Zap, Truck, Layers, Tag, Plus, Edit3, X, Check, Box } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
@@ -63,191 +63,486 @@ function useIsNarrow(): boolean {
   return isNarrow;
 }
 
+const DICT_TYPE_MAP: Record<DictType, string> = {
+  categories: 'categories',
+  models: 'models',
+  colors: 'colors',
+  suppliers: 'suppliers',
+  connectors: 'connectors',
+  protocols: 'chargingProtocols',
+  materials: 'materials',
+};
+
+const LOCAL_UPDATE_MAP: Record<string, (id: string, updates: any) => void> = {
+  categories: updateCategory,
+  models: updateModel,
+  colors: updateColor,
+  suppliers: updateSupplier,
+  connectors: updateConnector,
+  chargingProtocols: updateProtocol,
+  materials: updateMaterial,
+};
+
+const EDIT_INPUT_CLS =
+  'w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary';
+
+const ID_PREFIX_MAP: Record<string, string> = {
+  categories: 'cat-',
+  models: 'mod-',
+  colors: 'col-',
+  suppliers: 'sup-',
+  connectors: 'conn-',
+  chargingProtocols: 'prot-',
+  materials: 'mat-',
+};
+
+const LOCAL_ADD_MAP: Record<string, (item: any) => boolean> = {
+  categories: addCategory,
+  models: addModel,
+  colors: addColor,
+  suppliers: addSupplier,
+  connectors: addConnector,
+  chargingProtocols: addProtocol,
+  materials: addMaterial,
+};
+
+const DICT_DATA_MAP = {
+  categories,
+  models,
+  colors,
+  suppliers,
+  connectors,
+  chargingProtocols,
+  materials,
+} as const;
+
+const MODAL_ICON_ADD = <Plus className="w-4 h-4 text-accent flex-shrink-0" />;
+const MODAL_ICON_EDIT = <Edit3 className="w-4 h-4 text-accent flex-shrink-0" />;
+
+interface DictionaryCardItemProps {
+  kind: DictType;
+  item: any;
+  language: ReturnType<typeof useLanguage>['language'];
+  editLabel: string;
+  onEdit: (item: any) => void;
+}
+
+const DictionaryCardItem = memo(function DictionaryCardItem({
+  kind,
+  item,
+  language,
+  editLabel,
+  onEdit,
+}: DictionaryCardItemProps) {
+  const parentCategory =
+    kind === 'models' ? categories.find((c) => c.id === item.categoryId) : undefined;
+
+  return (
+    <div className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 mb-1">
+          <code className="text-[10px] sm:text-xs text-accent shrink-0">{item.code}</code>
+        </div>
+        <p className="text-sm text-text-primary truncate">
+          {kind === 'suppliers' ? item.name : displayName(item, language)}
+        </p>
+        {kind !== 'suppliers' && (
+          <p className="text-[11px] text-text-tertiary truncate">{displaySource(item)}</p>
+        )}
+        {kind === 'categories' && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <div
+              className="w-3 h-3 rounded-full shrink-0"
+              style={{ background: getCategoryColorVar(item.code) }}
+            />
+            <span className="text-[10px] text-text-tertiary truncate">{item.color}</span>
+          </div>
+        )}
+        {kind === 'models' && parentCategory && (
+          <p className="text-[10px] mt-1.5 truncate" style={{ color: parentCategory.color }}>
+            {displaySource(parentCategory)}
+          </p>
+        )}
+        {kind === 'colors' && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <div
+              className="w-4 h-4 rounded-full shrink-0"
+              style={{
+                background:
+                  item.hexValue === 'gradient'
+                    ? 'conic-gradient(in hsl longer hue, red, red)'
+                    : item.hexValue,
+              }}
+            />
+            <span className="text-[10px] text-text-tertiary truncate">
+              {item.hexValue === 'gradient' ? '—' : item.hexValue}
+            </span>
+          </div>
+        )}
+        {kind === 'protocols' && item.description && (
+          <p className="text-[10px] text-text-tertiary mt-1.5 line-clamp-2">
+            {item.description}
+          </p>
+        )}
+      </div>
+        <button
+        type="button"
+        onClick={() => onEdit(item)}
+        className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
+        aria-label={editLabel}
+        title={editLabel}
+      >
+        <Edit3 className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+});
+
+interface AddDictionaryFormProps {
+  onSubmit: (data: { code: string; nameSource: string; nameProduct: string }) => Promise<boolean>;
+  onCancel: () => void;
+}
+
+function AddDictionaryForm({ onSubmit, onCancel }: AddDictionaryFormProps) {
+  const { t } = useLanguage();
+  const [code, setCode] = useState('');
+  const [nameSource, setNameSource] = useState('');
+  const [nameProduct, setNameProduct] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const canSave = !!(code && nameSource && nameProduct) && !saving;
+
+  const handleSubmit = useCallback(async () => {
+    if (!canSave) return;
+    setSaving(true);
+    try {
+      const ok = await onSubmit({ code, nameSource, nameProduct });
+      if (ok) {
+        setCode('');
+        setNameSource('');
+        setNameProduct('');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, [canSave, code, nameSource, nameProduct, onSubmit]);
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
+        <input
+          type="text"
+          placeholder={t('dict.form.code_placeholder')}
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          className="w-full text-text-primary h-11"
+        />
+      </div>
+      <div>
+        <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
+        <input
+          type="text"
+          placeholder={t('dict.form.source_placeholder')}
+          value={nameSource}
+          onChange={(e) => setNameSource(e.target.value)}
+          className="w-full text-text-primary h-11"
+        />
+      </div>
+      <div>
+        <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
+        <input
+          type="text"
+          placeholder={t('dict.form.product_placeholder')}
+          value={nameProduct}
+          onChange={(e) => setNameProduct(e.target.value)}
+          className="w-full text-text-primary h-11"
+        />
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1.5 rounded-lg text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
+        >
+          {t('dict.cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!canSave}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
+        >
+          <Check className="w-3.5 h-3.5" /> {t('dict.save')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface EditDictionaryFormProps {
+  item: any;
+  isSupplier: boolean;
+  onSubmit: (item: any, data: { nameSource: string; nameProduct: string }) => Promise<boolean>;
+  onCancel: () => void;
+}
+
+function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictionaryFormProps) {
+  const { t } = useLanguage();
+  const [nameSource, setNameSource] = useState(() => {
+    return typeof item.name_source === 'string' ? item.name_source : item.name || '';
+  });
+  const [nameProduct, setNameProduct] = useState(() => {
+    return typeof item.name_product === 'string'
+      ? item.name_product
+      : typeof item.name_source === 'string'
+        ? item.name_source
+        : '';
+  });
+  const [saving, setSaving] = useState(false);
+
+  const canSave =
+    !saving &&
+    !!nameSource &&
+    (isSupplier || !!nameProduct);
+
+  const handleSubmit = useCallback(async () => {
+    if (!canSave) return;
+    setSaving(true);
+    try {
+      await onSubmit(item, { nameSource, nameProduct });
+    } finally {
+      setSaving(false);
+    }
+  }, [canSave, item, nameSource, nameProduct, onSubmit]);
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
+        <div className="text-text-secondary font-mono text-sm h-11 flex items-center px-3 rounded-lg bg-bg-tertiary border border-border-subtle">
+          {item.code ?? ''}
+        </div>
+      </div>
+      {isSupplier ? (
+        <div>
+          <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.name')}</label>
+          <input
+            type="text"
+            placeholder={t('dict.form.source_placeholder')}
+            value={nameSource}
+            onChange={(e) => setNameSource(e.target.value)}
+            className="w-full text-text-primary h-11"
+          />
+        </div>
+      ) : (
+        <>
+          <div>
+            <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.source')}</label>
+            <input
+              type="text"
+              placeholder={t('dict.form.source_placeholder')}
+              value={nameSource}
+              onChange={(e) => setNameSource(e.target.value)}
+              className="w-full text-text-primary h-11"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-text-tertiary mb-1 block">{t('dict.form.product')}</label>
+            <input
+              type="text"
+              placeholder={t('dict.form.product_placeholder')}
+              value={nameProduct}
+              onChange={(e) => setNameProduct(e.target.value)}
+              className="w-full text-text-primary h-11"
+            />
+          </div>
+        </>
+      )}
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1.5 rounded-lg text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
+        >
+          {t('dict.cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!canSave}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
+        >
+          <Check className="w-3.5 h-3.5" /> {t('dict.save')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function DictionaryManager() {
   const { t, language } = useLanguage();
   const isNarrow = useIsNarrow();
   const [activeDict, setActiveDict] = useState<DictType>('categories');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const [code, setCode] = useState('');
-  const [nameSource, setNameSource] = useState('');
-  const [nameProduct, setNameProduct] = useState('');
   const { toast, showToast, hideToast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editNameSource, setEditNameSource] = useState('');
-  const [editNameProduct, setEditNameProduct] = useState('');
+  const editNameSourceRef = useRef<HTMLInputElement>(null);
+  const editNameProductRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setEditingId(null);
   }, [activeDict]);
 
-  const dictTypeMap: Record<DictType, string> = {
-    categories: 'categories',
-    models: 'models',
-    colors: 'colors',
-    suppliers: 'suppliers',
-    connectors: 'connectors',
-    protocols: 'chargingProtocols',
-    materials: 'materials',
-  };
+  const handleAddFormClose = useCallback(() => setShowAddForm(false), []);
+  const handleEditFormClose = useCallback(() => setEditingId(null), []);
 
-  const localUpdateMap: Record<string, (id: string, updates: any) => void> = {
-    categories: updateCategory,
-    models: updateModel,
-    colors: updateColor,
-    suppliers: updateSupplier,
-    connectors: updateConnector,
-    chargingProtocols: updateProtocol,
-    materials: updateMaterial,
-  };
-
-  const dictLabels: Record<DictType, string> = {
-    categories: t('dict.tab.categories'),
-    models: t('dict.tab.models'),
-    colors: t('dict.tab.colors'),
-    suppliers: t('dict.tab.suppliers'),
-    connectors: t('dict.tab.connectors'),
-    protocols: t('dict.tab.protocols'),
-    materials: t('dict.tab.materials'),
-  };
-  const dictConfig: { id: DictType; label: string; icon: React.ElementType; count: number }[] = [
-    { id: 'categories', label: dictLabels.categories, icon: Layers, count: categories.length },
-    { id: 'models', label: dictLabels.models, icon: Tag, count: models.length },
-    { id: 'colors', label: dictLabels.colors, icon: Palette, count: colors.length },
-    { id: 'suppliers', label: dictLabels.suppliers, icon: Truck, count: suppliers.length },
-    { id: 'connectors', label: dictLabels.connectors, icon: Plug, count: connectors.length },
-    { id: 'protocols', label: dictLabels.protocols, icon: Zap, count: chargingProtocols.length },
-    { id: 'materials', label: dictLabels.materials, icon: Box, count: materials.length },
-  ];
-
-  const handleSave = async () => {
-    if (!code || !nameSource || !nameProduct) return;
-
-    const idPrefixMap: Record<string, string> = {
-      categories: 'cat-',
-      models: 'mod-',
-      colors: 'col-',
-      suppliers: 'sup-',
-      connectors: 'conn-',
-      chargingProtocols: 'prot-',
-      materials: 'mat-',
-    };
-
-    const apiType = dictTypeMap[activeDict];
-    const prefix = idPrefixMap[apiType];
-    const id = `${prefix}${code}`;
-    const item: Record<string, unknown> = {
-      id,
-      code,
-      name_source: nameSource,
-      name_product: nameProduct,
-    };
-    if (apiType === 'suppliers') {
-      delete item.name_source;
-      delete item.name_product;
-      item.name = nameSource;
-    }
-
-    const dictData = {
-      categories,
-      models,
-      colors,
-      suppliers,
-      connectors,
-      chargingProtocols,
-      materials,
-    };
-    const entries = dictData[apiType as keyof typeof dictData] as any[];
-    const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
-    if (entries.some((e: any) => (e[sourceKey] || '').toLowerCase() === nameSource.toLowerCase())) {
-      showToast(t('dict.toast_source_duplicate').replace('{name}', nameSource), 'error');
-      return;
-    }
-
-    try {
-      await dictionariesApi.add(apiType as never, item);
-    } catch {
-      // API unavailable, continue with local only
-    }
-    const localAdd: Record<string, (item: any) => boolean> = {
-      categories: addCategory,
-      models: addModel,
-      colors: addColor,
-      suppliers: addSupplier,
-      connectors: addConnector,
-      chargingProtocols: addProtocol,
-      materials: addMaterial,
-    };
-    const added = localAdd[apiType]?.(item) ?? true;
-    rebuildProducts();
-    if (added) {
-      showToast(t('dict.toast_added').replace('{name}', nameProduct));
-      setCode('');
-      setNameSource('');
-      setNameProduct('');
-      setShowAddForm(false);
-    } else {
-      showToast(t('dict.toast_duplicate').replace('{code}', code), 'error');
-    }
-  };
-
-  const handleStartEdit = (item: any) => {
-    setEditingId(item.id);
-    setEditNameSource(typeof item.name_source === 'string' ? item.name_source : item.name || '');
-    setEditNameProduct(
-      typeof item.name_product === 'string' ? item.name_product : item.name_source || ''
+  const dictLabels: Record<DictType, string> = useMemo(
+    () => ({
+      categories: t('dict.tab.categories'),
+      models: t('dict.tab.models'),
+      colors: t('dict.tab.colors'),
+      suppliers: t('dict.tab.suppliers'),
+      connectors: t('dict.tab.connectors'),
+      protocols: t('dict.tab.protocols'),
+      materials: t('dict.tab.materials'),
+    }),
+    [t]
+  );
+  const dictConfig: { id: DictType; label: string; icon: React.ElementType; count: number }[] =
+    useMemo(
+      () => [
+        { id: 'categories', label: dictLabels.categories, icon: Layers, count: categories.length },
+        { id: 'models', label: dictLabels.models, icon: Tag, count: models.length },
+        { id: 'colors', label: dictLabels.colors, icon: Palette, count: colors.length },
+        { id: 'suppliers', label: dictLabels.suppliers, icon: Truck, count: suppliers.length },
+        {
+          id: 'connectors',
+          label: dictLabels.connectors,
+          icon: Plug,
+          count: connectors.length,
+        },
+        { id: 'protocols', label: dictLabels.protocols, icon: Zap, count: chargingProtocols.length },
+        { id: 'materials', label: dictLabels.materials, icon: Box, count: materials.length },
+      ],
+      [
+        dictLabels,
+        categories.length,
+        models.length,
+        colors.length,
+        suppliers.length,
+        connectors.length,
+        chargingProtocols.length,
+        materials.length,
+      ]
     );
-  };
 
-  const handleSaveEdit = async () => {
+  const handleSave = useCallback(
+    async (data: { code: string; nameSource: string; nameProduct: string }) => {
+      if (!data.code || !data.nameSource || !data.nameProduct) return false;
+
+      const apiType = DICT_TYPE_MAP[activeDict];
+      const prefix = ID_PREFIX_MAP[apiType];
+      const id = `${prefix}${data.code}`;
+      const item: Record<string, unknown> = {
+        id,
+        code: data.code,
+        name_source: data.nameSource,
+        name_product: data.nameProduct,
+      };
+      if (apiType === 'suppliers') {
+        delete item.name_source;
+        delete item.name_product;
+        item.name = data.nameSource;
+      }
+
+      const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
+      const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
+      if (
+        entries.some(
+          (e: any) => (e[sourceKey] || '').toLowerCase() === data.nameSource.toLowerCase()
+        )
+      ) {
+        showToast(t('dict.toast_source_duplicate').replace('{name}', data.nameSource), 'error');
+        return false;
+      }
+
+      try {
+        await dictionariesApi.add(apiType as never, item);
+      } catch {
+        // API unavailable, continue with local only
+      }
+      const added = LOCAL_ADD_MAP[apiType]?.(item) ?? true;
+      rebuildProducts();
+      if (added) {
+        showToast(t('dict.toast_added').replace('{name}', data.nameProduct));
+        setShowAddForm(false);
+        return true;
+      } else {
+        showToast(t('dict.toast_duplicate').replace('{code}', data.code), 'error');
+        return false;
+      }
+    },
+    [activeDict, t, showToast]
+  );
+
+  const handleStartEdit = useCallback((item: any) => {
+    setEditingId(item.id);
+  }, []);
+
+  const handleSaveEdit = useCallback(
+    async (item: any, data: { nameSource: string; nameProduct: string }) => {
+      const apiType = DICT_TYPE_MAP[activeDict];
+      const localType = DICT_TYPE_MAP[activeDict];
+      const updates: Record<string, unknown> = {
+        name_source: data.nameSource,
+        name_product: data.nameProduct,
+        name: data.nameSource,
+      };
+
+      const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
+      const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
+      if (
+        entries.some(
+          (e: any) =>
+            e.id !== item.id &&
+            (e[sourceKey] || '').toLowerCase() === data.nameSource.toLowerCase()
+        )
+      ) {
+        showToast(t('dict.toast_source_duplicate').replace('{name}', data.nameSource), 'error');
+        return false;
+      }
+
+      try {
+        await dictionariesApi.update(apiType as never, item.id, updates);
+      } catch {
+        // API unavailable, continue with local only
+      }
+      LOCAL_UPDATE_MAP[localType]?.(item.id, updates);
+      rebuildProducts();
+      showToast(t('dict.save_success').replace('{name}', data.nameProduct));
+      setEditingId(null);
+      return true;
+    },
+    [activeDict, t, showToast]
+  );
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+  }, []);
+
+  const handleSaveEditInline = useCallback(async () => {
     if (!editingId) return;
-    const apiType = dictTypeMap[activeDict];
-    const localType = dictTypeMap[activeDict];
-    const updates: Record<string, unknown> = {
-      name_source: editNameSource,
-      name_product: editNameProduct,
-      name: editNameSource,
-    };
-
-    const dictData = {
-      categories,
-      models,
-      colors,
-      suppliers,
-      connectors,
-      chargingProtocols,
-      materials,
-    };
-    const entries = dictData[apiType as keyof typeof dictData] as any[];
-    const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
-    if (
-      entries.some(
-        (e: any) =>
-          e.id !== editingId && (e[sourceKey] || '').toLowerCase() === editNameSource.toLowerCase()
-      )
-    ) {
-      showToast(t('dict.toast_source_duplicate').replace('{name}', editNameSource), 'error');
-      return;
-    }
-
-    try {
-      await dictionariesApi.update(apiType as never, editingId, updates);
-    } catch {
-      // API unavailable, continue with local only
-    }
-    localUpdateMap[localType]?.(editingId, updates);
-    rebuildProducts();
-    showToast(t('dict.save_success').replace('{name}', editNameProduct));
-    setEditingId(null);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-  };
-
-  const editInputCls =
-    'w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary';
+    const apiType = DICT_TYPE_MAP[activeDict];
+    const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
+    const item = entries.find((r) => r.id === editingId);
+    if (!item) return;
+    const nameSource = editNameSourceRef.current?.value ?? '';
+    const nameProduct = editNameProductRef.current?.value ?? '';
+    await handleSaveEdit(item, { nameSource, nameProduct });
+  }, [editingId, activeDict, handleSaveEdit]);
 
   const renderActions = (row: { id: string }) => {
     const isEditing = editingId === row.id;
@@ -255,7 +550,7 @@ export default function DictionaryManager() {
       return (
         <div className="flex items-center justify-end gap-1">
           <button
-            onClick={handleSaveEdit}
+            onClick={handleSaveEditInline}
             className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"
           >
             <Check className="w-3.5 h-3.5" />
@@ -286,9 +581,19 @@ export default function DictionaryManager() {
     if (editingId === row.id) {
       return (
         <input
-          value={editNameSource}
-          onChange={(e) => setEditNameSource(e.target.value)}
-          className={editInputCls}
+          ref={editNameSourceRef}
+          defaultValue={typeof row.name_source === 'string' ? row.name_source : row.name || ''}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSaveEditInline();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              handleCancelEdit();
+            }
+          }}
+          className={EDIT_INPUT_CLS}
           placeholder={t('dict.form.source_placeholder')}
         />
       );
@@ -305,9 +610,20 @@ export default function DictionaryManager() {
     if (editingId === row.id) {
       return (
         <input
-          value={editNameProduct}
-          onChange={(e) => setEditNameProduct(e.target.value)}
-          className={editInputCls}
+          ref={editNameProductRef}
+          defaultValue={
+            typeof row.name_product === 'string' ? row.name_product : row.name_source || ''
+          }
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSaveEditInline();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              handleCancelEdit();
+            }
+          }}
+          className={EDIT_INPUT_CLS}
           placeholder={t('dict.form.product_placeholder')}
         />
       );
@@ -319,7 +635,8 @@ export default function DictionaryManager() {
     );
   };
 
-  const dictColumns: Record<DictType, Column<any>[]> = {
+  const dictColumns: Record<DictType, Column<any>[]> = useMemo(
+    () => ({
     categories: [
       {
         key: 'code',
@@ -550,17 +867,32 @@ export default function DictionaryManager() {
         cell: renderActions,
       },
     ],
-  };
+  }),
+    [
+      t,
+      editingId,
+      language,
+      categories,
+      models,
+      handleSaveEdit,
+      handleCancelEdit,
+      handleStartEdit,
+      handleSaveEditInline,
+    ]
+  );
 
-  const dictRows: Record<DictType, unknown[]> = {
-    categories: categories as unknown[],
-    models: models as unknown[],
-    colors: colors as unknown[],
-    suppliers: suppliers as unknown[],
-    connectors: connectors as unknown[],
-    protocols: chargingProtocols as unknown[],
-    materials: materials as unknown[],
-  };
+  const dictRows: Record<DictType, unknown[]> = useMemo(
+    () => ({
+      categories: categories as unknown[],
+      models: models as unknown[],
+      colors: colors as unknown[],
+      suppliers: suppliers as unknown[],
+      connectors: connectors as unknown[],
+      protocols: chargingProtocols as unknown[],
+      materials: materials as unknown[],
+    }),
+    [categories, models, colors, suppliers, connectors, chargingProtocols, materials]
+  );
 
   const renderTable = () => {
     const cols = dictColumns[activeDict];
@@ -576,109 +908,32 @@ export default function DictionaryManager() {
     );
   };
 
-  const editBtn = (item: any) => (
-    <button
-      onClick={() => handleStartEdit(item)}
-      className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
-      aria-label={t('dict.edit_title')}
-      title={t('dict.edit_title')}
-    >
-      <Edit3 className="w-3.5 h-3.5" />
-    </button>
-  );
-
-  const codeChip = (code: string) => (
-    <code className="text-[10px] sm:text-xs text-accent shrink-0">{code}</code>
-  );
-
   const renderCards = () => {
+    const editLabel = t('dict.edit_title');
+    const common = { language, editLabel, onEdit: handleStartEdit };
+
     switch (activeDict) {
       case 'categories':
         return (
           <div className="space-y-2">
             {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(cat.code)}</div>
-                  <p className="text-sm text-text-primary truncate">{displayName(cat, language)}</p>
-                  <p className="text-[11px] text-text-tertiary truncate">{displaySource(cat)}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <div
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ background: getCategoryColorVar(cat.code) }}
-                    />
-                    <span className="text-[10px] text-text-tertiary truncate">{cat.color}</span>
-                  </div>
-                </div>
-                {editBtn(cat)}
-              </div>
+              <DictionaryCardItem key={cat.id} kind="categories" item={cat} {...common} />
             ))}
           </div>
         );
       case 'models':
         return (
           <div className="space-y-2">
-            {models.map((model) => {
-              const cat = categories.find((c) => c.id === model.categoryId);
-              return (
-                <div
-                  key={model.id}
-                  className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-1">{codeChip(model.code)}</div>
-                    <p className="text-sm text-text-primary truncate">
-                      {displayName(model, language)}
-                    </p>
-                    <p className="text-[11px] text-text-tertiary truncate">
-                      {displaySource(model)}
-                    </p>
-                    {cat && (
-                      <p className="text-[10px] mt-1.5 truncate" style={{ color: cat.color }}>
-                        {displaySource(cat)}
-                      </p>
-                    )}
-                  </div>
-                  {editBtn(model)}
-                </div>
-              );
-            })}
+            {models.map((model) => (
+              <DictionaryCardItem key={model.id} kind="models" item={model} {...common} />
+            ))}
           </div>
         );
       case 'colors':
         return (
           <div className="space-y-2">
             {colors.map((color) => (
-              <div
-                key={color.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(color.code)}</div>
-                  <p className="text-sm text-text-primary truncate">
-                    {displayName(color, language)}
-                  </p>
-                  <p className="text-[11px] text-text-tertiary truncate">{displaySource(color)}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <div
-                      className="w-4 h-4 rounded-full shrink-0"
-                      style={{
-                        background:
-                          color.hexValue === 'gradient'
-                            ? 'conic-gradient(in hsl longer hue, red, red)'
-                            : color.hexValue,
-                      }}
-                    />
-                    <span className="text-[10px] text-text-tertiary truncate">
-                      {color.hexValue === 'gradient' ? '—' : color.hexValue}
-                    </span>
-                  </div>
-                </div>
-                {editBtn(color)}
-              </div>
+              <DictionaryCardItem key={color.id} kind="colors" item={color} {...common} />
             ))}
           </div>
         );
@@ -686,16 +941,7 @@ export default function DictionaryManager() {
         return (
           <div className="space-y-2">
             {suppliers.map((sup) => (
-              <div
-                key={sup.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(sup.code)}</div>
-                  <p className="text-sm text-text-primary truncate">{sup.name}</p>
-                </div>
-                {editBtn(sup)}
-              </div>
+              <DictionaryCardItem key={sup.id} kind="suppliers" item={sup} {...common} />
             ))}
           </div>
         );
@@ -703,19 +949,7 @@ export default function DictionaryManager() {
         return (
           <div className="space-y-2">
             {connectors.map((conn) => (
-              <div
-                key={conn.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(conn.code)}</div>
-                  <p className="text-sm text-text-primary truncate">
-                    {displayName(conn, language)}
-                  </p>
-                  <p className="text-[11px] text-text-tertiary truncate">{displaySource(conn)}</p>
-                </div>
-                {editBtn(conn)}
-              </div>
+              <DictionaryCardItem key={conn.id} kind="connectors" item={conn} {...common} />
             ))}
           </div>
         );
@@ -723,24 +957,7 @@ export default function DictionaryManager() {
         return (
           <div className="space-y-2">
             {chargingProtocols.map((proto) => (
-              <div
-                key={proto.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(proto.code)}</div>
-                  <p className="text-sm text-text-primary truncate">
-                    {displayName(proto, language)}
-                  </p>
-                  <p className="text-[11px] text-text-tertiary truncate">{displaySource(proto)}</p>
-                  {proto.description && (
-                    <p className="text-[10px] text-text-tertiary mt-1.5 line-clamp-2">
-                      {proto.description}
-                    </p>
-                  )}
-                </div>
-                {editBtn(proto)}
-              </div>
+              <DictionaryCardItem key={proto.id} kind="protocols" item={proto} {...common} />
             ))}
           </div>
         );
@@ -748,26 +965,22 @@ export default function DictionaryManager() {
         return (
           <div className="space-y-2">
             {materials.map((mat) => (
-              <div
-                key={mat.id}
-                className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">{codeChip(mat.code)}</div>
-                  <p className="text-sm text-text-primary truncate">{displayName(mat, language)}</p>
-                  <p className="text-[11px] text-text-tertiary truncate">{displaySource(mat)}</p>
-                </div>
-                {editBtn(mat)}
-              </div>
+              <DictionaryCardItem key={mat.id} kind="materials" item={mat} {...common} />
             ))}
           </div>
         );
     }
   };
 
-  const editingItem = editingId
-    ? (dictRows[activeDict] as any[]).find((r) => r.id === editingId)
-    : null;
+  const editingItem = useMemo(
+    () =>
+      editingId
+        ? (dictRows[activeDict] as any[]).find((r) => r.id === editingId)
+        : null,
+    [editingId, activeDict, dictRows]
+  );
+
+  const activeDictLabel = dictConfig.find((d) => d.id === activeDict)?.label ?? '';
 
   return (
     <div className="space-y-6">
@@ -819,148 +1032,31 @@ export default function DictionaryManager() {
             variant="bottom-sheet"
             width="md"
             open={showAddForm}
-            onClose={() => setShowAddForm(false)}
-            title={`${t('dict.add_title')}${dictConfig.find((d) => d.id === activeDict)?.label ?? ''}`}
-            icon={<Plus className="w-4 h-4 text-accent flex-shrink-0" />}
+            onClose={handleAddFormClose}
+            title={`${t('dict.add_title')}${activeDictLabel}`}
+            icon={MODAL_ICON_ADD}
             ariaLabel={t('dict.add')}
-            footer={
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddForm(false)}
-                  className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                >
-                  {t('dict.cancel')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!code || !nameSource || !nameProduct}
-                  className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
-                >
-                  <Check className="w-4 h-4" /> {t('dict.save')}
-                </button>
-              </div>
-            }
           >
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('dict.col.code')}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('dict.form.code_placeholder')}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full text-text-primary h-11"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('dict.form.source')}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('dict.form.source_placeholder')}
-                  value={nameSource}
-                  onChange={(e) => setNameSource(e.target.value)}
-                  className="w-full text-text-primary h-11"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('dict.form.product')}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('dict.form.product_placeholder')}
-                  value={nameProduct}
-                  onChange={(e) => setNameProduct(e.target.value)}
-                  className="w-full text-text-primary h-11"
-                />
-              </div>
-            </div>
+            <AddDictionaryForm onSubmit={handleSave} onCancel={handleAddFormClose} />
           </Modal>
           <Modal
             variant="bottom-sheet"
             width="md"
-            open={editingId !== null}
-            onClose={handleCancelEdit}
-            title={`${t('dict.edit_title')}${dictConfig.find((d) => d.id === activeDict)?.label ?? ''}`}
-            icon={<Edit3 className="w-4 h-4 text-accent flex-shrink-0" />}
+            open={editingItem !== null}
+            onClose={handleEditFormClose}
+            title={`${t('dict.edit_title')}${activeDictLabel}`}
+            icon={MODAL_ICON_EDIT}
             ariaLabel={t('dict.edit_title')}
-            footer={
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="flex-1 h-11 rounded-lg text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border-subtle cursor-pointer"
-                >
-                  {t('dict.cancel')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveEdit}
-                  disabled={!editNameSource || (activeDict !== 'suppliers' && !editNameProduct)}
-                  className="flex-1 h-11 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-1.5"
-                >
-                  <Check className="w-4 h-4" /> {t('dict.save')}
-                </button>
-              </div>
-            }
           >
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-text-tertiary mb-1 block">
-                  {t('dict.col.code')}
-                </label>
-                <div className="text-text-secondary font-mono text-sm h-11 flex items-center px-3 rounded-lg bg-bg-tertiary border border-border-subtle">
-                  {editingItem?.code ?? ''}
-                </div>
-              </div>
-              {activeDict === 'suppliers' ? (
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                    {t('dict.col.name')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t('dict.form.source_placeholder')}
-                    value={editNameSource}
-                    onChange={(e) => setEditNameSource(e.target.value)}
-                    className="w-full text-text-primary h-11"
-                  />
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">
-                      {t('dict.form.source')}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder={t('dict.form.source_placeholder')}
-                      value={editNameSource}
-                      onChange={(e) => setEditNameSource(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-tertiary mb-1 block">
-                      {t('dict.form.product')}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder={t('dict.form.product_placeholder')}
-                      value={editNameProduct}
-                      onChange={(e) => setEditNameProduct(e.target.value)}
-                      className="w-full text-text-primary h-11"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+            {editingItem && (
+              <EditDictionaryForm
+                key={editingItem.id}
+                item={editingItem}
+                isSupplier={activeDict === 'suppliers'}
+                onSubmit={handleSaveEdit}
+                onCancel={handleEditFormClose}
+              />
+            )}
           </Modal>
         </>
       ) : (
@@ -987,59 +1083,9 @@ export default function DictionaryManager() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                    {t('dict.col.code')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t('dict.form.code_placeholder')}
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-full text-text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                    {t('dict.form.source')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t('dict.form.source_placeholder')}
-                    value={nameSource}
-                    onChange={(e) => setNameSource(e.target.value)}
-                    className="w-full text-text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-text-tertiary mb-1 block">
-                    {t('dict.form.product')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t('dict.form.product_placeholder')}
-                    value={nameProduct}
-                    onChange={(e) => setNameProduct(e.target.value)}
-                    className="w-full text-text-primary"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs sm:text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
-                >
-                  {t('dict.cancel')}
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={!code || !nameSource || !nameProduct}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
-                >
-                  <Check className="w-3.5 h-3.5" /> {t('dict.save')}
-                </button>
-              </div>
+              {showAddForm && (
+                <AddDictionaryForm onSubmit={handleSave} onCancel={handleAddFormClose} />
+              )}
             </div>
           </div>
         </div>

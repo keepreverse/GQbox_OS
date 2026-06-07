@@ -113,7 +113,11 @@ export default function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: BACKDROP_DUR, ease: BACKDROP_EASE }}
             onClick={closeOnBackdropClick ? onClose : undefined}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className={
+              resolvedVariant === 'bottom-sheet'
+                ? 'absolute inset-0 bg-black/60'
+                : 'absolute inset-0 bg-black/40 backdrop-blur-sm'
+            }
             aria-hidden="true"
           />
           <motion.div

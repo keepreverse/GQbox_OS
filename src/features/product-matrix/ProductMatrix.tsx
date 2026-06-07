@@ -1,4 +1,4 @@
-import { useState, useMemo, useSyncExternalStore, useEffect } from 'react';
+import { useState, useMemo, useSyncExternalStore, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -67,6 +67,7 @@ export default function ProductMatrix({
   const [exporting, setExporting] = useState(false);
   const [tableKey, setTableKey] = useState(0);
   const pageSize = 15;
+  const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
 
   const productsVersion = useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
@@ -769,7 +770,7 @@ export default function ProductMatrix({
       {/* Product Detail Card */}
       <AnimatePresence>
         {selectedProduct && (
-          <ProductDetailCard product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+          <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />
         )}
       </AnimatePresence>
     </div>

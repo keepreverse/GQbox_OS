@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, useSyncExternalStore } from 'react';
+import { useMemo, useState, useRef, useEffect, useSyncExternalStore, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Cable,
@@ -126,6 +126,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
   const { t, language } = useLanguage();
   const { sidebarCollapsed } = useLayout();
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
+  const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
 
   const SupplierTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
@@ -898,7 +899,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       {/* Product Detail Modal */}
       <AnimatePresence>
         {selectedProduct && (
-          <ProductDetailCard product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+          <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />
         )}
       </AnimatePresence>
     </div>

@@ -2,25 +2,29 @@
   {
     "id": "sup-angela",
     "code": "A",
-    "name": "Angela",
-    "contactInfo": ""
+    "contactInfo": "",
+    "name_source": "Angela",
+    "name_product": "Angela"
   },
   {
     "id": "sup-wendy",
     "code": "W",
-    "name": "Wendy",
-    "contactInfo": ""
+    "contactInfo": "",
+    "name_source": "Wendy",
+    "name_product": "Wendy"
   },
   {
     "id": "sup-both",
     "code": "AW",
-    "name": "Angela+Wendy",
-    "contactInfo": ""
+    "contactInfo": "",
+    "name_source": "Angela+Wendy",
+    "name_product": "Angela+Wendy"
   },
   {
     "id": "sup-none",
     "code": "-",
-    "name": "—",
-    "contactInfo": ""
+    "contactInfo": "",
+    "name_source": "—",
+    "name_product": "—"
   }
 ]

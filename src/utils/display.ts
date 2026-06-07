@@ -14,22 +14,23 @@ export function displaySource(
   return item.name_source || item.code || '';
 }
 
+const CATEGORY_COLOR_VAR_MAP: Record<string, string> = {
+  cable: 'var(--color-cable)',
+  szu: 'var(--color-szu)',
+  bzu: 'var(--color-bzu)',
+  azu: 'var(--color-azu)',
+  headphones: 'var(--color-headphones)',
+  adapter: 'var(--color-adapter)',
+  pin: 'var(--color-pin)',
+  holder: 'var(--color-holder)',
+  case: 'var(--color-case)',
+  kit: 'var(--color-kit)',
+  packaging: 'var(--color-packaging)',
+  blogo: 'var(--color-blogo)',
+};
+
 export function getCategoryColorVar(code: string): string {
-  const map: Record<string, string> = {
-    cable: 'var(--color-cable)',
-    szu: 'var(--color-szu)',
-    bzu: 'var(--color-bzu)',
-    azu: 'var(--color-azu)',
-    headphones: 'var(--color-headphones)',
-    adapter: 'var(--color-adapter)',
-    pin: 'var(--color-pin)',
-    holder: 'var(--color-holder)',
-    case: 'var(--color-case)',
-    kit: 'var(--color-kit)',
-    packaging: 'var(--color-packaging)',
-    blogo: 'var(--color-blogo)',
-  };
-  return map[code] || 'var(--color-accent)';
+  return CATEGORY_COLOR_VAR_MAP[code] || 'var(--color-accent)';
 }
 
 export function displayProductName(item: { productName?: string }): string {

@@ -2,57 +2,49 @@
   {
     "id": "mat-plastic",
     "code": "plastic",
-    "name": "пластик",
-    "nameRu": "пластик",
-    "nameEn": "plastic"
+    "name_source": "пластик",
+    "name_product": "пластик"
   },
   {
     "id": "mat-aluminum",
     "code": "aluminum",
-    "name": "алюминий",
-    "nameRu": "алюминий",
-    "nameEn": "aluminum"
+    "name_source": "алюминий",
+    "name_product": "алюминий"
   },
   {
     "id": "mat-alloy",
     "code": "alloy",
-    "name": "алюминиевый сплав",
-    "nameRu": "алюминиевый сплав",
-    "nameEn": "aluminium alloy"
+    "name_source": "алюминиевый сплав",
+    "name_product": "алюминиевый сплав"
   },
   {
     "id": "mat-zinc",
     "code": "zinc",
-    "name": "цинк",
-    "nameRu": "цинк",
-    "nameEn": "zinc"
+    "name_source": "цинк",
+    "name_product": "цинк"
   },
   {
     "id": "mat-carbon",
     "code": "carbon",
-    "name": "карбон",
-    "nameRu": "карбон",
-    "nameEn": "carbon"
+    "name_source": "карбон",
+    "name_product": "карбон"
   },
   {
     "id": "mat-silicone",
     "code": "silicone",
-    "name": "силикон",
-    "nameRu": "силикон",
-    "nameEn": "silicone"
+    "name_source": "силикон",
+    "name_product": "силикон"
   },
   {
     "id": "mat-nylon",
     "code": "nylon",
-    "name": "нейлон",
-    "nameRu": "нейлон",
-    "nameEn": "nylon"
+    "name_source": "нейлон",
+    "name_product": "нейлон"
   },
   {
     "id": "mat-magnet",
     "code": "magnet",
-    "name": "магнит",
-    "nameRu": "магнит",
-    "nameEn": "magnet"
+    "name_source": "магнит",
+    "name_product": "магнит"
   }
 ]
