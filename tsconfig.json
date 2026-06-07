@@ -21,6 +21,7 @@
       "@components/*": ["./src/components/*"],
       "@features/*": ["./src/features/*"],
       "@data/*": ["./src/data/*"],
+      "@app-types": ["./src/types/index"],
       "@app-types/*": ["./src/types/*"],
       "@context/*": ["./src/context/*"],
       "@hooks/*": ["./src/hooks/*"],

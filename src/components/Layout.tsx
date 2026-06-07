@@ -5,7 +5,7 @@ import {
   Sparkles, Menu, Bell, Settings,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import type { ViewType } from '../data/types';
+import type { ViewType } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { LayoutProvider } from '../context/LayoutContext';
 import SettingsPanel from './SettingsPanel';

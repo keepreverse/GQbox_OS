@@ -11,13 +11,13 @@ import {
   updateCategory, updateModel, updateColor, updateSupplier, updateConnector, updateProtocol, updateMaterial,
 } from '../data/dictionaries';
 import { rebuildProducts } from '../data/products';
-import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '../data/types';
+import type { Category, Model, Color, Supplier, Connector, ChargingProtocol, Material } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '../utils/display';
 import Modal from './Modal';
 import { dictionariesApi } from '../api/dictionaries';
 import { ResponsiveTable } from './ResponsiveTable';
-import type { Column } from './table/types';
+import type { Column } from '@app-types/table';
 
 type DictType = 'categories' | 'models' | 'colors' | 'suppliers' | 'connectors' | 'protocols' | 'materials';
 

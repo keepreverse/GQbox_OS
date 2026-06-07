@@ -8,7 +8,7 @@ import DictionaryManager from './components/DictionaryManager';
 import KitBuilder from './components/KitBuilder';
 import MediaManager from './components/MediaManager';
 import AIHub from './components/AIHub';
-import type { ViewType, MatrixFilters } from './data/types';
+import type { ViewType, MatrixFilters } from '@app-types';
 import { LanguageProvider } from './context/LanguageContext';
 
 function getInitialView(): ViewType {

@@ -1,4 +1,4 @@
-import type { Category, Model, Supplier, Color, Connector, ChargingProtocol, Material, NamingTemplate, CategoryAttribute } from './types';
+import type { Category, Model, Supplier, Color, Connector, ChargingProtocol, Material, NamingTemplate, CategoryAttribute } from '@app-types';
 import { loadFromStore, saveToStore } from './store';
 
 /**

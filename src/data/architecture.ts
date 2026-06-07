@@ -1,4 +1,4 @@
-import type { SystemArchitecture, EntityDefinition, RelationshipDefinition, SKULogicDefinition, NamingLogicDefinition } from './types';
+import type { SystemArchitecture, EntityDefinition, RelationshipDefinition, SKULogicDefinition, NamingLogicDefinition } from '@app-types';
 
 // Английская версия
 export const skuLogicEn: SKULogicDefinition = {

@@ -1,4 +1,4 @@
-import type { MarketplaceListing } from './types';
+import type { MarketplaceListing } from '@app-types';
 
 const rawMarketplaceTable = `
 Односырьевой товар	Сырье 1	Сырье 2	Сырье 3	Сырье 4	Наименование товара	АртикулыWB	АртикулыOZON

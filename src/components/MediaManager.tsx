@@ -10,7 +10,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
 import Modal from './Modal';
 import { ResponsiveTable } from './ResponsiveTable';
-import type { Column } from './table/types';
+import type { Column } from '@app-types/table';
 
 interface MediaItem {
   id: string;

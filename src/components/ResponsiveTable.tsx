@@ -1,5 +1,5 @@
-import type { Column, ResponsiveTableProps } from './table/types';
-import { validateColumnWidths } from './table/types';
+import type { Column, ResponsiveTableProps } from '@app-types/table';
+import { validateColumnWidths } from '@app-types/table';
 
 const ALIGN_CLASS: Record<string, string> = {
   left: 'text-left',

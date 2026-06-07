@@ -7,12 +7,12 @@ import {
 } from 'lucide-react';
 import { products, subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, suppliers, colors } from '../data/dictionaries';
-import type { ProductWithRelations, MatrixFilters } from '../data/types';
+import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
 import { ResponsiveTable } from './ResponsiveTable';
-import type { Column } from './table/types';
+import type { Column } from '@app-types/table';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable, szu: Zap, bzu: Wifi, azu: Car, headphones: Headphones,

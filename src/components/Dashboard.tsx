@@ -15,10 +15,10 @@ import {
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
 import { useLayout } from '../context/LayoutContext';
-import type { ViewType, MatrixFilters } from '../data/types';
+import type { ViewType, MatrixFilters } from '@app-types';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import ProductDetailCard from './ProductDetailCard';
-import type { ProductWithRelations } from '../data/types';
+import type { ProductWithRelations } from '@app-types';
 
 const DASH_INITIAL_KEY = 'gqbox_dash_initial_v2';
 

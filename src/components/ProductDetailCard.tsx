@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { X, Image as ImageIcon, Video, Tag, Zap, Ruler, Users, Plug, Battery, Link as LinkIcon, Shield, Globe, ShoppingBag } from 'lucide-react';
-import type { ProductWithRelations } from '../data/types';
+import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '../utils/display';
 import Modal from './Modal';

@@ -11,7 +11,7 @@ import Modal from './Modal';
 import { products, addProduct } from '../data/products';
 import { subscribeToProducts, getProductsVersion } from '../data/products';
 import { categories, colors } from '../data/dictionaries';
-import type { ProductWithRelations } from '../data/types';
+import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '../context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '../utils/display';
 import { productsApi } from '../api/products';

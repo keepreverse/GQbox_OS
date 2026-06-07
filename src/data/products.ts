@@ -1,4 +1,4 @@
-import type { ProductWithRelations } from './types';
+import type { ProductWithRelations } from '@app-types';
 import {
   getCategoryById, getModelById, getColorById, getSupplierById,
   getConnectorById, getProtocolById, getMaterialById,
