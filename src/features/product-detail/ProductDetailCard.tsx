@@ -25,7 +25,7 @@ interface ProductDetailCardProps {
 }
 
 export default function ProductDetailCard({ product, onClose }: ProductDetailCardProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(true);
 
   const handleClose = useCallback(() => {
@@ -64,15 +64,15 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
   const connections = [
     {
       label: t('detail.input'),
-      value: product.connectorFemale ? displaySource(product.connectorFemale, language) : '—',
+      value: product.connectorFemale ? displaySource(product.connectorFemale) : '—',
     },
     {
       label: t('detail.output'),
-      value: product.connectorMale ? displaySource(product.connectorMale, language) : '—',
+      value: product.connectorMale ? displaySource(product.connectorMale) : '—',
     },
     {
       label: t('detail.protocol'),
-      value: product.chargingProtocol ? displaySource(product.chargingProtocol, language) : '—',
+      value: product.chargingProtocol ? displaySource(product.chargingProtocol) : '—',
     },
     {
       label: t('detail.connection'),
@@ -83,11 +83,11 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
   const materials = [
     {
       label: t('detail.body'),
-      value: product.bodyMaterial ? displayName(product.bodyMaterial, language) : '—',
+      value: product.bodyMaterial ? displayName(product.bodyMaterial) : '—',
     },
     {
       label: t('detail.wire'),
-      value: product.wireMaterial ? displayName(product.wireMaterial, language) : '—',
+      value: product.wireMaterial ? displayName(product.wireMaterial) : '—',
     },
   ];
 
@@ -128,10 +128,10 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
           </h2>
           <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-text-tertiary flex-wrap">
             <span style={{ color: getCategoryColorVar(product.category.code) }}>
-              {displaySource(product.category, language)}
+              {displaySource(product.category)}
             </span>
             <span>·</span>
-            <span className="text-text-secondary">{displaySource(product.model, language)}</span>
+            <span className="text-text-secondary">{displaySource(product.model)}</span>
             {product.color && (
               <>
                 <span>·</span>
@@ -149,7 +149,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                           : '1px solid var(--color-border-subtle)',
                     }}
                   />
-                  <span>{displaySource(product.color, language)}</span>
+                  <span>{displaySource(product.color)}</span>
                 </div>
               </>
             )}

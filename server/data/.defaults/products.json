@@ -2013,25 +2013,5 @@
     "connectorFemaleId": "conn-usb",
     "connectorMaleId": "conn-360",
     "lengthVariant": "1"
-  },
-  {
-    "sku": "S33333/01-A",
-    "skuBase": "S33333",
-    "categoryId": "cat-szu",
-    "modelId": "mod-pd",
-    "colorId": "col-01",
-    "supplierId": "sup-angela",
-    "deviceCount": 1,
-    "id": "p125"
-  },
-  {
-    "sku": "S33333/01-A",
-    "skuBase": "S33333",
-    "categoryId": "cat-szu",
-    "modelId": "mod-pd",
-    "colorId": "col-01",
-    "supplierId": "sup-angela",
-    "deviceCount": 1,
-    "id": "p126"
   }
 ]

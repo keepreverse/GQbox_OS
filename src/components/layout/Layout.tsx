@@ -25,10 +25,10 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   const [developerMode, setDeveloperMode] = useState<boolean>(() => {
     try {
       const val = localStorage.getItem('gqbox_dev_mode');
-      if (val === null) return true;
+      if (val === null) return false;
       return val === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
 

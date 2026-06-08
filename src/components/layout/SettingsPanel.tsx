@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, LogOut, Shield, Code2, Key } from 'lucide-react';
+import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw } from 'lucide-react';
 import Modal from '@components/ui/Modal';
 import Toggle from '@components/ui/Toggle';
 import SettingsRow from '@components/ui/SettingsRow';
 import { useLanguage } from '@context/LanguageContext';
 import type { Language } from '@context/LanguageContext';
+import { useDataSource } from '@api/dataSourceContext';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -20,9 +21,44 @@ export default function SettingsPanel({
   onDeveloperModeChange,
 }: SettingsPanelProps) {
   const { language, setLanguage, t } = useLanguage();
+  const ds = useDataSource();
   const [pendingDevMode, setPendingDevMode] = useState(developerMode);
   const savedLangRef = useRef<Language>(language);
   const prevOpenRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = useCallback(async () => {
+    try {
+      await ds.settings.exportToFile();
+    } catch (err) {
+      alert('Export error: ' + (err as Error).message);
+    }
+  }, [ds]);
+
+  const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      await ds.settings.importFromFile(text);
+      await ds.refresh();
+      alert('Import successful');
+    } catch (err) {
+      alert('Import error: ' + (err as Error).message);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [ds]);
+
+  const handleReset = useCallback(async () => {
+    if (!window.confirm(t('settings.reset_confirm'))) return;
+    try {
+      await ds.settings.reset();
+      await ds.refresh();
+      alert('Data reset to defaults');
+    } catch (err) {
+      alert('Reset error: ' + (err as Error).message);
+    }
+  }, [ds, t]);
 
   useEffect(() => {
     if (open && !prevOpenRef.current) {
@@ -42,22 +78,13 @@ export default function SettingsPanel({
     const wasDevModeOff = !developerMode;
     onDeveloperModeChange(pendingDevMode);
     if (pendingDevMode && wasDevModeOff) {
-      console.info(
-        '%c[Developer Mode] Активирован (демо)\n' +
-          'Что происходит: переключатель зафиксировал, что вы вошли в режим разработчика.\n' +
-          'Что будет дальше (итерация 2): при включении режима данные текущей тестовой сессии\n' +
-          '  остаются в localStorage (gqbox_test_*), а приложение начнёт работать с PostgreSQL.\n' +
-          '  При выключении — возврат к тестовой сессии без потерь.\n' +
-          'Зачем: позволяет параллельно тестировать визуальные фичи в браузере и реальную\n' +
-          '  работу с БД в dev-сессии, не перемешивая данные.',
-        'color: #7dd3fc; font-weight: 500;'
-      );
       window.alert(
-        'Вы вошли в режим разработчика (демо).\n\n' +
-          'Что происходит:\n' +
-          '— Переключатель зафиксирован. Реальное подключение к PostgreSQL появится в следующей итерации.\n\n' +
-          'Зачем нужен этот режим:\n' +
-          '— Тестовая сессия (localStorage) и dev-сессия (PostgreSQL) хранятся отдельно. Можно тестировать визуальные фичи в браузере и реальную работу с БД параллельно, не теряя данные.'
+        'Режим разработчика активирован.\n\n' +
+          'Приложение переключено на /api/dev/* (PostgreSQL).\n' +
+          'Для работы необходимо:\n' +
+          '  1. npm run db:start\n' +
+          '  2. npm run db:seed\n\n' +
+          'Текущая сессия (demo) сохранена отдельно — при выключении режима вы вернётесь к ней без потерь.'
       );
     }
     onOpenChange(false);
@@ -201,6 +228,48 @@ export default function SettingsPanel({
             <span className="text-text-tertiary">sbp_live_8f92...</span>
           </div>
         </div>
+
+        {!pendingDevMode && (
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-text-tertiary">
+              {t('settings.data_management')}
+            </h4>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex-1 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-accent/25 transition-colors border border-accent/30 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {t('settings.export')}
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 py-1.5 rounded-lg bg-bg-tertiary text-text-secondary text-xs flex items-center justify-center gap-1.5 hover:bg-bg-hover hover:border-accent/30 transition-colors border border-dashed border-border-subtle cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5 text-accent" />
+                {t('settings.import')}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="w-full py-1.5 rounded-lg bg-danger/10 text-danger text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-danger/20 transition-colors border border-danger/20 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              {t('settings.reset_to_defaults')}
+            </button>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleImport}
+          className="hidden"
+        />
       </div>
     </Modal>
   );

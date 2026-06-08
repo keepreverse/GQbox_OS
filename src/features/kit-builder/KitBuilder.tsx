@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Reorder, useDragControls } from 'framer-motion';
 import {
   Package,
@@ -26,13 +26,10 @@ import {
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
 import Modal from '@components/ui/Modal';
-import { products, addProduct } from '@data/products';
-import { subscribeToProducts, getProductsVersion } from '@data/products';
-import { categories, colors } from '@data/dictionaries';
 import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
-import { productsApi } from '@api/products';
+import { useDataSource } from '@api/dataSourceContext';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable,
@@ -54,7 +51,7 @@ interface KitComponent {
   quantity: number;
 }
 
-function generateKitName(items: KitComponent[]) {
+function generateKitName(items: KitComponent[], allColors: { name_product: string }[]) {
   const expanded = items.flatMap((item) =>
     Array.from({ length: item.quantity }, () => displayProductName(item.product))
   );
@@ -68,7 +65,7 @@ function generateKitName(items: KitComponent[]) {
     return `Комплект. ${cleaned[0]} ${cleaned.length} шт.`;
   }
 
-  const colorNames = colors
+  const colorNames = allColors
     .map((color) => color.name_product)
     .filter(Boolean)
     .sort((a, b) => b.length - a.length);
@@ -208,7 +205,11 @@ function ComponentItem({
 }
 
 export default function KitBuilder() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { products: productsApi, dictionaries } = useDataSource();
+  const products = productsApi.list;
+  const categories = dictionaries.categories;
+  const colors = dictionaries.colors;
   const [kitSku, setKitSku] = useState('');
   const [kitName, setKitName] = useState('');
   const [components, setComponents] = useState<KitComponent[]>([]);
@@ -218,8 +219,6 @@ export default function KitBuilder() {
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
   const { toast, showToast, hideToast } = useToast();
   const [addSuccess, setAddSuccess] = useState(false);
-
-  useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
   const closePicker = useCallback(() => {
     setShowPicker(false);
@@ -257,8 +256,8 @@ export default function KitBuilder() {
   const skuExists = products.some((p) => p.sku.toLowerCase() === kitSku.trim().toLowerCase());
 
   useEffect(() => {
-    setKitName(generateKitName(components));
-  }, [components]);
+    setKitName(generateKitName(components, colors));
+  }, [components, colors]);
 
   const addComponent = (product: ProductWithRelations) => {
     setAddSuccess(false);
@@ -303,25 +302,15 @@ export default function KitBuilder() {
       deviceCount: components.reduce((sum, c) => sum + c.quantity, 0),
     };
 
-    let product;
     try {
-      product = await productsApi.create(draft);
-    } catch {
-      const maxId = products.reduce((max, p) => {
-        const num = parseInt((p.id || '').replace(/^p/, ''), 10);
-        return num > max ? num : max;
-      }, 0);
-      product = { ...draft, id: `p${maxId + 1}` };
-    }
-    const added = addProduct(product);
-    if (added) {
+      await productsApi.create(draft);
       setAddSuccess(true);
       showToast(t('kit.toast_created'));
       setKitName('');
       setKitSku('');
       setComponents([]);
-    } else {
-      showToast(t('kit.toast_duplicate'), 'error');
+    } catch (err: any) {
+      showToast(err?.message || t('kit.toast_duplicate'), 'error');
     }
   };
 
@@ -507,7 +496,7 @@ export default function KitBuilder() {
                 {components.map((comp) => (
                   <div key={comp.product.id} className="flex items-center justify-between text-xs">
                     <span className="text-text-secondary truncate max-w-[140px]">
-                      {displaySource(comp.product.model, language)}
+                      {displaySource(comp.product.model)}
                     </span>
                     <span className="text-text-tertiary flex-shrink-0">×{comp.quantity}</span>
                   </div>
@@ -603,7 +592,7 @@ export default function KitBuilder() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate text-text-primary">
-                          {displaySource(cat, language)}
+                          {displaySource(cat)}
                         </p>
                         <p className="text-[10px] text-text-tertiary truncate mt-0.5">
                           {t('kit.select_components')}

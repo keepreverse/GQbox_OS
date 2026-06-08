@@ -54,7 +54,7 @@ const translations: Record<Language, Translations> = {
     'settings.developer_mode_desc':
       'Переключение на PostgreSQL для тестирования против реальной БД. Данные тестовой сессии в браузере сохранятся отдельно.',
     'settings.developer_mode_active':
-      'Данный переключатель демонстрационный — реальное подключение к PostgreSQL появится в следующем обновлении.',
+      'Активен — данные читаются и пишутся в PostgreSQL. Для работы: npm run db:start && npm run db:seed.',
     'settings.data_management': 'Управление данными',
     'settings.export': 'Экспорт',
     'settings.import': 'Импорт',
@@ -162,7 +162,6 @@ const translations: Record<Language, Translations> = {
     'sku.next': 'Далее',
     'sku.reset': 'Сбросить',
     'sku.generate': 'Сгенерировать',
-    'sku.unit_m': 'м',
     'sku.category_label': 'Категория товара',
     'sku.model_label': 'Модель / Линейка',
     'sku.base_number_label': 'Базовый номер (5 цифр)',
@@ -225,8 +224,6 @@ const translations: Record<Language, Translations> = {
     'detail.connections': 'Подключения',
     'detail.materials': 'Материалы',
     'detail.supplier': 'Поставщик',
-    'detail.unit_m': 'м',
-
     // Dictionaries
     'dict.title': 'Менеджер справочников',
     'dict.subtitle': 'Управление списком параметров и кодов',
@@ -405,7 +402,6 @@ const translations: Record<Language, Translations> = {
 
     // Matrix
     'matrix.exporting': 'Скачивание...',
-    'matrix.unit_m': 'м',
     'matrix.empty': 'Товары не найдены',
   },
   en: {
@@ -455,7 +451,7 @@ const translations: Record<Language, Translations> = {
     'settings.developer_mode_desc':
       'Switch to PostgreSQL for testing against a real DB. Test session data in the browser will be kept separately.',
     'settings.developer_mode_active':
-      'Active. In this iteration the toggle is demonstrative — actual PostgreSQL connection will appear in the next update.',
+      'Active — data is read from and written to PostgreSQL. Requires: npm run db:start && npm run db:seed.',
     'settings.data_management': 'Data Management',
     'settings.export': 'Export',
     'settings.import': 'Import',

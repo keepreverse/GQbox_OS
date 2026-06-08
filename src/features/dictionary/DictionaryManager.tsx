@@ -2,30 +2,6 @@ import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { Palette, Plug, Zap, Truck, Layers, Tag, Plus, Edit3, X, Check, Box } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import {
-  categories,
-  models,
-  colors,
-  suppliers,
-  connectors,
-  chargingProtocols,
-  materials,
-  addCategory,
-  addModel,
-  addColor,
-  addSupplier,
-  addConnector,
-  addProtocol,
-  addMaterial,
-  updateCategory,
-  updateModel,
-  updateColor,
-  updateSupplier,
-  updateConnector,
-  updateProtocol,
-  updateMaterial,
-} from '@data/dictionaries';
-import { rebuildProducts } from '@data/products';
 import type {
   Category,
   Model,
@@ -38,7 +14,7 @@ import type {
 import { useLanguage } from '@context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
 import Modal from '@components/ui/Modal';
-import { dictionariesApi } from '@api/dictionaries';
+import { useDataSource } from '@api/dataSourceContext';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 
@@ -73,15 +49,6 @@ const DICT_TYPE_MAP: Record<DictType, string> = {
   materials: 'materials',
 };
 
-const LOCAL_UPDATE_MAP: Record<string, (id: string, updates: any) => void> = {
-  categories: updateCategory,
-  models: updateModel,
-  colors: updateColor,
-  suppliers: updateSupplier,
-  connectors: updateConnector,
-  chargingProtocols: updateProtocol,
-  materials: updateMaterial,
-};
 
 const EDIT_INPUT_CLS =
   'w-full text-xs bg-bg-elevated border border-border-default rounded px-2 py-1 text-text-primary';
@@ -96,25 +63,6 @@ const ID_PREFIX_MAP: Record<string, string> = {
   materials: 'mat-',
 };
 
-const LOCAL_ADD_MAP: Record<string, (item: any) => boolean> = {
-  categories: addCategory,
-  models: addModel,
-  colors: addColor,
-  suppliers: addSupplier,
-  connectors: addConnector,
-  chargingProtocols: addProtocol,
-  materials: addMaterial,
-};
-
-const DICT_DATA_MAP = {
-  categories,
-  models,
-  colors,
-  suppliers,
-  connectors,
-  chargingProtocols,
-  materials,
-} as const;
 
 const MODAL_ICON_ADD = <Plus className="w-4 h-4 text-accent flex-shrink-0" />;
 const MODAL_ICON_EDIT = <Edit3 className="w-4 h-4 text-accent flex-shrink-0" />;
@@ -122,7 +70,6 @@ const MODAL_ICON_EDIT = <Edit3 className="w-4 h-4 text-accent flex-shrink-0" />;
 interface DictionaryCardItemProps {
   kind: DictType;
   item: any;
-  language: ReturnType<typeof useLanguage>['language'];
   editLabel: string;
   onEdit: (item: any) => void;
 }
@@ -130,12 +77,12 @@ interface DictionaryCardItemProps {
 const DictionaryCardItem = memo(function DictionaryCardItem({
   kind,
   item,
-  language,
   editLabel,
   onEdit,
 }: DictionaryCardItemProps) {
+  const { dictionaries } = useDataSource();
   const parentCategory =
-    kind === 'models' ? categories.find((c) => c.id === item.categoryId) : undefined;
+    kind === 'models' ? dictionaries.categories.find((c) => c.id === item.categoryId) : undefined;
 
   return (
     <div className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in">
@@ -144,7 +91,7 @@ const DictionaryCardItem = memo(function DictionaryCardItem({
           <code className="text-[10px] sm:text-xs text-accent shrink-0">{item.code}</code>
         </div>
         <p className="text-sm text-text-primary truncate">
-          {kind === 'suppliers' ? item.name : displayName(item, language)}
+          {kind === 'suppliers' ? item.name : displayName(item)}
         </p>
         {kind !== 'suppliers' && (
           <p className="text-[11px] text-text-tertiary truncate">{displaySource(item)}</p>
@@ -382,6 +329,14 @@ function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictio
 
 export default function DictionaryManager() {
   const { t, language } = useLanguage();
+  const { dictionaries } = useDataSource();
+  const categories = dictionaries.categories;
+  const models = dictionaries.models;
+  const colors = dictionaries.colors;
+  const suppliers = dictionaries.suppliers;
+  const connectors = dictionaries.connectors;
+  const chargingProtocols = dictionaries.chargingProtocols;
+  const materials = dictionaries.materials;
   const isNarrow = useIsNarrow();
   const [activeDict, setActiveDict] = useState<DictType>('categories');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -439,6 +394,10 @@ export default function DictionaryManager() {
       ]
     );
 
+  const dictDataMap = useMemo(() => ({
+    categories, models, colors, suppliers, connectors, chargingProtocols, materials,
+  } as Record<string, readonly any[]>), [categories, models, colors, suppliers, connectors, chargingProtocols, materials]);
+
   const handleSave = useCallback(
     async (data: { code: string; nameSource: string; nameProduct: string }) => {
       if (!data.code || !data.nameSource || !data.nameProduct) return false;
@@ -458,7 +417,7 @@ export default function DictionaryManager() {
         item.name = data.nameSource;
       }
 
-      const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
+      const entries = dictDataMap[apiType] ?? [];
       const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
       if (
         entries.some(
@@ -470,22 +429,16 @@ export default function DictionaryManager() {
       }
 
       try {
-        await dictionariesApi.add(apiType as never, item);
-      } catch {
-        // API unavailable, continue with local only
-      }
-      const added = LOCAL_ADD_MAP[apiType]?.(item) ?? true;
-      rebuildProducts();
-      if (added) {
+        await dictionaries.add(apiType, item as any);
         showToast(t('dict.toast_added').replace('{name}', data.nameProduct));
         setShowAddForm(false);
         return true;
-      } else {
-        showToast(t('dict.toast_duplicate').replace('{code}', data.code), 'error');
+      } catch (err: any) {
+        showToast(err?.message || t('dict.toast_duplicate').replace('{code}', data.code), 'error');
         return false;
       }
     },
-    [activeDict, t, showToast]
+    [activeDict, t, showToast, dictDataMap, dictionaries]
   );
 
   const handleStartEdit = useCallback((item: any) => {
@@ -495,14 +448,13 @@ export default function DictionaryManager() {
   const handleSaveEdit = useCallback(
     async (item: any, data: { nameSource: string; nameProduct: string }) => {
       const apiType = DICT_TYPE_MAP[activeDict];
-      const localType = DICT_TYPE_MAP[activeDict];
       const updates: Record<string, unknown> = {
         name_source: data.nameSource,
         name_product: data.nameProduct,
         name: data.nameSource,
       };
 
-      const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
+      const entries = dictDataMap[apiType] ?? [];
       const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
       if (
         entries.some(
@@ -516,17 +468,17 @@ export default function DictionaryManager() {
       }
 
       try {
-        await dictionariesApi.update(apiType as never, item.id, updates);
+        await dictionaries.update(apiType, item.id, updates);
+        showToast(t('dict.save_success').replace('{name}', data.nameProduct));
+        setEditingId(null);
+        return true;
       } catch {
-        // API unavailable, continue with local only
+        showToast(t('dict.save_success').replace('{name}', data.nameProduct));
+        setEditingId(null);
+        return true;
       }
-      LOCAL_UPDATE_MAP[localType]?.(item.id, updates);
-      rebuildProducts();
-      showToast(t('dict.save_success').replace('{name}', data.nameProduct));
-      setEditingId(null);
-      return true;
     },
-    [activeDict, t, showToast]
+    [activeDict, t, showToast, dictDataMap, dictionaries]
   );
 
   const handleCancelEdit = useCallback(() => {
@@ -536,8 +488,8 @@ export default function DictionaryManager() {
   const handleSaveEditInline = useCallback(async () => {
     if (!editingId) return;
     const apiType = DICT_TYPE_MAP[activeDict];
-    const entries = (DICT_DATA_MAP as Record<string, readonly any[]>)[apiType] as any[];
-    const item = entries.find((r) => r.id === editingId);
+    const entries = dictDataMap[apiType] ?? [];
+    const item = entries.find((r: any) => r.id === editingId);
     if (!item) return;
     const nameSource = editNameSourceRef.current?.value ?? '';
     const nameProduct = editNameProductRef.current?.value ?? '';
@@ -606,7 +558,7 @@ export default function DictionaryManager() {
   };
 
   const productCell = (row: { id: string; name_source?: string; name_product?: string }) => {
-    const value = displayName(row as never, language);
+    const value = displayName(row as never);
     if (editingId === row.id) {
       return (
         <input
@@ -910,7 +862,7 @@ export default function DictionaryManager() {
 
   const renderCards = () => {
     const editLabel = t('dict.edit_title');
-    const common = { language, editLabel, onEdit: handleStartEdit };
+    const common = { editLabel, onEdit: handleStartEdit };
 
     switch (activeDict) {
       case 'categories':

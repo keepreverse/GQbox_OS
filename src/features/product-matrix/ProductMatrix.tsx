@@ -1,4 +1,4 @@
-import { useState, useMemo, useSyncExternalStore, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -21,8 +21,7 @@ import {
   SlidersHorizontal,
   Check,
 } from 'lucide-react';
-import { products, subscribeToProducts, getProductsVersion } from '@data/products';
-import { categories, suppliers, colors } from '@data/dictionaries';
+import { useDataSource } from '@api/dataSourceContext';
 import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
@@ -54,7 +53,12 @@ export default function ProductMatrix({
   initialFilters,
   onInitialFiltersApplied,
 }: ProductMatrixProps = {}) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { products: productsApi, dictionaries } = useDataSource();
+  const products = productsApi.list;
+  const categories = dictionaries.categories;
+  const suppliers = dictionaries.suppliers;
+  const colors = dictionaries.colors;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([]);
@@ -68,8 +72,6 @@ export default function ProductMatrix({
   const [tableKey, setTableKey] = useState(0);
   const pageSize = 15;
   const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
-
-  const productsVersion = useSyncExternalStore(subscribeToProducts, getProductsVersion);
 
   useEffect(() => {
     if (initialFilters) {
@@ -117,7 +119,7 @@ export default function ProductMatrix({
       );
     });
   }, [
-    productsVersion,
+    products,
     searchQuery,
     selectedCategories,
     selectedSuppliers,
@@ -176,17 +178,17 @@ export default function ProductMatrix({
   const uniqueColors = useMemo(() => {
     const codes = new Set(products.map((p) => p.color?.code).filter(Boolean));
     return colors.filter((c) => codes.has(c.code));
-  }, [productsVersion]);
+  }, [products]);
 
   const uniquePowerValues = useMemo(() => {
     const vals = new Set(products.map((p) => p.powerW).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
-  }, [productsVersion]);
+  }, [products]);
 
   const uniqueLengthValues = useMemo(() => {
     const vals = new Set(products.map((p) => p.lengthM).filter((v): v is number => v != null));
     return [...vals].sort((a, b) => a - b);
-  }, [productsVersion]);
+  }, [products]);
 
   const activeFiltersCount =
     selectedCategories.length +
@@ -211,11 +213,11 @@ export default function ProductMatrix({
       const rows = filteredProducts.map((p) => [
         p.sku,
         `"${p.productName.replace(/"/g, '""')}"`,
-        displaySource(p.category, language),
-        displaySource(p.model, language),
+        displaySource(p.category),
+        displaySource(p.model),
         p.powerW || '',
         p.lengthM || '',
-        p.color ? displaySource(p.color, language) : '',
+        p.color ? displaySource(p.color) : '',
         p.supplier?.name || '',
       ]);
 
@@ -332,9 +334,9 @@ export default function ProductMatrix({
         <span
           className="text-[11px] sm:text-xs truncate block"
           style={{ color: getCategoryColorVar(p.category.code) }}
-          title={displaySource(p.category, language)}
+          title={displaySource(p.category)}
         >
-          {displaySource(p.category, language)}
+          {displaySource(p.category)}
         </span>
       ),
     },
@@ -345,9 +347,9 @@ export default function ProductMatrix({
       cell: (p) => (
         <span
           className="text-[11px] sm:text-xs text-text-secondary truncate block"
-          title={displaySource(p.model, language)}
+          title={displaySource(p.model)}
         >
-          {displaySource(p.model, language)}
+          {displaySource(p.model)}
         </span>
       ),
     },
@@ -381,7 +383,7 @@ export default function ProductMatrix({
         p.color ? (
           <div
             className="flex items-center gap-1 sm:gap-1.5 min-w-0"
-            title={displaySource(p.color, language)}
+            title={displaySource(p.color)}
           >
             <div
               className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0"
@@ -395,7 +397,7 @@ export default function ProductMatrix({
               }}
             />
             <span className="truncate text-[11px] sm:text-xs text-text-secondary">
-              {displaySource(p.color, language)}
+              {displaySource(p.color)}
             </span>
           </div>
         ) : null,
@@ -517,7 +519,7 @@ export default function ProductMatrix({
                         : {}
                     }
                   >
-                    {displaySource(cat, language)}
+                    {displaySource(cat)}
                   </button>
                 ))}
               </div>
@@ -554,7 +556,7 @@ export default function ProductMatrix({
                         ? 'bg-accent/25 text-white border border-accent/40'
                         : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
                     }`}
-                    title={displaySource(c, language)}
+                    title={displaySource(c)}
                   >
                     <span
                       className="inline-block w-4 h-4 rounded-full border border-border-subtle shrink-0"
@@ -650,7 +652,7 @@ export default function ProductMatrix({
                       className="text-[11px] font-medium truncate"
                       style={{ color: getCategoryColorVar(product.category.code) }}
                     >
-                      {displaySource(product.category, language)}
+                      {displaySource(product.category)}
                     </span>
                   </div>
                   {supplierBadge(product.supplier?.code)}
@@ -668,7 +670,7 @@ export default function ProductMatrix({
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle truncate max-w-[120px]">
-                    {displaySource(product.model, language)}
+                    {displaySource(product.model)}
                   </span>
                   {product.powerW != null && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary border border-border-subtle">
@@ -696,7 +698,7 @@ export default function ProductMatrix({
                         }}
                       />
                       <span className="truncate max-w-[80px]">
-                        {displaySource(product.color, language)}
+                        {displaySource(product.color)}
                       </span>
                     </span>
                   )}

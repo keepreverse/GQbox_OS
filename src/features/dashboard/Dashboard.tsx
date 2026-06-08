@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, useSyncExternalStore, useCallback } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Cable,
@@ -26,9 +26,6 @@ import {
   Ruler,
   Palette,
 } from 'lucide-react';
-import { products } from '@data/products';
-import { subscribeToProducts, getProductsVersion } from '@data/products';
-import { categories, colors } from '@data/dictionaries';
 import {
   BarChart,
   Bar,
@@ -50,6 +47,7 @@ import type { ViewType, MatrixFilters } from '@app-types';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
 import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import type { ProductWithRelations } from '@app-types';
+import { useDataSource } from '@api/dataSourceContext';
 
 const DASH_INITIAL_KEY = 'gqbox_dash_initial_v2';
 
@@ -125,6 +123,10 @@ interface DashboardProps {
 export default function Dashboard({ onViewChange, onNavigateToMatrix }: DashboardProps) {
   const { t, language } = useLanguage();
   const { sidebarCollapsed } = useLayout();
+  const { products: productsApi, dictionaries } = useDataSource();
+  const products = productsApi.list;
+  const categories = dictionaries.categories;
+  const colors = dictionaries.colors;
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
 
@@ -142,15 +144,13 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     );
   };
 
-  const productsVersion = useSyncExternalStore(subscribeToProducts, getProductsVersion);
-
   const stats = useMemo(() => {
     const total = products.length;
     const active = products.filter((p) => p.isActive).length;
     const kits = products.filter((p) => p.isKit).length;
     const byCategory = categories
       .map((cat) => ({
-        name: displaySource(cat, language),
+        name: displaySource(cat),
         code: cat.code,
         color: cat.color,
         count: products.filter((p) => p.category.code === cat.code).length,
@@ -208,7 +208,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       supplierStats,
       totalCategories: categories.length,
     };
-  }, [language, productsVersion]);
+  }, [language, products, categories]);
 
   // Power distribution with values for click navigation
   const powerDistribution = useMemo(() => {
@@ -227,7 +227,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         return { name: b.name, value: matching.length, values };
       })
       .filter((b) => b.value > 0);
-  }, [productsVersion]);
+  }, [products]);
 
   // Length distribution with values for click navigation
   const lengthDistribution = useMemo(() => {
@@ -246,7 +246,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         return { name: b.name, value: matching.length, values };
       })
       .filter((b) => b.value > 0);
-  }, [productsVersion]);
+  }, [products]);
 
   // Color distribution (top 8 by count)
   const colorDistribution = useMemo(() => {
@@ -261,7 +261,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       .filter((c) => c.value > 0)
       .sort((a, b) => b.value - a.value)
       .slice(0, 8);
-  }, [productsVersion]);
+  }, [products, colors]);
 
   // Current distribution based on selected metric
   const [metric, setMetric] = useState<MetricKey>('power');
@@ -313,7 +313,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       kits: { value: stats.kits, ...calc(stats.kits, init.kits) },
       categories: { value: categories.length, ...calc(categories.length, init.categories) },
     };
-  }, [stats]);
+  }, [stats, categories]);
 
   const powerColors = [
     'var(--color-cable)',
@@ -393,19 +393,16 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
               key={stat.label}
               className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-all duration-300"
             >
-              {/* Decorative glow */}
               <div
                 className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-35 transition-opacity duration-500"
                 style={{ background: stat.accent }}
               />
-              {/* Large decorative icon — colored, no stripe artifact */}
               <div
                 className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500"
                 style={{ color: stat.accent }}
               >
                 <stat.icon className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
               </div>
-              {/* Content */}
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center justify-between min-h-[18px]">
                   <p className="text-[11px] sm:text-xs text-text-tertiary font-medium tracking-wide">
@@ -546,8 +543,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         {/* Distribution by [metric] — pie/donut */}
         <div className="glass rounded-xl p-3 sm:p-5 overflow-hidden">
           <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">{t('dash.distTitle')}</h3>
-
-          {/* Metric selector */}
           <div className="flex gap-1 mb-2 sm:mb-3 overflow-x-auto scrollbar-hide">
             {metrics.map((m) => {
               const Icon = m.icon;
@@ -568,8 +563,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
               );
             })}
           </div>
-
-          {/* Donut chart with center overlay */}
           <div className="relative">
             <div className="relative z-10">
               <ChartFreeze sidebarCollapsed={sidebarCollapsed}>
@@ -604,7 +597,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                 </ResponsiveContainer>
               </ChartFreeze>
             </div>
-            {/* Center text overlay — sits behind chart so tooltip renders on top */}
             <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <div className="text-xl sm:text-2xl font-semibold text-text-primary leading-none">
@@ -616,8 +608,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
               </div>
             </div>
           </div>
-
-          {/* Legend */}
           <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-2 justify-center">
             {distributionData.map((d, i) => (
               <div
@@ -672,7 +662,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{displayProductName(product)}</p>
                     <p className="text-[11px] text-text-tertiary truncate">
-                      {product.sku} · {displaySource(product.model, language)}
+                      {product.sku} · {displaySource(product.model)}
                     </p>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
@@ -717,14 +707,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                           stopOpacity={1}
                         />
                       ))}
-                      <stop
-                        offset="100%"
-                        stopColor={
-                          stats.supplierStats[stats.supplierStats.length - 1]?.color ||
-                          'var(--color-accent)'
-                        }
-                        stopOpacity={1}
-                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
@@ -793,7 +775,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                       );
                     }}
                   />
-                  {/* Wide invisible Bar — full-height click zones covering the chart */}
                   <Bar
                     dataKey="maxCount"
                     fill="transparent"
@@ -810,7 +791,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                     onMouseLeave={() => setHoveredSupplierIndex(null)}
                     style={{ cursor: 'pointer' }}
                   />
-                  {/* Smooth fade highlight via Customized + framer-motion */}
                   <Customized
                     component={(props: any) => {
                       const { xAxisMap, offset } = props;
@@ -837,7 +817,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                       );
                     }}
                   />
-                  {/* Peak-point hit-zones — rendered AFTER the Bar so they sit on top */}
                   <Customized
                     component={(props: any) => {
                       const { xAxisMap, yAxisMap } = props;

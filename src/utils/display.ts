@@ -1,15 +1,11 @@
-import type { Language } from '../context/LanguageContext';
-
 export function displayName(
-  item: { name_source?: string; name_product?: string; code?: string },
-  _language: Language
+  item: { name_source?: string; name_product?: string; code?: string }
 ): string {
   return item.name_product || item.name_source || item.code || '';
 }
 
 export function displaySource(
-  item: { name_source?: string; code?: string },
-  _language?: Language
+  item: { name_source?: string; code?: string }
 ): string {
   return item.name_source || item.code || '';
 }

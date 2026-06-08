@@ -1,10 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import productsRouter from './routes/products';
-import dictionariesRouter from './routes/dictionaries';
-import exportImportRouter from './routes/export-import';
+
+// Demo mode (JSON-only, без fallback на БД)
+import demoProducts from './routes/demo/products';
+import demoDictionaries from './routes/demo/dictionaries';
+import demoSettings from './routes/demo/settings';
+
+// Dev mode (PostgreSQL-only)
+import devProducts from './routes/dev/products';
+import devDictionaries from './routes/dev/dictionaries';
+import devSettings from './routes/dev/settings';
+
 import { errorHandler } from './middleware/errorHandler';
-import { initSchema, closePool } from './utils/db';
+import { closePool } from './utils/db';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 const app = express();
@@ -12,30 +20,38 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// ─── Public health ────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    modes: ['demo', 'dev'],
+  });
 });
 
-app.use('/api/products', productsRouter);
-app.use('/api/dictionaries', dictionariesRouter);
-app.use('/api', exportImportRouter);
+// ─── Demo (JSON-files) ───────────────────────────────────────────────────
+app.use('/api/demo/products', demoProducts);
+app.use('/api/demo/dictionaries', demoDictionaries);
+app.use('/api/demo', demoSettings);
+
+// ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
+app.use('/api/dev/products', devProducts);
+app.use('/api/dev/dictionaries', devDictionaries);
+app.use('/api/dev', devSettings);
 
 app.use(errorHandler);
 
-async function start() {
-  try {
-    await initSchema();
-    console.log('[server] Database schema initialized');
-  } catch (err) {
-    console.warn('[server] Database unavailable, falling back to file store:', (err as Error).message);
-  }
-
-  app.listen(PORT, () => {
-    console.log(`[server] GQbox API running on http://localhost:${PORT}`);
-  });
-}
-
-start();
+// ─── Bootstrap ───────────────────────────────────────────────────────────
+// Демо-режим не требует init. Дев-режим — требует, но это ответственность
+// пользователя: сначала `npm run db:start`, потом `npm run db:seed`,
+// потом уже включать переключатель. Поэтому initSchema НЕ вызываем здесь,
+// чтобы не падать, если БД не поднята. Каждый dev-роут сам проверяет
+// доступность через isDbAvailable() и возвращает 503, если что.
+app.listen(PORT, () => {
+  console.log(`[server] GQbox API running on http://localhost:${PORT}`);
+  console.log(`[server]   demo: /api/demo/*  (JSON files)`);
+  console.log(`[server]   dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
+});
 
 process.on('SIGINT', async () => {
   await closePool();

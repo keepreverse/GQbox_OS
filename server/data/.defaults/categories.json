@@ -2,127 +2,121 @@
   {
     "id": "cat-cable",
     "code": "cable",
+    "name_source": "Кабель",
+    "name_product": "Кабель",
     "color": "#aa94ee",
     "icon": "Cable",
     "description": "",
-    "sortOrder": 1,
-    "name_source": "Кабель",
-    "name_product": "Кабель"
+    "sortOrder": 1
   },
   {
     "id": "cat-szu",
     "code": "szu",
+    "name_source": "СЗУ",
+    "name_product": "СЗУ",
     "color": "#fbbf24",
     "icon": "Zap",
     "description": "",
-    "sortOrder": 2,
-    "name_source": "СЗУ",
-    "name_product": "СЗУ"
+    "sortOrder": 2
   },
   {
     "id": "cat-bzu",
     "code": "bzu",
+    "name_source": "БЗУ",
+    "name_product": "БЗУ",
     "color": "#34d399",
     "icon": "Wifi",
     "description": "",
-    "sortOrder": 3,
-    "name_source": "БЗУ",
-    "name_product": "БЗУ"
+    "sortOrder": 3
   },
   {
     "id": "cat-azu",
     "code": "azu",
+    "name_source": "АЗУ",
+    "name_product": "АЗУ",
     "color": "#f87171",
     "icon": "Car",
     "description": "",
-    "sortOrder": 4,
-    "name_source": "АЗУ",
-    "name_product": "АЗУ"
+    "sortOrder": 4
   },
   {
     "id": "cat-headphones",
     "code": "headphones",
+    "name_source": "Наушники",
+    "name_product": "Наушники",
     "color": "#f472b6",
     "icon": "Headphones",
     "description": "",
-    "sortOrder": 5,
-    "name_source": "Наушники",
-    "name_product": "Наушники"
+    "sortOrder": 5
   },
   {
     "id": "cat-adapter",
     "code": "adapter",
+    "name_source": "Переходник",
+    "name_product": "Переходник",
     "color": "#22d3ee",
     "icon": "ArrowLeftRight",
     "description": "",
-    "sortOrder": 6,
-    "name_source": "Переходник",
-    "name_product": "Переходник"
+    "sortOrder": 6
   },
   {
     "id": "cat-pin",
     "code": "pin",
+    "name_source": "Пин",
+    "name_product": "Пин",
     "color": "#aa94ee",
     "icon": "Pin",
     "description": "",
-    "sortOrder": 7,
-    "name_source": "Пин",
-    "name_product": "Пин"
+    "sortOrder": 7
   },
   {
     "id": "cat-holder",
     "code": "holder",
+    "name_source": "Держатель",
+    "name_product": "Держатель",
     "color": "#a3e635",
     "icon": "GripVertical",
     "description": "",
-    "sortOrder": 8,
-    "name_source": "Держатель",
-    "name_product": "Держатель"
+    "sortOrder": 8
   },
   {
     "id": "cat-case",
     "code": "case",
+    "name_source": "Чехол ЗУ",
+    "name_product": "Чехол ЗУ",
     "color": "#fb923c",
     "icon": "Smartphone",
     "description": "",
-    "sortOrder": 9,
-    "name_source": "Чехол ЗУ",
-    "name_product": "Чехол ЗУ"
+    "sortOrder": 9
   },
   {
     "id": "cat-kit",
     "code": "kit",
+    "name_source": "Комплект",
+    "name_product": "Комплект",
     "color": "#c084fc",
     "icon": "Package",
     "description": "",
-    "sortOrder": 10,
-    "name_source": "Комплект",
-    "name_product": "Комплект"
+    "sortOrder": 10
   },
   {
     "id": "cat-packaging",
     "code": "packaging",
+    "name_source": "Вложение/упаковка",
+    "name_product": "Упаковка",
     "color": "#94a3b8",
     "icon": "Archive",
     "description": "",
-    "sortOrder": 11,
-    "name_source": "Вложение/упаковка",
-    "name_product": "Упаковка"
+    "sortOrder": 11
   },
   {
     "id": "cat-blogo",
     "code": "blogo",
+    "name_source": "Blogo",
+    "name_product": "Blogo",
     "color": "#2dd4bf",
     "icon": "Monitor",
     "description": "",
-    "sortOrder": 12,
-    "name_source": "Blogo",
-    "name_product": "Blogo"
-  },
-  {
-    "id": "cat-2",
-    "code": "2",
-    "name_source": "2",
-    "name_product": "2"
+    "sortOrder": 12
   }
 ]

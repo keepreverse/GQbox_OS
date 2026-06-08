@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import Layout from '@components/layout/Layout';
+import FullScreenLoader from '@components/ui/FullScreenLoader';
 import Dashboard from '@features/dashboard/Dashboard';
 import Architecture from '@features/architecture/Architecture';
 import ProductMatrix from '@features/product-matrix/ProductMatrix';
@@ -10,6 +12,7 @@ import MediaManager from '@features/media/MediaManager';
 import AIHub from '@features/ai-hub/AIHub';
 import type { ViewType, MatrixFilters } from '@app-types';
 import { LanguageProvider } from '@context/LanguageContext';
+import { DataSourceProvider, useDataSource } from '@api/dataSourceContext';
 
 function getInitialView(): ViewType {
   try {
@@ -32,9 +35,16 @@ function getInitialView(): ViewType {
   return 'dashboard';
 }
 
-export default function App() {
+function AppContent() {
+  const ds = useDataSource();
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView);
   const [pendingMatrixFilters, setPendingMatrixFilters] = useState<MatrixFilters | null>(null);
+  const [minSplashDone, setMinSplashDone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMinSplashDone(true), 2200);
+    return () => clearTimeout(timer);
+  }, []);
   const viewRef = useRef(currentView);
   viewRef.current = currentView;
 
@@ -82,10 +92,21 @@ export default function App() {
   };
 
   return (
-    <LanguageProvider>
+    <>
+      <AnimatePresence>{(!ds.isReady || !minSplashDone) && <FullScreenLoader />}</AnimatePresence>
       <Layout currentView={currentView} onViewChange={setCurrentView}>
         {renderView()}
       </Layout>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <DataSourceProvider>
+        <AppContent />
+      </DataSourceProvider>
     </LanguageProvider>
   );
 }

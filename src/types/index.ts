@@ -55,6 +55,40 @@ export interface Material {
   name_product: string;
 }
 
+/**
+ * Сырая форма продукта, как она хранится в БД / файлах и
+ * как приходит с API. Содержит только id-ссылки на справочники,
+ * а не развёрнутые relations. Для UI используется `ProductWithRelations`.
+ */
+export interface RawProduct {
+  id?: string;
+  sku: string;
+  skuBase?: string;
+  categoryId?: string;
+  modelId?: string;
+  colorId?: string;
+  supplierId?: string;
+  bodyMaterialId?: string;
+  wireMaterialId?: string;
+  currentA?: number;
+  voltageV?: number;
+  powerW?: number;
+  lengthM?: number;
+  dataTransferMbps?: number;
+  deviceCount?: number;
+  connectorFemaleId?: string;
+  connectorMaleId?: string;
+  chargingProtocolId?: string;
+  connectionType?: string;
+  isKit?: boolean;
+  isActive?: boolean;
+  variantCode?: string;
+  lengthVariant?: string;
+  supplierSuffix?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ProductBase {
   id: string;
   skuBase: string;

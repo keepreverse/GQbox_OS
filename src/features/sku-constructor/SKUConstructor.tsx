@@ -1,4 +1,4 @@
-import { Fragment, useState, useMemo, useEffect, useSyncExternalStore } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
@@ -14,21 +14,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import {
-  categories,
-  models,
-  colors,
-  suppliers,
-  connectors,
-  chargingProtocols,
-  materials,
-} from '@data/dictionaries';
-import { getModelsByCategory } from '@data/dictionaries';
-import { products, addProduct } from '@data/products';
-import { subscribeToProducts, getProductsVersion } from '@data/products';
+import { useDataSource } from '@api/dataSourceContext';
 import { useLanguage } from '@context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
-import { productsApi } from '@api/products';
 
 interface SKUFormData {
   categoryId: string;
@@ -71,7 +59,16 @@ const initialForm: SKUFormData = {
 };
 
 export default function SKUConstructor() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { products: productsApi, dictionaries } = useDataSource();
+  const categories = dictionaries.categories;
+  const models = dictionaries.models;
+  const colors = dictionaries.colors;
+  const suppliers = dictionaries.suppliers;
+  const connectors = dictionaries.connectors;
+  const chargingProtocols = dictionaries.chargingProtocols;
+  const materials = dictionaries.materials;
+  const products = productsApi.list;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<SKUFormData>(initialForm);
   const [generatedSKU, setGeneratedSKU] = useState('');
@@ -82,8 +79,6 @@ export default function SKUConstructor() {
   const [addSuccess, setAddSuccess] = useState(false);
   const { toast, showToast, hideToast } = useToast();
 
-  useSyncExternalStore(subscribeToProducts, getProductsVersion);
-
   useEffect(() => {
     if (step === 5) {
       handleGenerate();
@@ -91,8 +86,8 @@ export default function SKUConstructor() {
   }, [step, form]);
 
   const availableModels = useMemo(() => {
-    return form.categoryId ? getModelsByCategory(form.categoryId) : [];
-  }, [form.categoryId]);
+    return form.categoryId ? models.filter((m) => m.categoryId === form.categoryId) : [];
+  }, [form.categoryId, models]);
 
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const selectedModel = models.find((m) => m.id === form.modelId);
@@ -111,7 +106,7 @@ export default function SKUConstructor() {
 
   const generateName = () => {
     if (!selectedCategory) return '';
-    const catName = displayName(selectedCategory, language);
+    const catName = displayName(selectedCategory);
     const parts: string[] = [catName + '.'];
 
     if (form.connectorFemaleId) {
@@ -122,9 +117,9 @@ export default function SKUConstructor() {
       const conn = connectors.find((c) => c.id === form.connectorMaleId);
       if (conn) parts.push('-' + conn.code);
     }
-    if (selectedModel) parts.push(displayName(selectedModel, language));
+    if (selectedModel) parts.push(displayName(selectedModel));
     if (form.lengthM) parts.push(form.lengthM + 'м');
-    if (selectedColor) parts.push(displayName(selectedColor, language).toUpperCase());
+    if (selectedColor) parts.push(displayName(selectedColor).toUpperCase());
     if (form.powerW) parts.push(form.powerW + 'W');
 
     return parts.join(' ');
@@ -199,23 +194,12 @@ export default function SKUConstructor() {
       isKit: form.isKit || undefined,
     };
     const name = generatedName || generatedSKU;
-    let product;
     try {
-      product = await productsApi.create(draft);
-    } catch {
-      // API unavailable — generate id locally and add
-      const maxId = products.reduce((max, p) => {
-        const num = parseInt((p.id || '').replace(/^p/, ''), 10);
-        return num > max ? num : max;
-      }, 0);
-      product = { ...draft, id: `p${maxId + 1}` };
-    }
-    const added = addProduct(product);
-    if (added) {
+      await productsApi.create(draft);
       setAddSuccess(true);
       showToast(t('sku.added_to_matrix').replace('{name}', name));
-    } else {
-      showToast(t('sku.toast_duplicate'), 'error');
+    } catch (err: any) {
+      showToast(err?.message || t('sku.toast_duplicate'), 'error');
     }
   };
 
@@ -346,7 +330,7 @@ export default function SKUConstructor() {
                             style={{ background: getCategoryColorVar(cat.code) }}
                           />
                           <span className="text-[11px] sm:text-sm font-medium truncate">
-                            {displaySource(cat, language)}
+                            {displaySource(cat)}
                           </span>
                         </div>
                         <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 sm:mt-1 truncate">
@@ -374,7 +358,7 @@ export default function SKUConstructor() {
                           }`}
                         >
                           <span className="text-[11px] sm:text-sm font-medium block truncate">
-                            {displaySource(model, language)}
+                            {displaySource(model)}
                           </span>
                           <p className="text-[8px] sm:text-[10px] text-text-tertiary mt-0.5 truncate">
                             {model.code}
@@ -542,7 +526,7 @@ export default function SKUConstructor() {
                     <option value="">{t('sku.select_placeholder')}</option>
                     {connectors.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {displaySource(c, language)} ({c.code})
+                        {displaySource(c)} ({c.code})
                       </option>
                     ))}
                   </select>
@@ -559,7 +543,7 @@ export default function SKUConstructor() {
                     <option value="">{t('sku.select_placeholder')}</option>
                     {connectors.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {displaySource(c, language)} ({c.code})
+                        {displaySource(c)} ({c.code})
                       </option>
                     ))}
                   </select>
@@ -576,7 +560,7 @@ export default function SKUConstructor() {
                     <option value="">{t('sku.select_placeholder')}</option>
                     {chargingProtocols.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {displaySource(p, language)}
+                        {displaySource(p)}
                       </option>
                     ))}
                   </select>
@@ -593,7 +577,7 @@ export default function SKUConstructor() {
                     <option value="">{t('sku.select_placeholder')}</option>
                     {materials.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {displaySource(m, language)}
+                        {displaySource(m)}
                       </option>
                     ))}
                   </select>
@@ -610,7 +594,7 @@ export default function SKUConstructor() {
                     <option value="">{t('sku.select_placeholder')}</option>
                     {materials.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {displaySource(m, language)}
+                        {displaySource(m)}
                       </option>
                     ))}
                   </select>
@@ -671,7 +655,7 @@ export default function SKUConstructor() {
                           }}
                         />
                         <span className="text-[9px] sm:text-[10px] block truncate">
-                          {displaySource(color, language)}
+                          {displaySource(color)}
                         </span>
                       </button>
                     ))}
@@ -812,7 +796,7 @@ export default function SKUConstructor() {
                         {t('sku.generated_category_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
-                        {selectedCategory ? displaySource(selectedCategory, language) : ''}
+                        {selectedCategory ? displaySource(selectedCategory) : ''}
                       </p>
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
@@ -820,7 +804,7 @@ export default function SKUConstructor() {
                         {t('sku.generated_model_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
-                        {selectedModel ? displaySource(selectedModel, language) : ''}
+                        {selectedModel ? displaySource(selectedModel) : ''}
                       </p>
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
@@ -828,7 +812,7 @@ export default function SKUConstructor() {
                         {t('sku.color_label')}
                       </p>
                       <p className="text-xs sm:text-sm truncate">
-                        {selectedColor ? displaySource(selectedColor, language) : ''}
+                        {selectedColor ? displaySource(selectedColor) : ''}
                       </p>
                     </div>
                     <div className="p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle min-w-0">
