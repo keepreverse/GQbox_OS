@@ -251,6 +251,27 @@ export interface NamingLogicDefinition {
   rules: string[];
 }
 
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  unread: boolean;
+  type: NotificationType;
+  actionView?: ViewType;
+}
+
+export interface NotificationsAPI {
+  readonly list: AppNotification[];
+  readonly unreadCount: number;
+  add(n: Omit<AppNotification, 'id' | 'createdAt' | 'unread'>): Promise<void>;
+  markRead(id: string): Promise<void>;
+  markAllRead(): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
 export type ViewType =
   | 'dashboard'
   | 'architecture'
@@ -268,4 +289,5 @@ export interface MatrixFilters {
   colors?: string[];
   power?: number[];
   length?: number[];
+  missingFields?: string[];
 }

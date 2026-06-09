@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw } from 'lucide-react';
 import Modal from '@components/ui/Modal';
 import Toggle from '@components/ui/Toggle';
-import SettingsRow from '@components/ui/SettingsRow';
 import { useLanguage } from '@context/LanguageContext';
 import type { Language } from '@context/LanguageContext';
 import { useDataSource } from '@api/dataSourceContext';
@@ -12,6 +11,23 @@ interface SettingsPanelProps {
   onOpenChange: (open: boolean) => void;
   developerMode: boolean;
   onDeveloperModeChange: (next: boolean) => void;
+}
+
+function SettingsRow({ label, value, description }: { label: React.ReactNode; value: React.ReactNode; description?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col">
+      <div
+        className="flex items-center justify-between gap-4"
+        style={{ minHeight: 'clamp(2rem, 2.5vw, 2.5rem)' }}
+      >
+        <span className="text-sm text-text-secondary leading-none flex-1 min-w-0">{label}</span>
+        <div className="flex items-center justify-end shrink-0 w-32">{value}</div>
+      </div>
+      {description && (
+        <p className="text-xs text-text-tertiary mt-1 leading-relaxed">{description}</p>
+      )}
+    </div>
+  );
 }
 
 export default function SettingsPanel({
@@ -42,19 +58,21 @@ export default function SettingsPanel({
       const text = await file.text();
       await ds.settings.importFromFile(text);
       await ds.refresh();
+      ds.notifications.add({ title: t('settings.notif_imported'), type: 'success' });
       alert('Import successful');
     } catch (err) {
       alert('Import error: ' + (err as Error).message);
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [ds]);
+  }, [ds, t]);
 
   const handleReset = useCallback(async () => {
     if (!window.confirm(t('settings.reset_confirm'))) return;
     try {
       await ds.settings.reset();
       await ds.refresh();
-      alert('Data reset to defaults');
+      ds.notifications.add({ title: t('settings.notif_reset'), type: 'warning' });
+      alert(t('settings.notif_reset'));
     } catch (err) {
       alert('Reset error: ' + (err as Error).message);
     }
@@ -75,19 +93,23 @@ export default function SettingsPanel({
   }, [setLanguage, developerMode, onOpenChange]);
 
   const handleSave = useCallback(() => {
-    const wasDevModeOff = !developerMode;
-    onDeveloperModeChange(pendingDevMode);
-    if (pendingDevMode && wasDevModeOff) {
-      window.alert(
-        'Режим разработчика активирован.\n\n' +
-          'Приложение переключено на /api/dev/* (PostgreSQL).\n' +
-          'Для работы необходимо:\n' +
-          '  1. npm run db:start\n' +
-          '  2. npm run db:seed\n\n' +
-          'Текущая сессия (demo) сохранена отдельно — при выключении режима вы вернётесь к ней без потерь.'
-      );
+    const changed = pendingDevMode !== developerMode;
+    if (changed) {
+      const wasDevModeOff = !developerMode;
+      onDeveloperModeChange(pendingDevMode);
+      if (pendingDevMode && wasDevModeOff) {
+        window.alert(
+          'Режим разработчика активирован.\n\n' +
+            'Приложение переключено на /api/dev/* (PostgreSQL).\n' +
+            'Для работы необходимо:\n' +
+            '  1. npm run db:start\n' +
+            '  2. npm run db:seed\n\n' +
+            'Текущая сессия (demo) сохранена отдельно — при выключении режима вы вернётесь к ней без потерь.'
+        );
+      }
     }
     onOpenChange(false);
+    if (changed) window.location.reload();
   }, [developerMode, pendingDevMode, onDeveloperModeChange, onOpenChange]);
 
   const handleDeveloperToggle = useCallback((next: boolean) => {

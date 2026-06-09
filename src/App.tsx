@@ -40,11 +40,21 @@ function AppContent() {
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView);
   const [pendingMatrixFilters, setPendingMatrixFilters] = useState<MatrixFilters | null>(null);
   const [minSplashDone, setMinSplashDone] = useState(false);
+  const [showDevFallback, setShowDevFallback] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setMinSplashDone(true), 2200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (ds.mode !== 'dev' || !ds.error) {
+      setShowDevFallback(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowDevFallback(true), 5000);
+    return () => clearTimeout(timer);
+  }, [ds.error, ds.mode]);
   const viewRef = useRef(currentView);
   viewRef.current = currentView;
 
@@ -93,7 +103,13 @@ function AppContent() {
 
   return (
     <>
-      <AnimatePresence>{(!ds.isReady || !minSplashDone) && <FullScreenLoader />}</AnimatePresence>
+      <AnimatePresence>
+        {(!ds.isReady || !minSplashDone) && (
+          <FullScreenLoader
+            devError={ds.mode === 'dev' && showDevFallback ? ds.error : null}
+          />
+        )}
+      </AnimatePresence>
       <Layout currentView={currentView} onViewChange={setCurrentView}>
         {renderView()}
       </Layout>

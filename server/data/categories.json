@@ -100,16 +100,6 @@
     "sortOrder": 10
   },
   {
-    "id": "cat-packaging",
-    "code": "packaging",
-    "name_source": "Вложение/упаковка",
-    "name_product": "Упаковка",
-    "color": "#94a3b8",
-    "icon": "Archive",
-    "description": "",
-    "sortOrder": 11
-  },
-  {
     "id": "cat-blogo",
     "code": "blogo",
     "name_source": "Blogo",

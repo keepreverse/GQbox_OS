@@ -12,6 +12,7 @@
 // 4. Смена mode → полный reset + refresh().
 
 import type {
+  AppNotification,
   Category,
   Color,
   Connector,
@@ -102,6 +103,24 @@ export interface ProductsAPI {
   remove(id: string): Promise<void>;
 }
 
+// ─── Notifications API ─────────────────────────────────────────────────────
+export interface NotificationsAPI {
+  /** Все уведомления, от новых к старым. */
+  readonly list: AppNotification[];
+  /** Количество непрочитанных. */
+  readonly unreadCount: number;
+  /** Добавить новое уведомление (сервер сам проставит id, createdAt). */
+  add(n: Omit<AppNotification, 'id' | 'createdAt' | 'unread'>): Promise<void>;
+  /** Отметить одно как прочитанное. */
+  markRead(id: string): Promise<void>;
+  /** Отметить все как прочитанные. */
+  markAllRead(): Promise<void>;
+  /** Удалить уведомление (без подтверждения). */
+  remove(id: string): Promise<void>;
+  /** Удалить все уведомления. */
+  clear(): Promise<void>;
+}
+
 // ─── Settings API ─────────────────────────────────────────────────────────
 export interface SettingsAPI {
   /** Полный сброс к дефолтным значениям (на бэке). */
@@ -127,6 +146,7 @@ export interface DataSource {
 
   readonly products: ProductsAPI;
   readonly dictionaries: DictionariesAPI;
+  readonly notifications: NotificationsAPI;
   readonly settings: SettingsAPI;
 
   /** Перезагрузить все данные с бэка. */

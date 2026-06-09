@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   X,
   Image as ImageIcon,
@@ -17,14 +17,16 @@ import {
 import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '@utils/display';
+import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import Modal from '@components/ui/Modal';
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;
   onClose: () => void;
+  highlightedFields?: string[];
 }
 
-export default function ProductDetailCard({ product, onClose }: ProductDetailCardProps) {
+export default function ProductDetailCard({ product, onClose, highlightedFields = [] }: ProductDetailCardProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(true);
 
@@ -32,32 +34,55 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
     setOpen(false);
   }, []);
 
+  const allMissing = useMemo(() => {
+    const reqFields = categoryRequiredFields[product.category.code];
+    if (!reqFields) return new Set<string>();
+    const missing = new Set<string>();
+    for (const fd of reqFields) {
+      const val = product[fd.field as keyof ProductWithRelations];
+      if (val == null || val === '') {
+        missing.add(fd.field);
+      }
+    }
+    return missing;
+  }, [product]);
+
+  const hl = (field: string) => {
+    if (highlightedFields.includes(field)) return 'ring-1 ring-danger/40 bg-danger/[0.03]';
+    if (allMissing.has(field)) return 'ring-1 ring-warning/20 bg-warning/[0.02]';
+    return '';
+  };
+
   const desc = product.description || '';
   const usp = product.usp || '';
   const tags = product.tags || [];
 
   const specs = [
-    { icon: Zap, label: t('detail.power'), value: product.powerW ? `${product.powerW}W` : '—' },
+    { icon: Zap, label: t('detail.power'), value: product.powerW ? `${product.powerW}W` : '—', field: 'powerW' },
     {
       icon: Battery,
       label: t('detail.current'),
       value: product.currentA ? `${product.currentA}A` : '—',
+      field: 'currentA',
     },
     {
       icon: Zap,
       label: t('detail.voltage'),
       value: product.voltageV ? `${product.voltageV}V` : '—',
+      field: 'voltageV',
     },
     {
       icon: Ruler,
       label: t('detail.length'),
       value: product.lengthM ? `${product.lengthM}м` : '—',
+      field: 'lengthM',
     },
-    { icon: Users, label: t('detail.devices'), value: product.deviceCount || '—' },
+    { icon: Users, label: t('detail.devices'), value: product.deviceCount || '—', field: 'deviceCount' },
     {
       icon: LinkIcon,
       label: t('detail.speed'),
       value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—',
+      field: 'dataTransferMbps',
     },
   ];
 
@@ -65,18 +90,22 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
     {
       label: t('detail.input'),
       value: product.connectorFemale ? displaySource(product.connectorFemale) : '—',
+      field: 'connectorFemale',
     },
     {
       label: t('detail.output'),
       value: product.connectorMale ? displaySource(product.connectorMale) : '—',
+      field: 'connectorMale',
     },
     {
       label: t('detail.protocol'),
       value: product.chargingProtocol ? displaySource(product.chargingProtocol) : '—',
+      field: 'chargingProtocol',
     },
     {
       label: t('detail.connection'),
       value: product.connectionType || '—',
+      field: 'connectionType',
     },
   ];
 
@@ -84,10 +113,12 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
     {
       label: t('detail.body'),
       value: product.bodyMaterial ? displayName(product.bodyMaterial) : '—',
+      field: 'bodyMaterial',
     },
     {
       label: t('detail.wire'),
       value: product.wireMaterial ? displayName(product.wireMaterial) : '—',
+      field: 'wireMaterial',
     },
   ];
 
@@ -324,7 +355,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                 {specs.map((spec, i) => (
                   <div
                     key={i}
-                    className="p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle"
+                    className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(spec.field)}`}
                   >
                     <div className="flex items-center gap-1 mb-0.5">
                       <spec.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
@@ -349,7 +380,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                 {connections.map((conn, i) => (
                   <div
                     key={i}
-                    className="flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle"
+                    className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(conn.field)}`}
                   >
                     <span className="text-[9px] sm:text-[10px] text-text-tertiary">
                       {conn.label}
@@ -371,7 +402,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                 {materials.map((mat, i) => (
                   <div
                     key={i}
-                    className="flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle"
+                    className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(mat.field)}`}
                   >
                     <span className="text-[9px] sm:text-[10px] text-text-tertiary">
                       {mat.label}
@@ -390,7 +421,7 @@ export default function ProductDetailCard({ product, onClose }: ProductDetailCar
                   <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   {t('detail.supplier')}
                 </h3>
-                <div className="p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle">
+                <div className={`p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle ${hl('supplier')}`}>
                   <p className="text-[10px] sm:text-xs font-medium text-text-primary">
                     {product.supplier.name}
                   </p>

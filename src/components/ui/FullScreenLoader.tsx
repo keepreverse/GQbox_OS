@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -29,8 +30,17 @@ const textBaseStyle: LoaderStyle = {
   willChange: 'background-position, transform, opacity, filter',
 };
 
-export default function FullScreenLoader() {
+interface FullScreenLoaderProps {
+  devError?: string | null;
+}
+
+export default function FullScreenLoader({ devError }: FullScreenLoaderProps) {
   const shouldReduceMotion = useReducedMotion();
+
+  function handleSwitchToDemo() {
+    localStorage.setItem('gqbox_dev_mode', 'false');
+    window.location.reload();
+  }
 
   return (
     <motion.div
@@ -103,12 +113,36 @@ export default function FullScreenLoader() {
               ? { duration: 0.35, ease: EASE }
               : {
                   opacity: { duration: 1.2, delay: 0.4, ease: EASE },
-                  scaleX: { duration: 1.2, delay: 0.4, ease: EASE },
+                  scaleX: { duration: 1.8, delay: 0.4, ease: 'easeOut' },
                   y: { duration: 1.2, delay: 0.4, ease: EASE },
                   filter: { duration: 1.2, delay: 0.4, ease: EASE },
                 }
           }
         />
+
+        <AnimatePresence>
+          {devError && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              className="flex flex-col items-center gap-3"
+            >
+              <p className="text-xs text-text-secondary text-center max-w-[260px] leading-relaxed">
+                {devError}
+              </p>
+              <button
+                type="button"
+                onClick={handleSwitchToDemo}
+                className="flex items-center gap-1.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 transition-colors font-medium border border-accent/40 cursor-pointer px-4 py-2"
+              >
+                <AlertTriangle className="size-4 shrink-0" />
+                <span>Переключиться на Demo-режим</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

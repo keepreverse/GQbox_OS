@@ -1775,52 +1775,6 @@
     "isKit": true
   },
   {
-    "id": "p110",
-    "sku": "S00701",
-    "skuBase": "S00701",
-    "categoryId": "cat-packaging",
-    "modelId": "mod-items",
-    "colorId": "col-01",
-    "supplierId": "sup-none",
-    "bodyMaterialId": "mat-silicone"
-  },
-  {
-    "id": "p111",
-    "sku": "S00702",
-    "skuBase": "S00702",
-    "categoryId": "cat-packaging",
-    "modelId": "mod-items",
-    "colorId": "col-02",
-    "supplierId": "sup-none",
-    "bodyMaterialId": "mat-silicone"
-  },
-  {
-    "id": "p112",
-    "sku": "S00501",
-    "skuBase": "S00501",
-    "categoryId": "cat-packaging",
-    "modelId": "mod-box",
-    "colorId": "col-16",
-    "supplierId": "sup-wendy",
-    "bodyMaterialId": "mat-plastic"
-  },
-  {
-    "id": "p113",
-    "sku": "S00401",
-    "skuBase": "S00401",
-    "categoryId": "cat-packaging",
-    "modelId": "mod-box",
-    "supplierId": "sup-none"
-  },
-  {
-    "id": "p114",
-    "sku": "S00402",
-    "skuBase": "S00402",
-    "categoryId": "cat-packaging",
-    "modelId": "mod-box",
-    "supplierId": "sup-none"
-  },
-  {
     "id": "p115",
     "sku": "S90504/02",
     "skuBase": "S90504",
@@ -2013,34 +1967,5 @@
     "connectorFemaleId": "conn-usb",
     "connectorMaleId": "conn-360",
     "lengthVariant": "1"
-  },
-  {
-    "sku": "S10322-Ы/02-W",
-    "skuBase": "S10322",
-    "categoryId": "cat-szu",
-    "modelId": "mod-pd",
-    "colorId": "col-02",
-    "supplierId": "sup-wendy",
-    "bodyMaterialId": "mat-plastic",
-    "wireMaterialId": "mat-nylon",
-    "currentA": 6,
-    "voltageV": 3,
-    "powerW": 17,
-    "lengthM": 75,
-    "deviceCount": 1,
-    "connectorFemaleId": "conn-usb",
-    "connectorMaleId": "conn-l",
-    "variantCode": "Ы",
-    "id": "p125"
-  },
-  {
-    "sku": "S1044004",
-    "skuBase": "S1044004",
-    "categoryId": "cat-kit",
-    "modelId": "mod-china-pr",
-    "isKit": true,
-    "powerW": 20,
-    "deviceCount": 3,
-    "id": "p126"
   }
 ]

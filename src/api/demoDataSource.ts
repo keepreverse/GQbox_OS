@@ -15,11 +15,13 @@ import {
   asSupplier,
   type DataSource,
   type DictionariesAPI,
+  type NotificationsAPI,
   type ProductsAPI,
   type RawDictItem,
   type SettingsAPI,
 } from './dataSource';
 import type {
+  AppNotification,
   CategoryAttribute,
   NamingTemplate,
   ProductWithRelations,
@@ -203,6 +205,47 @@ export function createDemoDataSource(): DataSource {
     },
   };
 
+  // ─── Notifications API ────────────────────────────────────────────────
+  let notificationsCache: AppNotification[] = [];
+
+  const notifications: NotificationsAPI = {
+    get list() {
+      return notificationsCache;
+    },
+    get unreadCount() {
+      return notificationsCache.filter((n) => n.unread).length;
+    },
+    async add(n) {
+      const created = await request<AppNotification>(`${API_PREFIX}/notifications`, {
+        method: 'POST',
+        body: JSON.stringify(n),
+      });
+      notificationsCache = [created, ...notificationsCache];
+      notify();
+    },
+    async markRead(id) {
+      await request<unknown>(`${API_PREFIX}/notifications/${id}`, { method: 'PATCH' });
+      const n = notificationsCache.find((x) => x.id === id);
+      if (n) n.unread = false;
+      notify();
+    },
+    async markAllRead() {
+      await request<unknown>(`${API_PREFIX}/notifications/mark-all-read`, { method: 'PATCH' });
+      for (const n of notificationsCache) n.unread = false;
+      notify();
+    },
+    async remove(id) {
+      await request<unknown>(`${API_PREFIX}/notifications/${id}`, { method: 'DELETE' });
+      notificationsCache = notificationsCache.filter((x) => x.id !== id);
+      notify();
+    },
+    async clear() {
+      await request<unknown>(`${API_PREFIX}/notifications`, { method: 'DELETE' });
+      notificationsCache = [];
+      notify();
+    },
+  };
+
   // ─── Settings API ──────────────────────────────────────────────────────
   const settings: SettingsAPI = {
     async reset() {
@@ -229,14 +272,16 @@ export function createDemoDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
+        request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
       ]);
       rawProducts = rawProductsNew;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }
+      notificationsCache = notifs;
       isReady = true;
       error = null;
       notify();
@@ -257,6 +302,7 @@ export function createDemoDataSource(): DataSource {
     },
     products,
     dictionaries,
+    notifications,
     settings,
     refresh,
     subscribe(listener) {

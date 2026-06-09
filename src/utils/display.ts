@@ -21,7 +21,6 @@ const CATEGORY_COLOR_VAR_MAP: Record<string, string> = {
   holder: 'var(--color-holder)',
   case: 'var(--color-case)',
   kit: 'var(--color-kit)',
-  packaging: 'var(--color-packaging)',
   blogo: 'var(--color-blogo)',
 };
 

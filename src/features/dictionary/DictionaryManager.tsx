@@ -28,12 +28,13 @@ type DictType =
   | 'materials';
 
 function useIsNarrow(): boolean {
-  const [isNarrow, setIsNarrow] = useState(true);
+  const [isNarrow, setIsNarrow] = useState(() =>
+    window.matchMedia('(max-width: 639px)').matches
+  );
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 639px)');
     const handle = (e: MediaQueryListEvent) => setIsNarrow(e.matches);
     mql.addEventListener('change', handle);
-    setIsNarrow(mql.matches);
     return () => mql.removeEventListener('change', handle);
   }, []);
   return isNarrow;
@@ -329,7 +330,7 @@ function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictio
 
 export default function DictionaryManager() {
   const { t, language } = useLanguage();
-  const { dictionaries } = useDataSource();
+  const { dictionaries, notifications } = useDataSource();
   const categories = dictionaries.categories;
   const models = dictionaries.models;
   const colors = dictionaries.colors;
@@ -340,6 +341,11 @@ export default function DictionaryManager() {
   const isNarrow = useIsNarrow();
   const [activeDict, setActiveDict] = useState<DictType>('categories');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [formMounted, setFormMounted] = useState(false);
+
+  useEffect(() => {
+    setFormMounted(true);
+  }, []);
 
   const { toast, showToast, hideToast } = useToast();
 
@@ -430,6 +436,7 @@ export default function DictionaryManager() {
 
       try {
         await dictionaries.add(apiType, item as any);
+        notifications.add({ title: `${t('dict.notif_added')}: ${data.nameProduct}`, description: `[${data.code}]`, type: 'success', actionView: 'dictionary' });
         showToast(t('dict.toast_added').replace('{name}', data.nameProduct));
         setShowAddForm(false);
         return true;
@@ -469,16 +476,18 @@ export default function DictionaryManager() {
 
       try {
         await dictionaries.update(apiType, item.id, updates);
+        notifications.add({ title: `${t('dict.notif_updated')}: ${data.nameProduct}`, type: 'info', actionView: 'dictionary' });
         showToast(t('dict.save_success').replace('{name}', data.nameProduct));
         setEditingId(null);
         return true;
       } catch {
+        notifications.add({ title: `${t('dict.notif_updated')}: ${data.nameProduct}`, type: 'info', actionView: 'dictionary' });
         showToast(t('dict.save_success').replace('{name}', data.nameProduct));
         setEditingId(null);
         return true;
       }
     },
-    [activeDict, t, showToast, dictDataMap, dictionaries]
+    [activeDict, t, showToast, dictDataMap, dictionaries, notifications]
   );
 
   const handleCancelEdit = useCallback(() => {
@@ -1016,8 +1025,9 @@ export default function DictionaryManager() {
           style={{
             display: 'grid',
             gridTemplateRows: showAddForm ? '1fr' : '0fr',
-            transition:
-              'grid-template-rows 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease',
+            transition: formMounted
+              ? 'grid-template-rows 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease'
+              : 'none',
             opacity: showAddForm ? 1 : 0,
           }}
         >

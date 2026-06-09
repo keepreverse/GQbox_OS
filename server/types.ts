@@ -82,6 +82,16 @@ export type DataBundle = {
   materials: DictionaryItem[];
 };
 
+export interface NotificationRow {
+  id: string;
+  title: string;
+  description?: string | null;
+  createdAt: string;
+  unread: boolean;
+  type: string;
+  actionView?: string | null;
+}
+
 export const COLLECTIONS = [
   'products',
   'categories',
@@ -91,8 +101,13 @@ export const COLLECTIONS = [
   'connectors',
   'chargingProtocols',
   'materials',
+  'notifications',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
+
+export function isCollectionName(t: string): t is CollectionName {
+  return (COLLECTIONS as readonly string[]).includes(t);
+}
 
 export function isDictType(t: string): t is DictType {
   return (DICT_TYPES as readonly string[]).includes(t);

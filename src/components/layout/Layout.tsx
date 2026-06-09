@@ -128,7 +128,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-black/40 z-[101] backdrop-blur-sm cursor-pointer"
             />
           )}
         </AnimatePresence>
@@ -156,6 +156,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             onToggleNotifications={handleToggleNotifications}
             onCloseNotifications={handleCloseNotifications}
             onOpenSettings={handleOpenSettings}
+            onNavigate={onViewChange}
           />
 
           <main

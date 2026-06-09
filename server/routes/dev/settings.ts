@@ -58,7 +58,11 @@ async function seedFromJsonDefaults(): Promise<{ seeded: string[]; counts: Recor
           name,
           dictNameToJson(cleaned),
           cleaned.categoryId ?? cleaned.parentId ?? null,
-          cleaned.hex ?? cleaned.hexValue ?? null,
+          cleaned.code ?? null,
+          cleaned.color ?? cleaned.hex ?? cleaned.hexValue ?? null,
+          cleaned.icon ?? null,
+          cleaned.description ?? null,
+          cleaned.contactInfo ?? null,
           cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
           cleaned.sortOrder ?? 0,
         ];

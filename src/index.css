@@ -37,7 +37,6 @@
   --color-holder: var(--color-holder);
   --color-case: var(--color-case);
   --color-kit: var(--color-kit);
-  --color-packaging: var(--color-packaging);
   --color-blogo: var(--color-blogo);
 
   --color-supplier-a: var(--color-supplier-a);
@@ -253,11 +252,6 @@ input::placeholder, textarea::placeholder {
   letter-spacing: 0.01em;
 }
 
-/* Active/pressed state for buttons */
-button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
@@ -440,8 +434,8 @@ html {
 @keyframes t-check-draw { to { stroke-dashoffset: 0; } }
 
 @keyframes dev-mode-scan {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(1200%); }
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(400%) skewX(-15deg); }
 }
 
 @keyframes dev-mode-glow {

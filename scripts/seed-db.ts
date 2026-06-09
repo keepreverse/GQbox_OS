@@ -48,18 +48,43 @@ async function main() {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id VARCHAR(50) PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        unread BOOLEAN DEFAULT TRUE,
+        type VARCHAR(20) DEFAULT 'info',
+        action_view VARCHAR(50)
+      )
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS dictionaries (
         id VARCHAR(50) PRIMARY KEY,
         type VARCHAR(30) NOT NULL,
         name JSONB NOT NULL,
         parent_id VARCHAR(50),
+        code VARCHAR(20),
         hex VARCHAR(10),
+        icon VARCHAR(50),
+        description TEXT,
+        contact_info TEXT,
         short_name JSONB,
         sort_order INTEGER DEFAULT 0,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
+
+    for (const col of [
+      'ADD COLUMN IF NOT EXISTS code VARCHAR(20)',
+      'ADD COLUMN IF NOT EXISTS icon VARCHAR(50)',
+      'ADD COLUMN IF NOT EXISTS description TEXT',
+      'ADD COLUMN IF NOT EXISTS contact_info TEXT',
+    ]) {
+      await client.query(`ALTER TABLE dictionaries ${col}`);
+    }
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_dict_type ON dictionaries(type)`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_dict_parent ON dictionaries(parent_id)`);
@@ -102,13 +127,17 @@ async function main() {
       for (const item of items) {
         const name = { source: item.name_source || item.name || '', product: item.name_product || item.nameRu || item.name || '' };
         const parentId = item.categoryId || item.parentId || null;
-        const hex = item.hex || null;
+        const code = item.code || null;
+        const hex = item.color || item.hex || item.hexValue || null;
+        const icon = item.icon || null;
+        const description = item.description || null;
+        const contactInfo = item.contactInfo || null;
         const shortName = item.shortName || null;
         await client.query(`
-          INSERT INTO dictionaries (id, type, name, parent_id, hex, short_name, sort_order)
-          VALUES ($1,$2,$3::jsonb,$4,$5,$6::jsonb,$7)
+          INSERT INTO dictionaries (id, type, name, parent_id, code, hex, icon, description, contact_info, short_name, sort_order)
+          VALUES ($1,$2,$3::jsonb,$4,$5,$6,$7,$8,$9,$10::jsonb,$11)
           ON CONFLICT (id) DO NOTHING
-        `, [item.id, type, JSON.stringify(name), parentId, hex, shortName ? JSON.stringify(shortName) : null, item.sortOrder ?? 0]);
+        `, [item.id, type, JSON.stringify(name), parentId, code, hex, icon, description, contactInfo, shortName ? JSON.stringify(shortName) : null, item.sortOrder ?? 0]);
       }
       console.log(`Seeded ${items.length} ${type}`);
     }

@@ -135,7 +135,11 @@ export function mapDictionaryRow(row: any): DictionaryItem {
   if (!item.name_source) item.name_source = item.name_product ?? '';
   if (!item.name_product) item.name_product = item.name_source;
   if (row.parent_id) item.categoryId = row.parent_id;
-  if (row.hex) item.hex = row.hex;
+  if (row.code) item.code = row.code;
+  if (row.hex) { item.hex = row.hex; item.color = row.hex; }
+  if (row.icon) item.icon = row.icon;
+  if (row.description) item.description = row.description;
+  if (row.contact_info) item.contactInfo = row.contact_info;
   if (row.short_name) item.shortName = row.short_name;
   if (row.sort_order !== undefined) item.sortOrder = row.sort_order;
   return item;
@@ -151,12 +155,16 @@ export function dictNameToJson(item: DictionaryItem): string {
 }
 
 export function dictInsertSql(): string {
-  return `INSERT INTO dictionaries (id, type, name, parent_id, hex, short_name, sort_order)
-    VALUES ($1, $2, $3::jsonb, $4, $5, $6::jsonb, $7)
+  return `INSERT INTO dictionaries (id, type, name, parent_id, code, hex, icon, description, contact_info, short_name, sort_order)
+    VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8, $9, $10::jsonb, $11)
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       parent_id = EXCLUDED.parent_id,
+      code = EXCLUDED.code,
       hex = EXCLUDED.hex,
+      icon = EXCLUDED.icon,
+      description = EXCLUDED.description,
+      contact_info = EXCLUDED.contact_info,
       short_name = EXCLUDED.short_name,
       sort_order = EXCLUDED.sort_order,
       updated_at = NOW()`;
@@ -182,9 +190,29 @@ export function buildDictUpdateSql(id: string, body: DictionaryItem): { sql: str
     vals.push(body.categoryId ?? body.parentId ?? null);
     idx++;
   }
-  if (body.hex !== undefined) {
+  if (body.code !== undefined) {
+    updates.push(`code = $${idx}`);
+    vals.push(body.code ?? null);
+    idx++;
+  }
+  if (body.color !== undefined || body.hex !== undefined) {
     updates.push(`hex = $${idx}`);
-    vals.push(body.hex ?? null);
+    vals.push(body.hex ?? body.color ?? null);
+    idx++;
+  }
+  if (body.icon !== undefined) {
+    updates.push(`icon = $${idx}`);
+    vals.push(body.icon ?? null);
+    idx++;
+  }
+  if (body.description !== undefined) {
+    updates.push(`description = $${idx}`);
+    vals.push(body.description ?? null);
+    idx++;
+  }
+  if (body.contactInfo !== undefined) {
+    updates.push(`contact_info = $${idx}`);
+    vals.push(body.contactInfo ?? null);
     idx++;
   }
   if (body.shortName !== undefined) {

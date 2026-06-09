@@ -455,27 +455,6 @@
     "name_product": "PD + ST"
   },
   {
-    "id": "mod-items",
-    "categoryId": "cat-packaging",
-    "code": "items",
-    "name_source": "items",
-    "name_product": "Предмет"
-  },
-  {
-    "id": "mod-box",
-    "categoryId": "cat-packaging",
-    "code": "box",
-    "name_source": "box",
-    "name_product": "Коробка"
-  },
-  {
-    "id": "mod-box-items",
-    "categoryId": "cat-packaging",
-    "code": "box-items",
-    "name_source": "box-items",
-    "name_product": "Коробка предмет"
-  },
-  {
     "id": "mod-screen-mirror",
     "categoryId": "cat-blogo",
     "code": "Screen Mirror",

@@ -64,7 +64,11 @@ export async function initSchema(): Promise<void> {
       type VARCHAR(30) NOT NULL,
       name JSONB NOT NULL,
       parent_id VARCHAR(50),
+      code VARCHAR(20),
       hex VARCHAR(10),
+      icon VARCHAR(50),
+      description TEXT,
+      contact_info TEXT,
       short_name JSONB,
       sort_order INTEGER DEFAULT 0,
       created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -72,8 +76,30 @@ export async function initSchema(): Promise<void> {
     )
   `);
 
+  // Add columns if missing (migration for existing DBs)
+  for (const col of [
+    'ADD COLUMN IF NOT EXISTS code VARCHAR(20)',
+    'ADD COLUMN IF NOT EXISTS icon VARCHAR(50)',
+    'ADD COLUMN IF NOT EXISTS description TEXT',
+    'ADD COLUMN IF NOT EXISTS contact_info TEXT',
+  ]) {
+    await query(`ALTER TABLE dictionaries ${col}`);
+  }
+
   await query(`CREATE INDEX IF NOT EXISTS idx_dict_type ON dictionaries(type)`);
   await query(`CREATE INDEX IF NOT EXISTS idx_dict_parent ON dictionaries(parent_id)`);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id VARCHAR(50) PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      unread BOOLEAN DEFAULT TRUE,
+      type VARCHAR(20) DEFAULT 'info',
+      action_view VARCHAR(50)
+    )
+  `);
 }
 
 export async function closePool(): Promise<void> {

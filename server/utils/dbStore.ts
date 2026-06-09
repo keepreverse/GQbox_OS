@@ -114,7 +114,11 @@ export async function createDictionaryItem(
     type,
     dictNameToJson(cleaned),
     cleaned.categoryId ?? cleaned.parentId ?? null,
-    cleaned.hex ?? cleaned.hexValue ?? null,
+    cleaned.code ?? null,
+    cleaned.color ?? cleaned.hex ?? cleaned.hexValue ?? null,
+    cleaned.icon ?? null,
+    cleaned.description ?? null,
+    cleaned.contactInfo ?? null,
     cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
     cleaned.sortOrder ?? 0,
   ];
@@ -150,7 +154,7 @@ export async function deleteDictionaryItem(
 // ─── Bulk operations: reset / import / export ─────────────────────────────
 
 export async function truncateAll(): Promise<void> {
-  await query('TRUNCATE products, dictionaries RESTART IDENTITY CASCADE');
+  await query('TRUNCATE products, dictionaries, notifications RESTART IDENTITY CASCADE');
 }
 
 export async function exportAll(): Promise<DataBundle> {
@@ -183,6 +187,8 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
         const vals = productToDbParams(product as any);
         await query(productInsertSql(), vals);
       }
+    } else if (name === 'notifications') {
+      await query('DELETE FROM notifications');
     } else {
       await query('DELETE FROM dictionaries WHERE type = $1', [name]);
       for (const item of data as DictionaryItem[]) {

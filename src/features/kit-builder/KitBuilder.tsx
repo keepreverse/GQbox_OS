@@ -15,10 +15,10 @@ import {
   Car,
   Headphones,
   ArrowLeftRight,
-  Pin,
+  Magnet,
   GripVertical,
-  Smartphone,
-  Archive,
+  Sparkles,
+  Navigation,
   Monitor,
   Check,
   AlertCircle,
@@ -38,11 +38,10 @@ const categoryIcons: Record<string, React.ElementType> = {
   azu: Car,
   headphones: Headphones,
   adapter: ArrowLeftRight,
-  pin: Pin,
-  holder: GripVertical,
-  case: Smartphone,
+  pin: Magnet,
+  holder: Navigation,
+  case: Sparkles,
   kit: Package,
-  packaging: Archive,
   blogo: Monitor,
 };
 
@@ -581,7 +580,7 @@ export default function KitBuilder() {
                     >
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                         {(() => {
-                          const Icon = categoryIcons[cat.code] || Archive;
+                          const Icon = categoryIcons[cat.code] || Package;
                           return (
                             <Icon
                               className="w-5 h-5"

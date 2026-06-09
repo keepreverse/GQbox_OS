@@ -22,9 +22,10 @@ export default function DevModeBadge({ active }: DevModeBadgeProps) {
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-warning/25 to-transparent"
+        className="pointer-events-none absolute -top-10 -bottom-10 w-48"
         style={{
-          animation: 'dev-mode-scan 2.4s linear infinite',
+          animation: 'dev-mode-scan 5s linear infinite',
+          background: 'linear-gradient(to right, transparent 0%, transparent 25%, rgba(251,191,36,0.04) 35%, rgba(251,191,36,0.18) 50%, rgba(251,191,36,0.04) 65%, transparent 75%, transparent 100%)',
         }}
       />
 

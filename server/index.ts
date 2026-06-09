@@ -5,11 +5,13 @@ import cors from 'cors';
 import demoProducts from './routes/demo/products';
 import demoDictionaries from './routes/demo/dictionaries';
 import demoSettings from './routes/demo/settings';
+import demoNotifications from './routes/demo/notifications';
 
 // Dev mode (PostgreSQL-only)
 import devProducts from './routes/dev/products';
 import devDictionaries from './routes/dev/dictionaries';
 import devSettings from './routes/dev/settings';
+import devNotifications from './routes/dev/notifications';
 
 import { errorHandler } from './middleware/errorHandler';
 import { closePool } from './utils/db';
@@ -33,11 +35,13 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/demo/products', demoProducts);
 app.use('/api/demo/dictionaries', demoDictionaries);
 app.use('/api/demo', demoSettings);
+app.use('/api/demo/notifications', demoNotifications);
 
 // ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
 app.use('/api/dev/products', devProducts);
 app.use('/api/dev/dictionaries', devDictionaries);
 app.use('/api/dev', devSettings);
+app.use('/api/dev/notifications', devNotifications);
 
 app.use(errorHandler);
 
@@ -48,9 +52,9 @@ app.use(errorHandler);
 // чтобы не падать, если БД не поднята. Каждый dev-роут сам проверяет
 // доступность через isDbAvailable() и возвращает 503, если что.
 app.listen(PORT, () => {
-  console.log(`[server] GQbox API running on http://localhost:${PORT}`);
-  console.log(`[server]   demo: /api/demo/*  (JSON files)`);
-  console.log(`[server]   dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
+  console.log(`GQbox API running on http://localhost:${PORT}`);
+  console.log(`  demo: /api/demo/*  (JSON files)`);
+  console.log(`  dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
 });
 
 process.on('SIGINT', async () => {

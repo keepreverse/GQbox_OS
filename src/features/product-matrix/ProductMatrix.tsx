@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef, useDeferredValue } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -10,15 +10,16 @@ import {
   Car,
   Headphones,
   ArrowLeftRight,
-  Pin,
-  GripVertical,
-  Smartphone,
+  Magnet,
+  Sparkles,
+  Navigation,
   Package,
-  Archive,
   Monitor,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   SlidersHorizontal,
+  List,
   Check,
 } from 'lucide-react';
 import { useDataSource } from '@api/dataSourceContext';
@@ -36,11 +37,10 @@ const categoryIcons: Record<string, React.ElementType> = {
   azu: Car,
   headphones: Headphones,
   adapter: ArrowLeftRight,
-  pin: Pin,
-  holder: GripVertical,
-  case: Smartphone,
+  pin: Magnet,
+  holder: Navigation,
+  case: Sparkles,
   kit: Package,
-  packaging: Archive,
   blogo: Monitor,
 };
 
@@ -49,29 +49,54 @@ interface ProductMatrixProps {
   onInitialFiltersApplied?: () => void;
 }
 
+function FilterSection({
+  label,
+  children,
+  compact,
+}: {
+  label: string;
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`pt-2.5 sm:pt-3 first:pt-0 border-t border-border-subtle/40 first:border-t-0 ${compact ? '' : 'sm:pb-1'}`}>
+      <p className="text-[10px] uppercase tracking-wider text-text-tertiary font-medium mb-1.5 sm:mb-2">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-1 sm:gap-1.5">{children}</div>
+    </div>
+  );
+}
+
 export default function ProductMatrix({
   initialFilters,
   onInitialFiltersApplied,
 }: ProductMatrixProps = {}) {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries } = useDataSource();
+  const { products: productsApi, dictionaries, notifications } = useDataSource();
   const products = productsApi.list;
   const categories = dictionaries.categories;
   const suppliers = dictionaries.suppliers;
   const colors = dictionaries.colors;
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedPower, setSelectedPower] = useState<number[]>([]);
   const [selectedLength, setSelectedLength] = useState<number[]>([]);
+  const [selectedMissingFields, setSelectedMissingFields] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [exporting, setExporting] = useState(false);
   const [tableKey, setTableKey] = useState(0);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
+  const [pageSizeOpen, setPageSizeOpen] = useState(false);
+  const pageSizeRef = useRef<HTMLDivElement>(null);
+  const pageSizeOptions = [15, 25, 50, 100];
   const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
+  const handleRowClick = useCallback((p: ProductWithRelations) => setSelectedProduct(p), []);
 
   useEffect(() => {
     if (initialFilters) {
@@ -80,23 +105,36 @@ export default function ProductMatrix({
       setSelectedColors(initialFilters.colors ?? []);
       setSelectedPower(initialFilters.power ?? []);
       setSelectedLength(initialFilters.length ?? []);
-      setShowFilters(true);
+      setSelectedMissingFields(initialFilters.missingFields ?? []);
       setCurrentPage(1);
       setTableKey((k) => k + 1);
       onInitialFiltersApplied?.();
     }
   }, [initialFilters, onInitialFiltersApplied]);
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (pageSizeRef.current && !pageSizeRef.current.contains(e.target as Node)) {
+        setPageSizeOpen(false);
+      }
+    }
+    if (pageSizeOpen) {
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }
+  }, [pageSizeOpen]);
+
   const filteredProducts = useMemo(() => {
+    const q = deferredSearchQuery.toLowerCase();
     return products.filter((p) => {
       const matchesSearch =
-        !searchQuery ||
-        p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.model?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.model?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.color?.name_source?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (p.color?.name_product?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+        !q ||
+        p.sku.toLowerCase().includes(q) ||
+        p.productName.toLowerCase().includes(q) ||
+        (p.model?.name_source?.toLowerCase() || '').includes(q) ||
+        (p.model?.name_product?.toLowerCase() || '').includes(q) ||
+        (p.color?.name_source?.toLowerCase() || '').includes(q) ||
+        (p.color?.name_product?.toLowerCase() || '').includes(q);
 
       const matchesCategory =
         selectedCategories.length === 0 || selectedCategories.includes(p.category.code);
@@ -108,6 +146,12 @@ export default function ProductMatrix({
         selectedPower.length === 0 || (p.powerW != null && selectedPower.includes(p.powerW));
       const matchesLength =
         selectedLength.length === 0 || (p.lengthM != null && selectedLength.includes(p.lengthM));
+      const matchesMissingFields =
+        selectedMissingFields.length === 0 ||
+        selectedMissingFields.some((field) => {
+          const val = p[field as keyof ProductWithRelations];
+          return val == null || val === '';
+        });
 
       return (
         matchesSearch &&
@@ -115,17 +159,19 @@ export default function ProductMatrix({
         matchesSupplier &&
         matchesColor &&
         matchesPower &&
-        matchesLength
+        matchesLength &&
+        matchesMissingFields
       );
     });
   }, [
     products,
-    searchQuery,
+    deferredSearchQuery,
     selectedCategories,
     selectedSuppliers,
     selectedColors,
     selectedPower,
     selectedLength,
+    selectedMissingFields,
   ]);
 
   const paginatedProducts = useMemo(() => {
@@ -135,45 +181,45 @@ export default function ProductMatrix({
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
 
-  const toggleCategory = (code: string) => {
+  const toggleCategory = useCallback((code: string) => {
     setSelectedCategories((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
     setTableKey((k) => k + 1);
-  };
+  }, []);
 
-  const toggleSupplier = (code: string) => {
+  const toggleSupplier = useCallback((code: string) => {
     setSelectedSuppliers((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
     setTableKey((k) => k + 1);
-  };
+  }, []);
 
-  const toggleColor = (code: string) => {
+  const toggleColor = useCallback((code: string) => {
     setSelectedColors((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
     setCurrentPage(1);
     setTableKey((k) => k + 1);
-  };
+  }, []);
 
-  const togglePower = (val: number) => {
+  const togglePower = useCallback((val: number) => {
     setSelectedPower((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
     setCurrentPage(1);
     setTableKey((k) => k + 1);
-  };
+  }, []);
 
-  const toggleLength = (val: number) => {
+  const toggleLength = useCallback((val: number) => {
     setSelectedLength((prev) =>
       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
     setCurrentPage(1);
     setTableKey((k) => k + 1);
-  };
+  }, []);
 
   const uniqueColors = useMemo(() => {
     const codes = new Set(products.map((p) => p.color?.code).filter(Boolean));
@@ -195,9 +241,10 @@ export default function ProductMatrix({
     selectedSuppliers.length +
     selectedColors.length +
     selectedPower.length +
-    selectedLength.length;
+    selectedLength.length +
+    selectedMissingFields.length;
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     setExporting(true);
     setTimeout(() => {
       const headers = [
@@ -238,8 +285,9 @@ export default function ProductMatrix({
       document.body.removeChild(link);
 
       setExporting(false);
+      notifications.add({ title: t('matrix.notif_exported').replace('{count}', String(filteredProducts.length)), type: 'info' });
     }, 600);
-  };
+  }, [filteredProducts, notifications, t]);
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -265,7 +313,7 @@ export default function ProductMatrix({
     return pages;
   };
 
-  const supplierBadge = (code?: string) => {
+  const supplierBadge = useCallback((code?: string) => {
     const c = code || '-';
     return (
       <span
@@ -282,17 +330,28 @@ export default function ProductMatrix({
         {c === '-' ? '—' : c}
       </span>
     );
-  };
+  }, []);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSelectedCategories([]);
     setSelectedSuppliers([]);
     setSelectedColors([]);
     setSelectedPower([]);
     setSelectedLength([]);
-  };
+    setSelectedMissingFields([]);
+    setShowFilters(false);
+  }, []);
 
-  const productColumns: Column<ProductWithRelations>[] = [
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+    setTableKey((k) => k + 1);
+  }, []);
+
+  const rowKeyFn = useCallback((p: ProductWithRelations) => p.id, []);
+  const rowClassNameFn = useCallback(() => 'table-row-hover cursor-pointer', []);
+
+  const productColumns: Column<ProductWithRelations>[] = useMemo(() => [
     {
       key: 'sku',
       header: t('matrix.col.sku'),
@@ -314,7 +373,7 @@ export default function ProductMatrix({
       header: t('matrix.col.product'),
       width: 24,
       cell: (p) => {
-        const Icon = categoryIcons[p.category.code] || Archive;
+        const Icon = categoryIcons[p.category.code] || Package;
         return (
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p)}>
             <Icon
@@ -418,7 +477,7 @@ export default function ProductMatrix({
         <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-text-muted hover:text-text-primary transition-colors" />
       ),
     },
-  ];
+  ], [t, supplierBadge]);
 
   return (
     <div className="space-y-4">
@@ -430,18 +489,52 @@ export default function ProductMatrix({
             {filteredProducts.length} {t('matrix.subtitle')}
           </p>
         </div>
-        <button
-          onClick={handleExport}
-          disabled={exporting || filteredProducts.length === 0}
-          className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
-        >
-          {exporting ? (
-            <Check className="w-3.5 h-3.5 text-success" />
-          ) : (
-            <Download className="w-3.5 h-3.5" />
-          )}
-          {exporting ? t('matrix.exporting') : t('matrix.export')}
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="relative" ref={pageSizeRef}>
+            <button
+              onClick={() => setPageSizeOpen(!pageSizeOpen)}
+              className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3 min-w-[88px] rounded-lg border text-xs sm:text-sm transition-all cursor-pointer bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span className="tabular-nums">{pageSize}</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${pageSizeOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {pageSizeOpen && (
+              <div className="absolute right-0 top-full mt-2 w-full glass rounded-lg border border-border-subtle overflow-hidden z-50">
+                {pageSizeOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      setPageSize(opt);
+                      setPageSizeOpen(false);
+                      setCurrentPage(1);
+                      setTableKey((k) => k + 1);
+                    }}
+                    className={`w-full text-center px-3 py-2 text-xs transition-colors cursor-pointer ${
+                      pageSize === opt
+                        ? 'bg-accent/20 text-white'
+                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleExport}
+            disabled={exporting || filteredProducts.length === 0}
+            className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+          >
+            {exporting ? (
+              <Check className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            {exporting ? t('matrix.exporting') : t('matrix.export')}
+          </button>
+        </div>
       </div>
 
       {/* Search & Filters */}
@@ -451,11 +544,7 @@ export default function ProductMatrix({
             type="text"
             placeholder={t('matrix.search')}
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-              setTableKey((k) => k + 1);
-            }}
+            onChange={handleSearchChange}
             className="w-full px-4 text-text-primary transition-all duration-150 h-11 sm:h-10"
           />
         </div>
@@ -477,6 +566,15 @@ export default function ProductMatrix({
             </span>
           )}
         </button>
+        {activeFiltersCount > 0 && (
+          <button
+            onClick={clearAllFilters}
+            className="h-11 sm:h-10 min-w-0 flex items-center gap-1.5 px-3 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer bg-bg-secondary border-border-subtle text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>{t('matrix.clear')}</span>
+          </button>
+        )}
       </div>
 
       {/* Filter Panel */}
@@ -488,127 +586,112 @@ export default function ProductMatrix({
         }}
       >
         <div className="overflow-hidden">
-          <div className="glass rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">{t('matrix.filters')}</h3>
-              {activeFiltersCount > 0 && (
-                <button
-                  onClick={clearAllFilters}
-                  className="text-xs flex items-center gap-1 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 px-2 py-1 rounded transition-colors"
-                >
-                  <X className="w-3 h-3" /> {t('matrix.clear')}
-                </button>
-              )}
-            </div>
-
-            <div>
-              <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.cat')}</p>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {categories.map((cat) => (
+          <div className="glass rounded-xl px-3 sm:px-4 py-2.5 sm:py-3.5">
+            <FilterSection label={t('matrix.cat')}>
+              {categories.map((cat) => {
+                const active = selectedCategories.includes(cat.code);
+                const accent = getCategoryColorVar(cat.code);
+                return (
                   <button
                     key={cat.code}
                     onClick={() => toggleCategory(cat.code)}
-                    className={`flex h-11 sm:h-10 min-w-0 sm:min-w-[112px] items-center justify-center gap-1.5 px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
-                      selectedCategories.includes(cat.code)
+                    className={`h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
+                      active
                         ? 'text-white border border-transparent'
-                        : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                        : 'bg-bg-tertiary/60 text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-transparent'
                     }`}
-                    style={
-                      selectedCategories.includes(cat.code)
-                        ? { background: getCategoryColorVar(cat.code) }
-                        : {}
-                    }
+                    style={active ? { background: accent } : {}}
                   >
                     {displaySource(cat)}
                   </button>
-                ))}
-              </div>
-            </div>
+                );
+              })}
+            </FilterSection>
 
-            <div>
-              <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.sup')}</p>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {suppliers.map((sup) => (
+            <FilterSection label={t('matrix.sup')}>
+              {suppliers.map((sup) => {
+                const active = selectedSuppliers.includes(sup.code);
+                return (
                   <button
                     key={sup.code}
                     onClick={() => toggleSupplier(sup.code)}
-                    className={`h-11 sm:h-10 min-w-0 sm:min-w-[112px] px-3 rounded-lg text-xs transition-colors truncate outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
-                      selectedSuppliers.includes(sup.code)
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                    className={`h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-accent/20 text-white border border-accent/40'
+                        : 'bg-bg-tertiary/60 text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-transparent'
                     }`}
                   >
                     {sup.name}
                   </button>
-                ))}
-              </div>
-            </div>
+                );
+              })}
+            </FilterSection>
 
-            <div>
-              <p className="text-xs text-text-tertiary font-medium mb-2">{t('matrix.col.color')}</p>
-              <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                {uniqueColors.map((c) => (
+            <FilterSection label={t('matrix.col.color')}>
+              {uniqueColors.map((c) => {
+                const active = selectedColors.includes(c.code);
+                return (
                   <button
                     key={c.code}
                     onClick={() => toggleColor(c.code)}
-                    className={`flex items-center gap-1.5 h-11 sm:h-9 px-2.5 sm:px-2 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer flex-shrink-0 ${
-                      selectedColors.includes(c.code)
-                        ? 'bg-accent/25 text-white border border-accent/40'
-                        : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
-                    }`}
                     title={displaySource(c)}
+                    className={`flex items-center gap-1.5 h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-accent/20 text-white border border-accent/40'
+                        : 'bg-bg-tertiary/60 text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-transparent'
+                    }`}
                   >
                     <span
-                      className="inline-block w-4 h-4 rounded-full border border-border-subtle shrink-0"
-                      style={{ background: c.hexValue || '#888' }}
+                      className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
+                      style={{
+                        background: c.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.hexValue || '#888',
+                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
+                      }}
                     />
                     <span className="truncate max-w-[80px]">{c.name_source}</span>
                   </button>
-                ))}
-              </div>
-            </div>
+                );
+              })}
+            </FilterSection>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <p className="text-xs text-text-tertiary font-medium mb-2">
-                  {t('matrix.col.power')}
-                </p>
-                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                  {uniquePowerValues.map((val) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 pt-2.5 sm:pt-3 border-t border-border-subtle/40">
+              <FilterSection label={t('matrix.col.power')} compact>
+                {uniquePowerValues.map((val) => {
+                  const active = selectedPower.includes(val);
+                  return (
                     <button
                       key={val}
                       onClick={() => togglePower(val)}
-                      className={`h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                        selectedPower.includes(val)
-                          ? 'bg-accent/25 text-white border border-accent/40'
-                          : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                      className={`h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-medium tabular-nums transition-colors cursor-pointer ${
+                        active
+                          ? 'bg-accent/20 text-white border border-accent/40'
+                          : 'bg-bg-tertiary/60 text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-transparent'
                       }`}
                     >
                       {val}W
                     </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-text-tertiary font-medium mb-2">
-                  {t('matrix.col.length')}
-                </p>
-                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto sm:flex-wrap scrollbar-hide max-h-[124px] sm:max-h-[140px]">
-                  {uniqueLengthValues.map((val) => (
+                  );
+                })}
+              </FilterSection>
+
+              <FilterSection label={t('matrix.col.length')} compact>
+                {uniqueLengthValues.map((val) => {
+                  const active = selectedLength.includes(val);
+                  return (
                     <button
                       key={val}
                       onClick={() => toggleLength(val)}
-                      className={`h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                        selectedLength.includes(val)
-                          ? 'bg-accent/25 text-white border border-accent/40'
-                          : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
+                      className={`h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-medium tabular-nums transition-colors cursor-pointer ${
+                        active
+                          ? 'bg-accent/20 text-white border border-accent/40'
+                          : 'bg-bg-tertiary/60 text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-transparent'
                       }`}
                     >
                       {val}м
                     </button>
-                  ))}
-                </div>
-              </div>
+                  );
+                })}
+              </FilterSection>
             </div>
           </div>
         </div>
@@ -622,19 +705,19 @@ export default function ProductMatrix({
             key={tableKey}
             columns={productColumns}
             rows={paginatedProducts}
-            rowKey={(p) => p.id}
+            rowKey={rowKeyFn}
             minWidth={720}
             emptyMessage={t('matrix.empty')}
             bodyClassName="table-fade-in"
-            rowClassName={() => 'table-row-hover cursor-pointer'}
-            onRowClick={(p) => setSelectedProduct(p)}
+            rowClassName={rowClassNameFn}
+            onRowClick={handleRowClick}
           />
         </div>
 
         {/* Cards — mobile */}
         <div key={tableKey} className="sm:hidden p-2 space-y-2 animate-card-in">
           {paginatedProducts.map((product) => {
-            const Icon = categoryIcons[product.category.code] || Archive;
+            const Icon = categoryIcons[product.category.code] || Package;
             return (
               <button
                 key={product.id}
@@ -772,7 +855,11 @@ export default function ProductMatrix({
       {/* Product Detail Card */}
       <AnimatePresence>
         {selectedProduct && (
-          <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />
+          <ProductDetailCard
+            product={selectedProduct}
+            onClose={handleDetailClose}
+            highlightedFields={selectedMissingFields}
+          />
         )}
       </AnimatePresence>
     </div>
