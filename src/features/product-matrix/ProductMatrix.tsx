@@ -26,6 +26,7 @@ import { useDataSource } from '@api/dataSourceContext';
 import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
+import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
@@ -149,6 +150,19 @@ export default function ProductMatrix({
       const matchesMissingFields =
         selectedMissingFields.length === 0 ||
         selectedMissingFields.some((field) => {
+          // Kit component fields: just the component category code (e.g., "szu", "cable")
+          if (p.isKit) {
+            const reqFields = categoryRequiredFields[field];
+            if (reqFields) {
+              return p.kitComponents?.some((comp) => {
+                if (comp.product.category.code !== field) return false;
+                return reqFields.some((fd) => {
+                  const val = comp.product[fd.field as keyof ProductWithRelations];
+                  return val == null || val === '';
+                });
+              }) ?? false;
+            }
+          }
           const val = p[field as keyof ProductWithRelations];
           return val == null || val === '';
         });
@@ -360,11 +374,7 @@ export default function ProductMatrix({
       cell: (p) => (
         <div className="flex items-center min-w-0" title={p.sku}>
           <code className="text-[11px] sm:text-xs text-accent truncate">{p.sku}</code>
-          {p.isKit && (
-            <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-warning/10 text-warning whitespace-nowrap flex-shrink-0">
-              KIT
-            </span>
-          )}
+
         </div>
       ),
     },
@@ -378,7 +388,7 @@ export default function ProductMatrix({
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0" title={displayProductName(p)}>
             <Icon
               className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0"
-              style={{ color: getCategoryColorVar(p.category.code) }}
+              style={{ color: getCategoryColorVar(p.category) }}
             />
             <span className="truncate text-xs sm:text-sm">{displayProductName(p)}</span>
           </div>
@@ -392,7 +402,7 @@ export default function ProductMatrix({
       cell: (p) => (
         <span
           className="text-[11px] sm:text-xs truncate block"
-          style={{ color: getCategoryColorVar(p.category.code) }}
+          style={{ color: getCategoryColorVar(p.category) }}
           title={displaySource(p.category)}
         >
           {displaySource(p.category)}
@@ -448,11 +458,11 @@ export default function ProductMatrix({
               className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0"
               style={{
                 background:
-                  p.color.hexValue === 'gradient'
+                  p.color.color === 'gradient'
                     ? 'conic-gradient(in hsl longer hue, red, red)'
-                    : p.color.hexValue,
+                    : p.color.color,
                 border:
-                  p.color.hexValue === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
+                  p.color.color === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
               }}
             />
             <span className="truncate text-[11px] sm:text-xs text-text-secondary">
@@ -548,6 +558,15 @@ export default function ProductMatrix({
             className="w-full px-4 text-text-primary transition-all duration-150 h-11 sm:h-10"
           />
         </div>
+        {activeFiltersCount > 0 && (
+          <button
+            onClick={clearAllFilters}
+            className="h-11 sm:h-10 min-w-0 flex items-center gap-1.5 px-3 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer bg-bg-secondary border-border-subtle text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>{t('matrix.clear')}</span>
+          </button>
+        )}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
@@ -566,15 +585,6 @@ export default function ProductMatrix({
             </span>
           )}
         </button>
-        {activeFiltersCount > 0 && (
-          <button
-            onClick={clearAllFilters}
-            className="h-11 sm:h-10 min-w-0 flex items-center gap-1.5 px-3 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer bg-bg-secondary border-border-subtle text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>{t('matrix.clear')}</span>
-          </button>
-        )}
       </div>
 
       {/* Filter Panel */}
@@ -590,7 +600,7 @@ export default function ProductMatrix({
             <FilterSection label={t('matrix.cat')}>
               {categories.map((cat) => {
                 const active = selectedCategories.includes(cat.code);
-                const accent = getCategoryColorVar(cat.code);
+                const accent = getCategoryColorVar(cat);
                 return (
                   <button
                     key={cat.code}
@@ -644,7 +654,7 @@ export default function ProductMatrix({
                     <span
                       className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                       style={{
-                        background: c.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.hexValue || '#888',
+                        background: c.color === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.color || '#888',
                         boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
                       }}
                     />
@@ -723,17 +733,17 @@ export default function ProductMatrix({
                 key={product.id}
                 onClick={() => setSelectedProduct(product)}
                 aria-label={`${displayProductName(product)} ${product.sku}`}
-                className="w-full text-left glass rounded-xl p-3 active:scale-[0.99] transition-transform"
+                className="w-full text-left glass rounded-xl p-3 active:scale-[0.99] transition-transform cursor-pointer"
               >
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <Icon
                       className="w-3.5 h-3.5 flex-shrink-0"
-                      style={{ color: getCategoryColorVar(product.category.code) }}
+                      style={{ color: getCategoryColorVar(product.category) }}
                     />
                     <span
                       className="text-[11px] font-medium truncate"
-                      style={{ color: getCategoryColorVar(product.category.code) }}
+                      style={{ color: getCategoryColorVar(product.category) }}
                     >
                       {displaySource(product.category)}
                     </span>
@@ -742,11 +752,7 @@ export default function ProductMatrix({
                 </div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <code className="text-[11px] text-accent truncate">{product.sku}</code>
-                  {product.isKit && (
-                    <span className="text-[9px] px-1 py-0.5 rounded bg-warning/10 text-warning flex-shrink-0">
-                      KIT
-                    </span>
-                  )}
+
                 </div>
                 <p className="text-sm font-medium text-text-primary line-clamp-2 mb-2">
                   {displayProductName(product)}
@@ -771,11 +777,11 @@ export default function ProductMatrix({
                         className="inline-block w-2.5 h-2.5 rounded-full border border-border-subtle shrink-0"
                         style={{
                           background:
-                            product.color.hexValue === 'gradient'
+                            product.color.color === 'gradient'
                               ? 'conic-gradient(in hsl longer hue, red, red)'
-                              : product.color.hexValue,
+                              : product.color.color,
                           border:
-                            product.color.hexValue === 'gradient'
+                            product.color.color === 'gradient'
                               ? 'none'
                               : '1px solid var(--color-border-subtle)',
                         }}

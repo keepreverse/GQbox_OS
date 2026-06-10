@@ -26,10 +26,20 @@ export interface RawProduct {
   variantCode?: string | null;
   lengthVariant?: string | null;
   supplierSuffix?: string | null;
+  productName?: string | null;
   isKit?: boolean | null;
+  connectionType?: string | null;
+  chargingProtocolId?: string | null;
   isActive?: boolean | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+}
+
+export interface RawKitComponent {
+  kitId: string;
+  componentId: string;
+  quantity: number;
+  sortOrder?: number;
 }
 
 export type DictType =
@@ -60,11 +70,9 @@ export interface DictionaryItem {
   nameRu?: string | null;
   categoryId?: string | null;
   parentId?: string | null;
-  hex?: string | null;
-  hexValue?: string | null;
+  color?: string | null;
   shortName?: unknown;
   sortOrder?: number;
-  color?: string | null;
   icon?: string | null;
   description?: string | null;
   contactInfo?: string | null;
@@ -80,6 +88,7 @@ export type DataBundle = {
   connectors: DictionaryItem[];
   chargingProtocols: DictionaryItem[];
   materials: DictionaryItem[];
+  kitComponents: RawKitComponent[];
 };
 
 export interface NotificationRow {
@@ -102,6 +111,7 @@ export const COLLECTIONS = [
   'chargingProtocols',
   'materials',
   'notifications',
+  'kitComponents',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 

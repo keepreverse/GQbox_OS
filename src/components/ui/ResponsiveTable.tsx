@@ -20,7 +20,7 @@ const HIDE_BELOW_COL_CLASS: Record<string, string> = {
   lg: 'hidden lg:table-column',
 };
 
-function HeaderCell<T>({ col }: { col: Column<T> }) {
+const HeaderCell = memo(function HeaderCell<T>({ col }: { col: Column<T> }) {
   const align = col.align ?? 'left';
   const hide = col.hideBelow ? HIDE_BELOW_CELL_CLASS[col.hideBelow] : '';
   return (
@@ -31,9 +31,9 @@ function HeaderCell<T>({ col }: { col: Column<T> }) {
       <div className="truncate">{col.header}</div>
     </th>
   );
-}
+}) as <T>(props: { col: Column<T> }) => React.JSX.Element;
 
-function BodyCell<T>({ col, row, index }: { col: Column<T>; row: T; index: number }) {
+const BodyCell = memo(function BodyCell<T>({ col, row, index }: { col: Column<T>; row: T; index: number }) {
   const align = col.align ?? 'left';
   const hide = col.hideBelow ? HIDE_BELOW_CELL_CLASS[col.hideBelow] : '';
   return (
@@ -43,7 +43,7 @@ function BodyCell<T>({ col, row, index }: { col: Column<T>; row: T; index: numbe
       <div className="overflow-hidden min-w-0">{col.cell(row, index)}</div>
     </td>
   );
-}
+}) as <T>(props: { col: Column<T>; row: T; index: number }) => React.JSX.Element;
 
 function ResponsiveTableInner<T>({
   columns,

@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import type { CollectionName, DataBundle, DictionaryItem, RawProduct } from '../types';
+import type { CollectionName, DataBundle, DictionaryItem, RawProduct, RawKitComponent } from '../types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -82,6 +82,7 @@ export function restoreAllFromDefaults(): { restored: string[]; skipped: string[
     'connectors',
     'chargingProtocols',
     'materials',
+    'kitComponents',
   ] as CollectionName[]) {
     if (defaultsExist(name)) {
       restoreOne(name);
@@ -108,6 +109,7 @@ export function exportAll(): DataBundle {
     connectors: readCollection<DictionaryItem>('connectors'),
     chargingProtocols: readCollection<DictionaryItem>('chargingProtocols'),
     materials: readCollection<DictionaryItem>('materials'),
+    kitComponents: readCollection<RawKitComponent>('kitComponents'),
   };
 }
 
@@ -126,6 +128,7 @@ export function importAll(bundle: Partial<DataBundle>): string[] {
     'connectors',
     'chargingProtocols',
     'materials',
+    'kitComponents',
   ] as CollectionName[]) {
     const data = (bundle as any)?.[name];
     if (Array.isArray(data) && data.length > 0) {

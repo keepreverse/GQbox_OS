@@ -51,12 +51,26 @@ export async function initSchema(): Promise<void> {
       connector_male_id VARCHAR(50),
       variant_code VARCHAR(10),
       length_variant VARCHAR(10),
-      supplier_suffix VARCHAR(10),
-      is_kit BOOLEAN DEFAULT FALSE,
+        supplier_suffix VARCHAR(10),
+        product_name VARCHAR(255),
+        is_kit BOOLEAN DEFAULT FALSE,
+      connection_type VARCHAR(50),
+      charging_protocol_id VARCHAR(50),
+      is_active BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
+  // Add columns if missing (migration for existing DBs)
+  for (const col of [
+    'ADD COLUMN IF NOT EXISTS connection_type VARCHAR(50)',
+    'ADD COLUMN IF NOT EXISTS charging_protocol_id VARCHAR(50)',
+    'ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE',
+    'ADD COLUMN IF NOT EXISTS product_name VARCHAR(255)',
+  ]) {
+    await query(`ALTER TABLE products ${col}`);
+  }
 
   await query(`
     CREATE TABLE IF NOT EXISTS dictionaries (
@@ -65,7 +79,7 @@ export async function initSchema(): Promise<void> {
       name JSONB NOT NULL,
       parent_id VARCHAR(50),
       code VARCHAR(20),
-      hex VARCHAR(10),
+      color VARCHAR(20),
       icon VARCHAR(50),
       description TEXT,
       contact_info TEXT,
@@ -76,15 +90,18 @@ export async function initSchema(): Promise<void> {
     )
   `);
 
+  // Migration: rename hex → color (if hex exists), drop category_color
+  await query(`
+    DO $$ BEGIN
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='dictionaries' AND column_name='hex') THEN
+        ALTER TABLE dictionaries RENAME COLUMN hex TO color;
+      END IF;
+    END $$;
+  `);
+  await query(`ALTER TABLE dictionaries DROP COLUMN IF EXISTS category_color`);
+
   // Add columns if missing (migration for existing DBs)
-  for (const col of [
-    'ADD COLUMN IF NOT EXISTS code VARCHAR(20)',
-    'ADD COLUMN IF NOT EXISTS icon VARCHAR(50)',
-    'ADD COLUMN IF NOT EXISTS description TEXT',
-    'ADD COLUMN IF NOT EXISTS contact_info TEXT',
-  ]) {
-    await query(`ALTER TABLE dictionaries ${col}`);
-  }
+  await query(`ALTER TABLE dictionaries ALTER COLUMN color TYPE VARCHAR(20)`);
 
   await query(`CREATE INDEX IF NOT EXISTS idx_dict_type ON dictionaries(type)`);
   await query(`CREATE INDEX IF NOT EXISTS idx_dict_parent ON dictionaries(parent_id)`);
@@ -98,6 +115,19 @@ export async function initSchema(): Promise<void> {
       unread BOOLEAN DEFAULT TRUE,
       type VARCHAR(20) DEFAULT 'info',
       action_view VARCHAR(50)
+    )
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS kit_components (
+      kit_id VARCHAR(20) NOT NULL,
+      component_id VARCHAR(20) NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (kit_id, component_id),
+      FOREIGN KEY (kit_id) REFERENCES products(id) ON DELETE CASCADE,
+      FOREIGN KEY (component_id) REFERENCES products(id) ON DELETE CASCADE
     )
   `);
 }

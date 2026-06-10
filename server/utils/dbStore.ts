@@ -17,6 +17,10 @@ import {
   dictNameToJson,
   mapDictionaryRow,
   mapProductRow,
+  mapKitComponentRow,
+  kitComponentToDbParams,
+  kitComponentInsertSql,
+  kitComponentDeleteSql,
   productInsertSql,
   productToDbParams,
   productUpdateSql,
@@ -94,6 +98,37 @@ export async function deleteProduct(id: string): Promise<RawProduct | null> {
   return existing;
 }
 
+// ─── Kit Components ──────────────────────────────────────────────────────
+
+export async function getKitComponents(kitId: string): Promise<import('../types').RawKitComponent[]> {
+  const rows = await query<any>(
+    'SELECT * FROM kit_components WHERE kit_id = $1 ORDER BY sort_order, created_at',
+    [kitId]
+  );
+  return rows.map(mapKitComponentRow);
+}
+
+export async function createKitComponent(
+  raw: import('../types').RawKitComponent
+): Promise<import('../types').RawKitComponent> {
+  const vals = kitComponentToDbParams(raw);
+  await query(kitComponentInsertSql(), vals);
+  return raw;
+}
+
+export async function deleteKitComponent(kitId: string, componentId: string): Promise<void> {
+  await query(kitComponentDeleteSql(), [kitId, componentId]);
+}
+
+export async function clearKitComponents(kitId: string): Promise<void> {
+  await query('DELETE FROM kit_components WHERE kit_id = $1', [kitId]);
+}
+
+export async function getAllKitComponents(): Promise<import('../types').RawKitComponent[]> {
+  const rows = await query<any>('SELECT * FROM kit_components ORDER BY kit_id, sort_order, created_at');
+  return rows.map(mapKitComponentRow);
+}
+
 // ─── Dictionaries ─────────────────────────────────────────────────────────
 
 export async function getDictionary(type: string): Promise<DictionaryItem[]> {
@@ -115,7 +150,7 @@ export async function createDictionaryItem(
     dictNameToJson(cleaned),
     cleaned.categoryId ?? cleaned.parentId ?? null,
     cleaned.code ?? null,
-    cleaned.color ?? cleaned.hex ?? cleaned.hexValue ?? null,
+    cleaned.color ?? null,
     cleaned.icon ?? null,
     cleaned.description ?? null,
     cleaned.contactInfo ?? null,
@@ -154,7 +189,7 @@ export async function deleteDictionaryItem(
 // ─── Bulk operations: reset / import / export ─────────────────────────────
 
 export async function truncateAll(): Promise<void> {
-  await query('TRUNCATE products, dictionaries, notifications RESTART IDENTITY CASCADE');
+  await query('TRUNCATE products, dictionaries, kit_components, notifications RESTART IDENTITY CASCADE');
 }
 
 export async function exportAll(): Promise<DataBundle> {
@@ -163,6 +198,7 @@ export async function exportAll(): Promise<DataBundle> {
   for (const t of DICT_TYPES) {
     dicts[t] = await getDictionary(t);
   }
+  const kitComps = await query<import('../types').RawKitComponent>('SELECT * FROM kit_components ORDER BY kit_id, sort_order');
   return {
     products,
     categories: dicts.categories ?? [],
@@ -172,6 +208,7 @@ export async function exportAll(): Promise<DataBundle> {
     connectors: dicts.connectors ?? [],
     chargingProtocols: dicts.chargingProtocols ?? [],
     materials: dicts.materials ?? [],
+    kitComponents: kitComps,
   };
 }
 
@@ -198,7 +235,11 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
           name,
           dictNameToJson(cleaned),
           cleaned.categoryId ?? cleaned.parentId ?? null,
-          cleaned.hex ?? cleaned.hexValue ?? null,
+          cleaned.code ?? null,
+          cleaned.color ?? null,
+          cleaned.icon ?? null,
+          cleaned.description ?? null,
+          cleaned.contactInfo ?? null,
           cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
           cleaned.sortOrder ?? 0,
         ];

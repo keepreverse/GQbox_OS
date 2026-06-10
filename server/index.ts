@@ -6,12 +6,14 @@ import demoProducts from './routes/demo/products';
 import demoDictionaries from './routes/demo/dictionaries';
 import demoSettings from './routes/demo/settings';
 import demoNotifications from './routes/demo/notifications';
+import demoKitComponents from './routes/demo/kitComponents';
 
 // Dev mode (PostgreSQL-only)
 import devProducts from './routes/dev/products';
 import devDictionaries from './routes/dev/dictionaries';
 import devSettings from './routes/dev/settings';
 import devNotifications from './routes/dev/notifications';
+import devKitComponents from './routes/dev/kitComponents';
 
 import { errorHandler } from './middleware/errorHandler';
 import { closePool } from './utils/db';
@@ -36,12 +38,14 @@ app.use('/api/demo/products', demoProducts);
 app.use('/api/demo/dictionaries', demoDictionaries);
 app.use('/api/demo', demoSettings);
 app.use('/api/demo/notifications', demoNotifications);
+app.use('/api/demo/kit-components', demoKitComponents);
 
 // ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
 app.use('/api/dev/products', devProducts);
 app.use('/api/dev/dictionaries', devDictionaries);
 app.use('/api/dev', devSettings);
 app.use('/api/dev/notifications', devNotifications);
+app.use('/api/dev/kit-components', devKitComponents);
 
 app.use(errorHandler);
 

@@ -7,10 +7,10 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 type LoaderStyle = CSSProperties & Record<`--${string}`, string>;
 
 const textBaseStyle: LoaderStyle = {
-  fontSize: 'clamp(2rem, 4.5vw, 2.75rem)',
+  fontSize: 'clamp(2.25rem, 5vw, 3rem)',
   lineHeight: 1,
-  letterSpacing: '-0.035em',
-  fontWeight: 500,
+  letterSpacing: '-0.045em',
+  fontWeight: 700,
 
   '--ldr-edge': 'color-mix(in srgb, var(--color-text-muted) 10%, var(--color-bg-primary) 90%)',
   '--ldr-soft': 'color-mix(in srgb, var(--color-accent) 20%, var(--color-bg-elevated) 80%)',
@@ -47,13 +47,13 @@ export default function FullScreenLoader({ devError }: FullScreenLoaderProps) {
       role="status"
       aria-label="Загрузка"
       className="fixed inset-0 z-[9999] isolate flex items-center justify-center bg-bg-primary"
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4, ease: EASE }}
+      exit={{ opacity: 0, scale: 1.1 }}
+      transition={{ duration: 0.55, ease: EASE }}
     >
-      <div className="relative flex flex-col items-center justify-center gap-4">
+      <div className="relative flex flex-col items-center justify-center gap-5">
         <motion.span
           aria-hidden="true"
-          className="relative select-none font-medium"
+          className="relative select-none"
           style={textBaseStyle}
           initial={
             shouldReduceMotion
@@ -92,11 +92,12 @@ export default function FullScreenLoader({ devError }: FullScreenLoaderProps) {
         </motion.span>
 
         <motion.div
-          className="h-px"
+          className="h-0.5"
           style={{
             width: 'clamp(120px, 65%, 280px)',
             background: 'linear-gradient(90deg, transparent, var(--color-accent), transparent)',
             transformOrigin: 'center',
+            boxShadow: '0 0 12px color-mix(in srgb, var(--color-accent) 40%, transparent)',
           }}
           initial={
             shouldReduceMotion

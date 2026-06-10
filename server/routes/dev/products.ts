@@ -7,6 +7,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  clearKitComponents,
 } from '../../utils/dbStore';
 import type { RawProduct } from '../../types';
 
@@ -112,6 +113,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
       res.status(404).json({ error: 'Product not found' });
       return;
     }
+    // Cascade delete kit components
+    await clearKitComponents(id);
     res.json(removed);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

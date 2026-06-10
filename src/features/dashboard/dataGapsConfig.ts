@@ -23,6 +23,8 @@ export const categoryRequiredFields: Record<string, FieldDef[]> = {
     { field: 'supplier', label: 'Supplier', labelRu: 'Поставщик' },
     { field: 'bodyMaterial', label: 'Body material', labelRu: 'Материал корпуса' },
     { field: 'powerW', label: 'Power (W)', labelRu: 'Мощность (W)' },
+    { field: 'currentA', label: 'Current (A)', labelRu: 'Сила тока (A)' },
+    { field: 'voltageV', label: 'Voltage (V)', labelRu: 'Напряжение (V)' },
     { field: 'deviceCount', label: 'Ports', labelRu: 'Кол-во портов' },
     { field: 'connectorFemale', label: 'Output connector', labelRu: 'Выходной разъем' },
   ],

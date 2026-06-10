@@ -13,6 +13,7 @@ import {
   Shield,
   Globe,
   ShoppingBag,
+  Package,
 } from 'lucide-react';
 import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
@@ -29,9 +30,14 @@ interface ProductDetailCardProps {
 export default function ProductDetailCard({ product, onClose, highlightedFields = [] }: ProductDetailCardProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(true);
+  const [nestedProduct, setNestedProduct] = useState<ProductWithRelations | null>(null);
 
   const handleClose = useCallback(() => {
     setOpen(false);
+  }, []);
+
+  const handleNestedClose = useCallback(() => {
+    setNestedProduct(null);
   }, []);
 
   const allMissing = useMemo(() => {
@@ -148,17 +154,13 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
             <code className="text-[11px] sm:text-sm text-accent px-1.5 sm:px-2 py-0.5 rounded bg-accent/10 border border-accent/20">
               {product.sku}
             </code>
-            {product.isKit && (
-              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-warning/10 text-warning font-medium">
-                KIT
-              </span>
-            )}
+
           </div>
           <h2 className="text-sm sm:text-base font-semibold text-text-primary mb-0.5 leading-snug line-clamp-2">
             {product.productName}
           </h2>
           <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-text-tertiary flex-wrap">
-            <span style={{ color: getCategoryColorVar(product.category.code) }}>
+            <span style={{ color: getCategoryColorVar(product.category) }}>
               {displaySource(product.category)}
             </span>
             <span>·</span>
@@ -171,11 +173,11 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                     className="w-2 h-2 rounded-full flex-shrink-0"
                     style={{
                       background:
-                        product.color.hexValue === 'gradient'
+                        product.color.color === 'gradient'
                           ? 'conic-gradient(in hsl longer hue, red, red)'
-                          : product.color.hexValue,
+                          : product.color.color,
                       border:
-                        product.color.hexValue === 'gradient'
+                        product.color.color === 'gradient'
                           ? 'none'
                           : '1px solid var(--color-border-subtle)',
                     }}
@@ -196,8 +198,8 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-          <div className="md:col-span-2 p-3 sm:p-4 space-y-3 sm:space-y-4 md:border-r border-border-subtle">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+          <div className="lg:col-span-2 p-3 sm:p-4 space-y-3 sm:space-y-4 lg:border-r border-border-subtle">
             <div className="space-y-2">
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -343,95 +345,192 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 </div>
               </div>
             )}
+
           </div>
 
           <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 bg-bg-tertiary/30">
-            <div className="space-y-2">
-              <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
-                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('detail.specifications')}
-              </h3>
-              <div className="grid grid-cols-2 gap-1.5">
-                {specs.map((spec, i) => (
-                  <div
-                    key={i}
-                    className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(spec.field)}`}
-                  >
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <spec.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
-                      <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                        {spec.label}
-                      </span>
-                    </div>
-                    <p className="text-[10px] sm:text-xs font-medium text-text-primary">
-                      {spec.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
-                <Plug className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('detail.connections')}
-              </h3>
-              <div className="space-y-1">
-                {connections.map((conn, i) => (
-                  <div
-                    key={i}
-                    className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(conn.field)}`}
-                  >
-                    <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                      {conn.label}
-                    </span>
-                    <span className="text-[10px] sm:text-xs font-medium text-text-primary">
-                      {conn.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
-                <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t('detail.materials')}
-              </h3>
-              <div className="space-y-1">
-                {materials.map((mat, i) => (
-                  <div
-                    key={i}
-                    className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(mat.field)}`}
-                  >
-                    <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                      {mat.label}
-                    </span>
-                    <span className="text-[10px] sm:text-xs font-medium text-text-primary">
-                      {mat.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {product.supplier && (
-              <div className="space-y-2">
-                <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
-                  <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {t('detail.supplier')}
+            {product.isKit && product.kitComponents && product.kitComponents.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="text-[10px] sm:text-xs font-medium text-text-secondary flex items-center gap-1.5">
+                  <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  Комплект содержит:
                 </h3>
-                <div className={`p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle ${hl('supplier')}`}>
-                  <p className="text-[10px] sm:text-xs font-medium text-text-primary">
-                    {product.supplier.name}
-                  </p>
-                  {product.supplier.code !== '-' && (
-                    <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">
-                      Code: {product.supplier.code}
-                    </p>
-                  )}
+                <div className="space-y-2">
+                  {product.kitComponents.map((comp, idx) => {
+                    const compProduct = comp.product;
+                    const compReqFields = categoryRequiredFields[compProduct.category.code];
+                    const compMissing = new Set<string>();
+                    if (compReqFields) {
+                      for (const fd of compReqFields) {
+                        const val = compProduct[fd.field as keyof ProductWithRelations];
+                        if (val == null || val === '') {
+                          compMissing.add(fd.field);
+                        }
+                      }
+                    }
+                    const compHl = (field: string) => {
+                      if (compMissing.has(field)) return 'ring-1 ring-warning/30 bg-warning/[0.03]';
+                      return '';
+                    };
+                    const compSpecs = [
+                      { icon: Zap, label: t('detail.power'), value: compProduct.powerW ? `${compProduct.powerW}W` : '—', field: 'powerW' },
+                      { icon: Battery, label: t('detail.current'), value: compProduct.currentA ? `${compProduct.currentA}A` : '—', field: 'currentA' },
+                      { icon: Zap, label: t('detail.voltage'), value: compProduct.voltageV ? `${compProduct.voltageV}V` : '—', field: 'voltageV' },
+                      { icon: Ruler, label: t('detail.length'), value: compProduct.lengthM ? `${compProduct.lengthM}м` : '—', field: 'lengthM' },
+                      { icon: Users, label: t('detail.devices'), value: compProduct.deviceCount || '—', field: 'deviceCount' },
+                      { icon: LinkIcon, label: t('detail.speed'), value: compProduct.dataTransferMbps ? `${compProduct.dataTransferMbps} Mbps` : '—', field: 'dataTransferMbps' },
+                    ];
+                    const compConnections = [
+                      { label: t('detail.input'), value: compProduct.connectorFemale ? displaySource(compProduct.connectorFemale) : '—', field: 'connectorFemale' },
+                      { label: t('detail.output'), value: compProduct.connectorMale ? displaySource(compProduct.connectorMale) : '—', field: 'connectorMale' },
+                      { label: t('detail.protocol'), value: compProduct.chargingProtocol ? displaySource(compProduct.chargingProtocol) : '—', field: 'chargingProtocol' },
+                      { label: t('detail.connection'), value: compProduct.connectionType || '—', field: 'connectionType' },
+                    ];
+                    const compMaterials = [
+                      { label: t('detail.body'), value: compProduct.bodyMaterial ? displayName(compProduct.bodyMaterial) : '—', field: 'bodyMaterial' },
+                      { label: t('detail.wire'), value: compProduct.wireMaterial ? displayName(compProduct.wireMaterial) : '—', field: 'wireMaterial' },
+                    ];
+                    return (
+                      <div key={idx} className="rounded-lg border border-border-subtle bg-bg-tertiary/50 p-2 sm:p-3 space-y-2">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-[10px] sm:text-xs font-medium text-text-primary cursor-pointer hover:text-accent transition-colors"
+                              onClick={() => setNestedProduct(compProduct)}
+                            >
+                              {compProduct.productName}
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] text-text-secondary">
+                              ×{comp.quantity}
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-bg-tertiary text-text-secondary border border-border-subtle">
+                              {displaySource(compProduct.category)}
+                            </span>
+                          </div>
+                          <code className="text-[9px] text-accent px-1 py-0.5 rounded bg-accent/10 border border-accent/20 font-mono w-fit">{compProduct.sku}</code>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {compSpecs.map((spec, i) => (
+                            <div key={i} className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${compHl(spec.field)}`}>
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <spec.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
+                                <span className="text-[9px] sm:text-[10px] text-text-tertiary">{spec.label}</span>
+                              </div>
+                              <p className="text-[10px] sm:text-xs font-medium text-text-primary">{spec.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-1">
+                          {compConnections.map((conn, i) => (
+                            <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${compHl(conn.field)}`}>
+                              <span className="text-[9px] sm:text-[10px] text-text-tertiary">{conn.label}</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-text-primary">{conn.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-1">
+                          {compMaterials.map((mat, i) => (
+                            <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${compHl(mat.field)}`}>
+                              <span className="text-[9px] sm:text-[10px] text-text-tertiary">{mat.label}</span>
+                              <span className="text-[10px] sm:text-xs font-medium text-text-primary">{mat.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
+                    <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    {t('detail.specifications')}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {specs.map((spec, i) => (
+                      <div
+                        key={i}
+                        className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(spec.field)}`}
+                      >
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <spec.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
+                          <span className="text-[9px] sm:text-[10px] text-text-tertiary">
+                            {spec.label}
+                          </span>
+                        </div>
+                        <p className="text-[10px] sm:text-xs font-medium text-text-primary">
+                          {spec.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
+                    <Plug className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    {t('detail.connections')}
+                  </h3>
+                  <div className="space-y-1">
+                    {connections.map((conn, i) => (
+                      <div
+                        key={i}
+                        className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(conn.field)}`}
+                      >
+                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">
+                          {conn.label}
+                        </span>
+                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">
+                          {conn.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
+                    <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    {t('detail.materials')}
+                  </h3>
+                  <div className="space-y-1">
+                    {materials.map((mat, i) => (
+                      <div
+                        key={i}
+                        className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(mat.field)}`}
+                      >
+                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">
+                          {mat.label}
+                        </span>
+                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">
+                          {mat.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {product.supplier && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
+                      <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      {t('detail.supplier')}
+                    </h3>
+                    <div className={`p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle ${hl('supplier')}`}>
+                      <p className="text-[10px] sm:text-xs font-medium text-text-primary">
+                        {product.supplier.name}
+                      </p>
+                      {product.supplier.code !== '-' && (
+                        <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">
+                          Code: {product.supplier.code}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -440,19 +539,27 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
   );
 
   return (
-    <Modal
-      variant="auto"
-      width="lg"
-      open={open}
-      onClose={handleClose}
-      onExitComplete={onClose}
-      showCloseButton={false}
-      height="clamp(75dvh, 80dvh, 95dvh)"
-      pinned
-      className="sm:!max-w-[min(1100px,65vw)] sm:rounded-2xl"
-      contentClassName="p-0 flex flex-col"
-    >
-      {modalContent}
-    </Modal>
+    <>
+      <Modal
+        variant="auto"
+        width="lg"
+        open={open}
+        onClose={handleClose}
+        onExitComplete={onClose}
+        showCloseButton={false}
+        height="clamp(70dvh, 80dvh, 95dvh)"
+        pinned
+        className="sm:!max-w-[clamp(600px,75vw,1400px)] sm:rounded-2xl"
+        contentClassName="p-0 flex flex-col"
+      >
+        {modalContent}
+      </Modal>
+      {nestedProduct && (
+        <ProductDetailCard
+          product={nestedProduct}
+          onClose={handleNestedClose}
+        />
+      )}
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw } from 'lucide-react';
+import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw, Database } from 'lucide-react';
 import Modal from '@components/ui/Modal';
 import Toggle from '@components/ui/Toggle';
 import { useLanguage } from '@context/LanguageContext';
@@ -75,6 +75,18 @@ export default function SettingsPanel({
       alert(t('settings.notif_reset'));
     } catch (err) {
       alert('Reset error: ' + (err as Error).message);
+    }
+  }, [ds, t]);
+
+  const handleSeed = useCallback(async () => {
+    if (!window.confirm(t('settings.seed_confirm'))) return;
+    try {
+      await ds.settings.seed();
+      await ds.refresh();
+      ds.notifications.add({ title: t('settings.notif_seeded'), type: 'success' });
+      alert(t('settings.notif_seeded'));
+    } catch (err) {
+      alert('Seed error: ' + (err as Error).message);
     }
   }, [ds, t]);
 
@@ -251,39 +263,50 @@ export default function SettingsPanel({
           </div>
         </div>
 
-        {!pendingDevMode && (
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-text-tertiary">
-              {t('settings.data_management')}
-            </h4>
-            <div className="flex gap-1.5">
-              <button
-                type="button"
-                onClick={handleExport}
-                className="flex-1 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-accent/25 transition-colors border border-accent/30 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                {t('settings.export')}
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1 py-1.5 rounded-lg bg-bg-tertiary text-text-secondary text-xs flex items-center justify-center gap-1.5 hover:bg-bg-hover hover:border-accent/30 transition-colors border border-dashed border-border-subtle cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5 text-accent" />
-                {t('settings.import')}
-              </button>
-            </div>
+        <div className="space-y-2">
+          <h4 className="text-xs font-medium text-text-tertiary">
+            {t('settings.data_management')}
+          </h4>
+          {pendingDevMode ? (
             <button
               type="button"
-              onClick={handleReset}
-              className="w-full py-1.5 rounded-lg bg-danger/10 text-danger text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-danger/20 transition-colors border border-danger/20 cursor-pointer"
+              onClick={handleSeed}
+              className="w-full py-1.5 rounded-lg bg-success/10 text-success text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-success/20 transition-colors border border-success/20 cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              {t('settings.reset_to_defaults')}
+              <Database className="w-3.5 h-3.5" />
+              {t('settings.seed')}
             </button>
-          </div>
-        )}
+          ) : (
+            <>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="flex-1 py-1.5 rounded-lg bg-accent/15 text-accent text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-accent/25 transition-colors border border-accent/30 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  {t('settings.export')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 py-1.5 rounded-lg bg-bg-tertiary text-text-secondary text-xs flex items-center justify-center gap-1.5 hover:bg-bg-hover hover:border-accent/30 transition-colors border border-dashed border-border-subtle cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5 text-accent" />
+                  {t('settings.import')}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="w-full py-1.5 rounded-lg bg-danger/10 text-danger text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-danger/20 transition-colors border border-danger/20 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {t('settings.reset_to_defaults')}
+              </button>
+            </>
+          )}
+        </div>
 
         <input
           ref={fileInputRef}

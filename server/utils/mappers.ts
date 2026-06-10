@@ -10,6 +10,17 @@ import type { RawProduct, DictionaryItem } from '../types';
  * Преобразует строку из БД (snake_case + лишние created_at/updated_at)
  * в канонический camelCase-объект, который отдаём клиенту.
  */
+// Numeric columns: must be JS numbers, not pg's DECIMAL-as-string.
+// Everything else (ids, codes, slugs, free text) stays a string.
+const NUMERIC_PRODUCT_COLUMNS = new Set([
+  'current_a',
+  'voltage_v',
+  'power_w',
+  'length_m',
+  'data_transfer_mbps',
+  'device_count',
+]);
+
 export function mapProductRow(row: any): RawProduct {
   if (!row) return row;
   const m: any = { id: row.id, sku: row.sku };
@@ -17,8 +28,9 @@ export function mapProductRow(row: any): RawProduct {
     if (key === 'id' || key === 'sku' || key === 'created_at' || key === 'updated_at') continue;
     const camel = key.replace(/_([a-z])/g, (_, l: string) => l.toUpperCase());
     let value = row[key];
-    if (typeof value === 'string' && /^\d+(\.\d+)?$/.test(value) && key !== 'sku_base' && key !== 'variant_code' && key !== 'length_variant' && key !== 'supplier_suffix') {
-      value = Number(value);
+    if (NUMERIC_PRODUCT_COLUMNS.has(key) && value !== null && value !== '') {
+      const n = typeof value === 'number' ? value : Number(value);
+      value = Number.isFinite(n) ? n : null;
     }
     m[camel] = value;
   }
@@ -51,7 +63,11 @@ export function productToDbParams(p: Partial<RawProduct> & { id: string; sku: st
     p.variantCode ?? null,
     p.lengthVariant ?? null,
     p.supplierSuffix ?? null,
+    p.productName ?? null,
     p.isKit ?? false,
+    p.connectionType ?? null,
+    p.chargingProtocolId ?? null,
+    p.isActive ?? true,
   ];
 }
 
@@ -59,12 +75,13 @@ export const PRODUCT_DB_COLUMNS = `
   (id, sku, sku_base, category_id, model_id, color_id, supplier_id,
    body_material_id, wire_material_id, current_a, voltage_v, power_w, length_m,
    data_transfer_mbps, device_count, connector_female_id, connector_male_id,
-   variant_code, length_variant, supplier_suffix, is_kit)
+   variant_code, length_variant, supplier_suffix, product_name, is_kit,
+   connection_type, charging_protocol_id, is_active)
 `;
 
 export function productInsertSql(): string {
   return `INSERT INTO products ${PRODUCT_DB_COLUMNS} VALUES
-    ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+    ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
     ON CONFLICT (id) DO UPDATE SET
       sku = EXCLUDED.sku,
       sku_base = EXCLUDED.sku_base,
@@ -85,7 +102,11 @@ export function productInsertSql(): string {
       variant_code = EXCLUDED.variant_code,
       length_variant = EXCLUDED.length_variant,
       supplier_suffix = EXCLUDED.supplier_suffix,
+      product_name = EXCLUDED.product_name,
       is_kit = EXCLUDED.is_kit,
+      connection_type = EXCLUDED.connection_type,
+      charging_protocol_id = EXCLUDED.charging_protocol_id,
+      is_active = EXCLUDED.is_active,
       updated_at = NOW()`;
 }
 
@@ -110,7 +131,11 @@ export function productUpdateSql(): string {
       variant_code = $18,
       length_variant = $19,
       supplier_suffix = $20,
-      is_kit = $21,
+      product_name = $21,
+      is_kit = $22,
+      connection_type = $23,
+      charging_protocol_id = $24,
+      is_active = $25,
       updated_at = NOW()
     WHERE id = $1`;
 }
@@ -136,7 +161,7 @@ export function mapDictionaryRow(row: any): DictionaryItem {
   if (!item.name_product) item.name_product = item.name_source;
   if (row.parent_id) item.categoryId = row.parent_id;
   if (row.code) item.code = row.code;
-  if (row.hex) { item.hex = row.hex; item.color = row.hex; }
+  if (row.color) item.color = row.color;
   if (row.icon) item.icon = row.icon;
   if (row.description) item.description = row.description;
   if (row.contact_info) item.contactInfo = row.contact_info;
@@ -155,13 +180,13 @@ export function dictNameToJson(item: DictionaryItem): string {
 }
 
 export function dictInsertSql(): string {
-  return `INSERT INTO dictionaries (id, type, name, parent_id, code, hex, icon, description, contact_info, short_name, sort_order)
+  return `INSERT INTO dictionaries (id, type, name, parent_id, code, color, icon, description, contact_info, short_name, sort_order)
     VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8, $9, $10::jsonb, $11)
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       parent_id = EXCLUDED.parent_id,
       code = EXCLUDED.code,
-      hex = EXCLUDED.hex,
+      color = EXCLUDED.color,
       icon = EXCLUDED.icon,
       description = EXCLUDED.description,
       contact_info = EXCLUDED.contact_info,
@@ -195,9 +220,9 @@ export function buildDictUpdateSql(id: string, body: DictionaryItem): { sql: str
     vals.push(body.code ?? null);
     idx++;
   }
-  if (body.color !== undefined || body.hex !== undefined) {
-    updates.push(`hex = $${idx}`);
-    vals.push(body.hex ?? body.color ?? null);
+  if (body.color !== undefined) {
+    updates.push(`color = $${idx}`);
+    vals.push(body.color ?? null);
     idx++;
   }
   if (body.icon !== undefined) {
@@ -247,4 +272,38 @@ export function sanitizeDictItem(item: DictionaryItem): DictionaryItem {
     (out as any)[k] = v;
   }
   return out;
+}
+
+// ─── Kit Components ──────────────────────────────────────────────────────
+
+export function mapKitComponentRow(row: any): import('../types').RawKitComponent {
+  if (!row) return row;
+  return {
+    kitId: row.kit_id,
+    componentId: row.component_id,
+    quantity: Number(row.quantity ?? 1),
+    sortOrder: Number(row.sort_order ?? 0),
+  };
+}
+
+export function kitComponentToDbParams(k: import('../types').RawKitComponent): any[] {
+  return [
+    k.kitId,
+    k.componentId,
+    k.quantity ?? 1,
+    k.sortOrder ?? 0,
+  ];
+}
+
+export function kitComponentInsertSql(): string {
+  return `INSERT INTO kit_components (kit_id, component_id, quantity, sort_order)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (kit_id, component_id) DO UPDATE SET
+      quantity = EXCLUDED.quantity,
+      sort_order = EXCLUDED.sort_order,
+      created_at = NOW()`;
+}
+
+export function kitComponentDeleteSql(): string {
+  return `DELETE FROM kit_components WHERE kit_id = $1 AND component_id = $2`;
 }

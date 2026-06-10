@@ -4,16 +4,12 @@ import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
 import type {
   Category,
-  Model,
-  Color,
-  Supplier,
-  Connector,
   ChargingProtocol,
-  Material,
 } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
-import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
+import { displaySource } from '@utils/display';
 import Modal from '@components/ui/Modal';
+import ColorPicker from '@components/ui/ColorPicker';
 import { useDataSource } from '@api/dataSourceContext';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
@@ -81,27 +77,35 @@ const DictionaryCardItem = memo(function DictionaryCardItem({
   editLabel,
   onEdit,
 }: DictionaryCardItemProps) {
+  const { t } = useLanguage();
   const { dictionaries } = useDataSource();
   const parentCategory =
     kind === 'models' ? dictionaries.categories.find((c) => c.id === item.categoryId) : undefined;
 
+  const rawName = kind === 'suppliers' ? item.name : item.name_product;
+  const hasName = !!rawName;
+  const rawSource = kind !== 'suppliers' ? item.name_source : undefined;
+  const hasSource = !!rawSource;
+
   return (
-    <div className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in">
+    <div className="glass rounded-xl p-3 flex items-start justify-between gap-2 animate-card-in cursor-pointer active:scale-[0.99] transition-transform" onClick={() => onEdit(item)}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 mb-1">
           <code className="text-[10px] sm:text-xs text-accent shrink-0">{item.code}</code>
         </div>
-        <p className="text-sm text-text-primary truncate">
-          {kind === 'suppliers' ? item.name : displayName(item)}
+        <p className={`text-sm truncate ${hasName ? 'text-text-primary' : 'bg-danger/10 text-danger rounded px-1 py-0.5 text-[10px] font-medium w-fit'}`}>
+          {hasName ? rawName : t('dict.empty')}
         </p>
         {kind !== 'suppliers' && (
-          <p className="text-[11px] text-text-tertiary truncate">{displaySource(item)}</p>
+          <p className={`text-[11px] truncate ${hasSource ? 'text-text-tertiary' : 'bg-danger/10 text-danger rounded px-1 py-0.5 text-[10px] font-medium w-fit mt-1'}`}>
+            {hasSource ? rawSource : t('dict.empty')}
+          </p>
         )}
         {kind === 'categories' && (
           <div className="flex items-center gap-1.5 mt-1.5">
             <div
               className="w-3 h-3 rounded-full shrink-0"
-              style={{ background: getCategoryColorVar(item.code) }}
+              style={{ background: item.color || 'var(--color-accent)' }}
             />
             <span className="text-[10px] text-text-tertiary truncate">{item.color}</span>
           </div>
@@ -117,13 +121,13 @@ const DictionaryCardItem = memo(function DictionaryCardItem({
               className="w-4 h-4 rounded-full shrink-0"
               style={{
                 background:
-                  item.hexValue === 'gradient'
+                  item.color === 'gradient'
                     ? 'conic-gradient(in hsl longer hue, red, red)'
-                    : item.hexValue,
+                    : item.color,
               }}
             />
             <span className="text-[10px] text-text-tertiary truncate">
-              {item.hexValue === 'gradient' ? '—' : item.hexValue}
+              {item.color === 'gradient' ? '—' : item.color}
             </span>
           </div>
         )}
@@ -135,7 +139,7 @@ const DictionaryCardItem = memo(function DictionaryCardItem({
       </div>
         <button
         type="button"
-        onClick={() => onEdit(item)}
+        onClick={(e) => { e.stopPropagation(); onEdit(item); }}
         className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer flex items-center justify-center"
         aria-label={editLabel}
         title={editLabel}
@@ -230,13 +234,27 @@ function AddDictionaryForm({ onSubmit, onCancel }: AddDictionaryFormProps) {
 
 interface EditDictionaryFormProps {
   item: any;
-  isSupplier: boolean;
-  onSubmit: (item: any, data: { nameSource: string; nameProduct: string }) => Promise<boolean>;
+  kind: DictType;
+  categories: Category[];
+  onSubmit: (item: any, data: {
+    nameSource: string;
+    nameProduct: string;
+    code?: string;
+    categoryId?: string;
+    color?: string;
+  }) => Promise<boolean>;
   onCancel: () => void;
 }
 
-function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictionaryFormProps) {
+function EditDictionaryForm({ item, kind, categories, onSubmit, onCancel }: EditDictionaryFormProps) {
   const { t } = useLanguage();
+  const isSupplier = kind === 'suppliers';
+  const isModel = kind === 'models';
+  const isCategory = kind === 'categories';
+  const isColor = kind === 'colors';
+  const hasColor = isCategory || isColor;
+
+  const [code, setCode] = useState(() => item.code ?? '');
   const [nameSource, setNameSource] = useState(() => {
     return typeof item.name_source === 'string' ? item.name_source : item.name || '';
   });
@@ -247,34 +265,48 @@ function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictio
         ? item.name_source
         : '';
   });
+  const [categoryId, setCategoryId] = useState(() => item.categoryId ?? '');
+  const [color, setColor] = useState(() => {
+    return item.color ?? '';
+  });
   const [saving, setSaving] = useState(false);
 
   const canSave =
     !saving &&
+    !!code &&
     !!nameSource &&
-    (isSupplier || !!nameProduct);
+    (isSupplier || !!nameProduct) &&
+    (!isModel || !!categoryId);
 
   const handleSubmit = useCallback(async () => {
     if (!canSave) return;
     setSaving(true);
     try {
-      await onSubmit(item, { nameSource, nameProduct });
+      const updates: any = { nameSource, nameProduct };
+      if (code !== item.code) updates.code = code;
+      if (isModel && categoryId !== item.categoryId) updates.categoryId = categoryId;
+      if (hasColor && color !== item.color) updates.color = color;
+      await onSubmit(item, updates);
     } finally {
       setSaving(false);
     }
-  }, [canSave, item, nameSource, nameProduct, onSubmit]);
+  }, [canSave, item, code, nameSource, nameProduct, categoryId, color, isModel, hasColor, onSubmit]);
 
   return (
     <div className="space-y-3">
       <div>
         <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.code')}</label>
-        <div className="text-text-secondary font-mono text-sm h-11 flex items-center px-3 rounded-lg bg-bg-tertiary border border-border-subtle">
-          {item.code ?? ''}
-        </div>
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          className="w-full text-text-primary font-mono h-11"
+          placeholder={t('dict.form.code_placeholder')}
+        />
       </div>
       {isSupplier ? (
         <div>
-          <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.name')}</label>
+          <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.supplier_name')}</label>
           <input
             type="text"
             placeholder={t('dict.form.source_placeholder')}
@@ -306,6 +338,35 @@ function EditDictionaryForm({ item, isSupplier, onSubmit, onCancel }: EditDictio
             />
           </div>
         </>
+      )}
+      {isModel && (
+        <div>
+          <label className="text-xs text-text-tertiary mb-1 block">{t('dict.col.category')}</label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full text-text-primary h-11 bg-bg-elevated border border-border-default rounded px-2"
+          >
+            <option value="" disabled>{t('dict.form.select_category')}</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {displaySource(cat)} ({cat.code})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {hasColor && (
+        <div>
+          <label className="text-xs text-text-tertiary mb-1 block">
+            {isColor ? t('dict.col.hex') : t('dict.col.color')}
+          </label>
+          <ColorPicker
+            value={color}
+            onChange={(val) => setColor(val)}
+            label={isColor ? t('dict.col.hex') : t('dict.col.color')}
+          />
+        </div>
       )}
       <div className="flex justify-end gap-2 pt-2">
         <button
@@ -350,11 +411,15 @@ export default function DictionaryManager() {
   const { toast, showToast, hideToast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const editingColorRef = useRef('');
   const editNameSourceRef = useRef<HTMLInputElement>(null);
   const editNameProductRef = useRef<HTMLInputElement>(null);
+  const editCodeRef = useRef<HTMLInputElement>(null);
+  const editCategoryIdRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     setEditingId(null);
+    editingColorRef.current = '';
   }, [activeDict]);
 
   const handleAddFormClose = useCallback(() => setShowAddForm(false), []);
@@ -434,6 +499,16 @@ export default function DictionaryManager() {
         return false;
       }
 
+      if (
+        apiType !== 'suppliers' &&
+        entries.some(
+          (e: any) => (e.name_product || '').toLowerCase() === data.nameProduct.toLowerCase()
+        )
+      ) {
+        showToast(t('dict.toast_product_duplicate').replace('{name}', data.nameProduct), 'error');
+        return false;
+      }
+
       try {
         await dictionaries.add(apiType, item as any);
         notifications.add({ title: `${t('dict.notif_added')}: ${data.nameProduct}`, description: `[${data.code}]`, type: 'success', actionView: 'dictionary' });
@@ -450,16 +525,38 @@ export default function DictionaryManager() {
 
   const handleStartEdit = useCallback((item: any) => {
     setEditingId(item.id);
+    editingColorRef.current = item.color || '';
   }, []);
 
   const handleSaveEdit = useCallback(
-    async (item: any, data: { nameSource: string; nameProduct: string }) => {
+    async (item: any, data: {
+      nameSource: string;
+      nameProduct: string;
+      code?: string;
+      categoryId?: string;
+      color?: string;
+    }) => {
       const apiType = DICT_TYPE_MAP[activeDict];
       const updates: Record<string, unknown> = {
         name_source: data.nameSource,
         name_product: data.nameProduct,
         name: data.nameSource,
       };
+
+      if (data.code !== undefined && data.code !== item.code) {
+        const entries = dictDataMap[apiType] ?? [];
+        if (entries.some((e: any) => e.id !== item.id && e.code === data.code)) {
+          showToast(t('dict.toast_code_duplicate').replace('{code}', data.code), 'error');
+          return false;
+        }
+        updates.code = data.code;
+      }
+      if (data.categoryId !== undefined && data.categoryId !== item.categoryId) {
+        updates.categoryId = data.categoryId;
+      }
+      if (data.color !== undefined && data.color !== item.color) {
+        updates.color = data.color;
+      }
 
       const entries = dictDataMap[apiType] ?? [];
       const sourceKey = apiType === 'suppliers' ? 'name' : 'name_source';
@@ -474,6 +571,18 @@ export default function DictionaryManager() {
         return false;
       }
 
+      if (
+        apiType !== 'suppliers' &&
+        entries.some(
+          (e: any) =>
+            e.id !== item.id &&
+            (e.name_product || '').toLowerCase() === data.nameProduct.toLowerCase()
+        )
+      ) {
+        showToast(t('dict.toast_product_duplicate').replace('{name}', data.nameProduct), 'error');
+        return false;
+      }
+
       try {
         await dictionaries.update(apiType, item.id, updates);
         notifications.add({ title: `${t('dict.notif_updated')}: ${data.nameProduct}`, type: 'info', actionView: 'dictionary' });
@@ -481,10 +590,8 @@ export default function DictionaryManager() {
         setEditingId(null);
         return true;
       } catch {
-        notifications.add({ title: `${t('dict.notif_updated')}: ${data.nameProduct}`, type: 'info', actionView: 'dictionary' });
-        showToast(t('dict.save_success').replace('{name}', data.nameProduct));
-        setEditingId(null);
-        return true;
+        showToast(t('dict.toast_update_error').replace('{name}', data.nameProduct), 'error');
+        return false;
       }
     },
     [activeDict, t, showToast, dictDataMap, dictionaries, notifications]
@@ -492,20 +599,34 @@ export default function DictionaryManager() {
 
   const handleCancelEdit = useCallback(() => {
     setEditingId(null);
+    editingColorRef.current = '';
   }, []);
 
   const handleSaveEditInline = useCallback(async () => {
     if (!editingId) return;
     const apiType = DICT_TYPE_MAP[activeDict];
+    const isSupplier = activeDict === 'suppliers';
+    const isModel = activeDict === 'models';
     const entries = dictDataMap[apiType] ?? [];
     const item = entries.find((r: any) => r.id === editingId);
     if (!item) return;
     const nameSource = editNameSourceRef.current?.value ?? '';
     const nameProduct = editNameProductRef.current?.value ?? '';
-    await handleSaveEdit(item, { nameSource, nameProduct });
-  }, [editingId, activeDict, handleSaveEdit]);
+    const code = editCodeRef.current?.value ?? item.code;
+    const categoryId = editCategoryIdRef.current?.value ?? item.categoryId;
+    const color = editingColorRef.current || item.color || '';
 
-  const renderActions = (row: { id: string }) => {
+    if (!code || !nameSource || (!isSupplier && !nameProduct) || (isModel && !categoryId)) {
+      showToast(t('dict.fill_required'), 'error');
+      return;
+    }
+
+    const updates: any = { nameSource, nameProduct, code, categoryId, color };
+    await handleSaveEdit(item, updates);
+    editingColorRef.current = '';
+  }, [editingId, activeDict, handleSaveEdit, showToast, t]);
+
+  const renderActions = useCallback((row: { id: string }) => {
     const isEditing = editingId === row.id;
     if (isEditing) {
       return (
@@ -535,15 +656,16 @@ export default function DictionaryManager() {
         </button>
       </div>
     );
-  };
+  }, [editingId, handleSaveEditInline, handleCancelEdit, handleStartEdit]);
 
-  const sourceCell = (row: { id: string; name_source?: string; name?: string }) => {
-    const value = displaySource(row);
+  const sourceCell = useCallback((row: { id: string; name_source?: string; name?: string; code?: string }) => {
+    const raw = row.name_source !== undefined ? row.name_source : row.name;
+    const hasValue = !!raw;
     if (editingId === row.id) {
       return (
         <input
           ref={editNameSourceRef}
-          defaultValue={typeof row.name_source === 'string' ? row.name_source : row.name || ''}
+          defaultValue={raw || ''}
           autoFocus
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -560,21 +682,20 @@ export default function DictionaryManager() {
       );
     }
     return (
-      <span className="text-text-secondary truncate block" title={value}>
-        {value}
+      <span className={`truncate block ${hasValue ? 'text-text-secondary' : 'bg-danger/10 text-danger rounded px-1 py-0.5 text-[10px] font-medium w-fit'}`} title={raw || ''}>
+        {hasValue ? raw : t('dict.empty')}
       </span>
     );
-  };
+  }, [editingId, t, handleSaveEditInline, handleCancelEdit]);
 
-  const productCell = (row: { id: string; name_source?: string; name_product?: string }) => {
-    const value = displayName(row as never);
+  const productCell = useCallback((row: { id: string; name_source?: string; name_product?: string }) => {
+    const raw = row.name_product;
+    const hasValue = !!raw;
     if (editingId === row.id) {
       return (
         <input
           ref={editNameProductRef}
-          defaultValue={
-            typeof row.name_product === 'string' ? row.name_product : row.name_source || ''
-          }
+          defaultValue={raw || ''}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -590,25 +711,112 @@ export default function DictionaryManager() {
       );
     }
     return (
-      <span className="truncate block" title={value}>
+      <span className={`truncate block ${hasValue ? '' : 'bg-danger/10 text-danger rounded px-1 py-0.5 text-[10px] font-medium w-fit'}`} title={raw || ''}>
+        {hasValue ? raw : t('dict.empty')}
+      </span>
+    );
+  }, [editingId, t, handleSaveEditInline, handleCancelEdit]);
+
+  const codeCell = useCallback((row: { id: string; code: string }) => {
+    if (editingId === row.id) {
+      return (
+        <input
+          ref={editCodeRef}
+          defaultValue={row.code ?? ''}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSaveEditInline();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              handleCancelEdit();
+            }
+          }}
+          className={`${EDIT_INPUT_CLS} font-mono text-accent`}
+          placeholder={t('dict.form.code_placeholder')}
+        />
+      );
+    }
+    return (
+      <span className="text-xs text-accent truncate block font-mono" title={row.code}>
+        {row.code}
+      </span>
+    );
+  }, [editingId, t, handleSaveEditInline, handleCancelEdit]);
+
+  const categoryCell = useCallback((row: { id: string; categoryId?: string }) => {
+    if (editingId === row.id && activeDict === 'models') {
+      return (
+        <select
+          ref={editCategoryIdRef}
+          defaultValue={row.categoryId ?? ''}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSaveEditInline();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              handleCancelEdit();
+            }
+          }}
+          className={`${EDIT_INPUT_CLS} bg-bg-elevated`}
+        >
+          <option value="" disabled>{t('dict.form.select_category')}</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {displaySource(cat)} ({cat.code})
+            </option>
+          ))}
+        </select>
+      );
+    }
+    const cat = activeDict === 'models' ? categories.find((c) => c.id === row.categoryId) : undefined;
+    const value = cat ? displaySource(cat) : '—';
+    return (
+      <span className="text-xs truncate block" style={{ color: cat?.color }} title={value}>
         {value}
       </span>
     );
-  };
+  }, [editingId, activeDict, categories, t, handleSaveEditInline, handleCancelEdit]);
 
-  const dictColumns: Record<DictType, Column<any>[]> = useMemo(
-    () => ({
+  const colorCell = useCallback((row: any) => {
+    const isEditingColor = editingId === row.id && (activeDict === 'categories' || activeDict === 'colors');
+    const colorValue = row.color;
+    if (isEditingColor) {
+      return (
+        <div className="flex items-center gap-2">
+          <ColorPicker
+            value={editingColorRef.current || colorValue || '#000000'}
+            onChange={(val) => {
+              editingColorRef.current = val;
+            }}
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2 min-w-0" title={colorValue}>
+        <div
+          className="w-3 h-3 rounded-full flex-shrink-0"
+          style={{
+            background: activeDict === 'colors' && colorValue === 'gradient'
+              ? 'conic-gradient(in hsl longer hue, red, red)'
+              : colorValue || 'transparent',
+          }}
+        />
+        <span className="text-xs text-text-tertiary truncate">{colorValue}</span>
+      </div>
+    );
+  }, [editingId, activeDict]);
+
+  const dictColumns: Record<DictType, Column<any>[]> = useMemo(() => ({
     categories: [
       {
         key: 'code',
         header: t('dict.col.code'),
         width: 15,
         nowrap: true,
-        cell: (c: Category) => (
-          <span className="text-xs text-accent truncate block" title={c.code}>
-            {c.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 28, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 28, cell: productCell },
@@ -616,15 +824,7 @@ export default function DictionaryManager() {
         key: 'color',
         header: t('dict.col.color'),
         width: 18,
-        cell: (c: Category) => (
-          <div className="flex items-center gap-2 min-w-0" title={c.color}>
-            <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ background: getCategoryColorVar(c.code) }}
-            />
-            <span className="text-xs text-text-tertiary truncate">{c.color}</span>
-          </div>
-        ),
+        cell: colorCell,
       },
       {
         key: 'actions',
@@ -640,11 +840,7 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 12,
         nowrap: true,
-        cell: (m: Model) => (
-          <span className="text-xs text-accent truncate block" title={m.code}>
-            {m.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 26, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 26, cell: productCell },
@@ -652,15 +848,7 @@ export default function DictionaryManager() {
         key: 'category',
         header: t('dict.col.category'),
         width: 22,
-        cell: (m: Model) => {
-          const cat = categories.find((c) => c.id === m.categoryId);
-          const value = cat ? displaySource(cat) : '—';
-          return (
-            <span className="text-xs truncate block" style={{ color: cat?.color }} title={value}>
-              {value}
-            </span>
-          );
-        },
+        cell: categoryCell,
       },
       {
         key: 'actions',
@@ -676,11 +864,7 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 12,
         nowrap: true,
-        cell: (c: Color) => (
-          <span className="text-xs text-accent truncate block" title={c.code}>
-            {c.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 26, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 26, cell: productCell },
@@ -688,25 +872,7 @@ export default function DictionaryManager() {
         key: 'preview',
         header: t('dict.col.preview'),
         width: 22,
-        cell: (c: Color) => (
-          <div
-            className="flex items-center gap-1.5 sm:gap-2 min-w-0"
-            title={c.hexValue === 'gradient' ? '—' : c.hexValue}
-          >
-            <div
-              className="w-4 sm:w-5 h-4 sm:h-5 rounded-full flex-shrink-0"
-              style={{
-                background:
-                  c.hexValue === 'gradient'
-                    ? 'conic-gradient(in hsl longer hue, red, red)'
-                    : c.hexValue,
-              }}
-            />
-            <span className="text-xs text-text-tertiary hidden sm:inline truncate">
-              {c.hexValue === 'gradient' ? '—' : c.hexValue}
-            </span>
-          </div>
-        ),
+        cell: colorCell,
       },
       {
         key: 'actions',
@@ -722,34 +888,20 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 20,
         nowrap: true,
-        cell: (s: Supplier) => (
-          <span className="text-xs text-accent truncate block" title={s.code}>
-            {s.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       {
         key: 'name',
-        header: t('dict.col.name'),
+        header: t('dict.col.supplier_name'),
         width: 55,
-        cell: (s: Supplier) => (
-          <span className="truncate block" title={s.name}>
-            {s.name}
-          </span>
-        ),
+        cell: sourceCell,
       },
       {
         key: 'actions',
         header: t('dict.col.actions'),
         width: 25,
         align: 'right',
-        cell: () => (
-          <div className="flex items-center justify-end gap-1">
-            <button className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary cursor-pointer">
-              <Edit3 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ),
+        cell: renderActions,
       },
     ],
     connectors: [
@@ -758,11 +910,7 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 15,
         nowrap: true,
-        cell: (c: Connector) => (
-          <span className="text-xs text-accent truncate block" title={c.code}>
-            {c.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 30, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 30, cell: productCell },
@@ -780,11 +928,7 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 14,
         nowrap: true,
-        cell: (p: ChargingProtocol) => (
-          <span className="text-xs text-accent truncate block" title={p.code}>
-            {p.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 22, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 22, cell: productCell },
@@ -812,11 +956,7 @@ export default function DictionaryManager() {
         header: t('dict.col.code'),
         width: 15,
         nowrap: true,
-        cell: (m: Material) => (
-          <span className="text-xs text-accent truncate block" title={m.code}>
-            {m.code}
-          </span>
-        ),
+        cell: codeCell,
       },
       { key: 'source', header: t('dict.col.source'), width: 30, cell: sourceCell },
       { key: 'product', header: t('dict.col.product'), width: 30, cell: productCell },
@@ -835,10 +975,17 @@ export default function DictionaryManager() {
       language,
       categories,
       models,
+      colors,
       handleSaveEdit,
       handleCancelEdit,
       handleStartEdit,
       handleSaveEditInline,
+      codeCell,
+      categoryCell,
+      colorCell,
+      sourceCell,
+      productCell,
+      renderActions,
     ]
   );
 
@@ -869,7 +1016,7 @@ export default function DictionaryManager() {
     );
   };
 
-  const renderCards = () => {
+  const renderCards = useMemo(() => {
     const editLabel = t('dict.edit_title');
     const common = { editLabel, onEdit: handleStartEdit };
 
@@ -931,7 +1078,7 @@ export default function DictionaryManager() {
           </div>
         );
     }
-  };
+  }, [t, activeDict, categories, models, colors, suppliers, connectors, chargingProtocols, materials, handleStartEdit]);
 
   const editingItem = useMemo(
     () =>
@@ -1013,7 +1160,8 @@ export default function DictionaryManager() {
               <EditDictionaryForm
                 key={editingItem.id}
                 item={editingItem}
-                isSupplier={activeDict === 'suppliers'}
+                kind={activeDict}
+                categories={categories}
                 onSubmit={handleSaveEdit}
                 onCancel={handleEditFormClose}
               />
@@ -1056,7 +1204,7 @@ export default function DictionaryManager() {
       <div className="hidden sm:block">
         <div className="glass rounded-xl overflow-hidden">{renderTable()}</div>
       </div>
-      <div className="sm:hidden">{renderCards()}</div>
+      <div className="sm:hidden">{renderCards}</div>
     </div>
   );
 }

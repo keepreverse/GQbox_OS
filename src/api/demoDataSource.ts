@@ -47,6 +47,7 @@ async function fetchDictionaries(): Promise<Record<string, RawDictItem[]>> {
 export function createDemoDataSource(): DataSource {
   // In-memory кэш
   let rawProducts: RawProduct[] = [];
+  let rawKitComponents: import('@app-types').RawKitComponent[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -73,7 +74,7 @@ export function createDemoDataSource(): DataSource {
     const materials = dicts.materials.map(asMaterial);
     const chargingProtocols = dicts.chargingProtocols.map(asChargingProtocol);
     const total = rawProducts.length;
-    return rawProducts.map((raw, i) =>
+    const all = rawProducts.map((raw, i) =>
       hydrateProduct(
         raw,
         i,
@@ -81,6 +82,21 @@ export function createDemoDataSource(): DataSource {
         { categories, models, colors, suppliers, connectors, materials, chargingProtocols }
       )
     );
+    // Attach kit components to kit products
+    const productMap = new Map(all.map((p) => [p.id, p]));
+    for (const product of all) {
+      if (product.isKit) {
+        const comps = rawKitComponents
+          .filter((k) => k.kitId === product.id)
+          .map((k) => {
+            const compProduct = productMap.get(k.componentId);
+            return compProduct ? { product: compProduct, quantity: k.quantity } : null;
+          })
+          .filter(Boolean) as { product: ProductWithRelations; quantity: number }[];
+        product.kitComponents = comps;
+      }
+    }
+    return all;
   }
 
   // ─── Dictionaries API ──────────────────────────────────────────────────
@@ -201,6 +217,33 @@ export function createDemoDataSource(): DataSource {
     async remove(id) {
       await request<unknown>(`${API_PREFIX}/products/${id}`, { method: 'DELETE' });
       rawProducts = rawProducts.filter((p) => p.id !== id);
+      rawKitComponents = rawKitComponents.filter((k) => k.kitId !== id);
+      notify();
+    },
+    async getKitComponents(kitId) {
+      const rows = await request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components/${kitId}`);
+      rawKitComponents = rawKitComponents.filter((k) => k.kitId !== kitId).concat(rows);
+      notify();
+      const all = buildHydrated();
+      const kit = all.find((p) => p.id === kitId);
+      return kit?.kitComponents?.map((c) => c.product) ?? [];
+    },
+    async addKitComponent(kitId, componentId, quantity = 1) {
+      await request<import('@app-types').RawKitComponent>(`${API_PREFIX}/kit-components/${kitId}`, {
+        method: 'POST',
+        body: JSON.stringify({ componentId, quantity }),
+      });
+      const existingIdx = rawKitComponents.findIndex((k) => k.kitId === kitId && k.componentId === componentId);
+      if (existingIdx !== -1) {
+        rawKitComponents[existingIdx] = { ...rawKitComponents[existingIdx], quantity };
+      } else {
+        rawKitComponents.push({ kitId, componentId, quantity, sortOrder: 0 });
+      }
+      notify();
+    },
+    async removeKitComponent(kitId, componentId) {
+      await request<unknown>(`${API_PREFIX}/kit-components/${kitId}/${componentId}`, { method: 'DELETE' });
+      rawKitComponents = rawKitComponents.filter((k) => !(k.kitId === kitId && k.componentId === componentId));
       notify();
     },
   };
@@ -252,6 +295,10 @@ export function createDemoDataSource(): DataSource {
       await request<{ ok: boolean }>(`${API_PREFIX}/reset`, { method: 'POST' });
       await refresh();
     },
+    async seed() {
+      // Demo mode doesn't support database seeding — use reset instead.
+      throw new Error('Seed is only available in dev mode (PostgreSQL).');
+    },
     async exportToFile() {
       const bundle = await request<unknown>(`${API_PREFIX}/export`);
       const text = JSON.stringify(bundle, null, 2);
@@ -272,12 +319,14 @@ export function createDemoDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
+        request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
       ]);
       rawProducts = rawProductsNew;
+      rawKitComponents = kitComps;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }

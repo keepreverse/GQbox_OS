@@ -1703,7 +1703,11 @@
     "deviceCount": 1,
     "connectorFemaleId": "conn-tc",
     "connectorMaleId": "conn-tc",
-    "isKit": true
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 35W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 12,
+    "dataTransferMbps": 480
   },
   {
     "id": "p106",
@@ -1720,7 +1724,11 @@
     "deviceCount": 1,
     "connectorFemaleId": "conn-l",
     "connectorMaleId": "conn-tc",
-    "isKit": true
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC плетеный PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480
   },
   {
     "id": "p107",
@@ -1738,7 +1746,11 @@
     "connectorFemaleId": "conn-l",
     "connectorMaleId": "conn-tc",
     "isKit": true,
-    "variantCode": "PR"
+    "variantCode": "PR",
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480
   },
   {
     "id": "p108",
@@ -1755,7 +1767,11 @@
     "deviceCount": 1,
     "connectorFemaleId": "conn-tc",
     "connectorMaleId": "conn-tc",
-    "isKit": true
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480
   },
   {
     "id": "p109",
@@ -1772,7 +1788,11 @@
     "deviceCount": 1,
     "connectorFemaleId": "conn-tc",
     "connectorMaleId": "conn-tc",
-    "isKit": true
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. TC-TC ST 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480
   },
   {
     "id": "p115",
@@ -1967,5 +1987,49 @@
     "connectorFemaleId": "conn-usb",
     "connectorMaleId": "conn-360",
     "lengthVariant": "1"
+  },
+  {
+    "id": "p110",
+    "sku": "S19003-2PR/02-K",
+    "skuBase": "S19003",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "PR",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 2м БЕЛЫЙ"
+  },
+  {
+    "id": "p111",
+    "sku": "S19033/02-K",
+    "skuBase": "S19033",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 3,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "PR",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 3м БЕЛЫЙ"
   }
 ]

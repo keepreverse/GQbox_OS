@@ -155,7 +155,7 @@ export function TopBar({
                   </span>
                   <span
                     className="text-[10px] text-accent font-medium cursor-pointer hover:underline"
-                    onClick={(e) => { e.stopPropagation(); notifications.markAllRead(); }}
+                    onClick={(e) => { e.stopPropagation(); notifications.markAllRead(); setSessionUnreadIds(new Set()); }}
                   >
                     {t('header.notifications.mark_read')}
                   </span>

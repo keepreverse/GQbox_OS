@@ -4,15 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n client,server -c cyan,magenta \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "concurrently --no-stdin -n client,server -c cyan,magenta \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
     "dev:server": "tsx watch --env-file=.env server/index.ts",
-    "db:start": "pg_ctl start -D C:\\pgdata -o \"-c logging_collector=off\"",
-    "db:stop": "pg_ctl stop -D C:\\pgdata",
+    "db:start": "pg_ctl start -D C:\\pgdata -o \"-c logging_collector=off\" -l C:\\pgdata\\pg.log",
+    "db:stop": "pg_ctl stop -D C:\\pgdata -m fast",
     "db:seed": "tsx --env-file=.env scripts/seed-db.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "seed": "tsx scripts/seed-data.ts",
     "seed:db": "tsx --env-file=.env scripts/seed-db.ts"
   },
   "dependencies": {

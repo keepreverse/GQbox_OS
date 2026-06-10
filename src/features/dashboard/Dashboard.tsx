@@ -251,7 +251,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         name: c.name_source,
         value: products.filter((p) => p.color?.code === c.code).length,
         code: c.code,
-        color: c.hexValue === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.hexValue,
+        color: c.color === 'gradient' ? 'conic-gradient(in hsl longer hue, red, red)' : c.color,
       }))
       .filter((c) => c.value > 0)
       .sort((a, b) => b.value - a.value)
@@ -300,13 +300,11 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     };
   }, [stats, categories]);
 
-  const powerColors = ['var(--color-cable)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-success)'];
-  const lengthColors = ['var(--color-info)', 'var(--color-accent)', 'var(--color-warning)', 'var(--color-danger)'];
+  const chartColors = ['var(--color-info)', 'var(--color-accent)', 'var(--color-warning)', 'var(--color-danger)'];
 
   const getSliceColor = (entry: any, index: number): string => {
     if (metric === 'color') return entry?.color || 'var(--color-accent)';
-    if (metric === 'length') return lengthColors[index % lengthColors.length];
-    return powerColors[index % powerColors.length];
+    return chartColors[index % chartColors.length];
   };
 
   const metrics: { key: MetricKey; label: string; icon: React.ElementType }[] = [
@@ -467,10 +465,11 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       count: number;
     }> = [];
 
+    // Regular products (non-kit)
     for (const cat of categories) {
       const reqFields = categoryRequiredFields[cat.code];
       if (!reqFields) continue;
-      const catProducts = products.filter((p) => p.category.code === cat.code);
+      const catProducts = products.filter((p) => p.category.code === cat.code && !p.isKit);
 
       for (const fd of reqFields) {
         const missing = catProducts.filter((p) => {
@@ -488,6 +487,40 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       }
     }
 
+    // Kit products: check components — aggregate by component category
+    const kitProducts = products.filter((p) => p.isKit);
+    const kitGapMap = new Map<string, Set<string>>(); // compCatCode -> Set<kitId>
+
+    for (const kit of kitProducts) {
+      for (const comp of kit.kitComponents || []) {
+        const compCatCode = comp.product.category.code;
+        const reqFields = categoryRequiredFields[compCatCode];
+        if (!reqFields) continue;
+
+        // Check if ANY required field is missing for this component
+        const hasMissing = reqFields.some((fd) => {
+          const val = comp.product[fd.field as keyof ProductWithRelations];
+          return val == null || val === '';
+        });
+
+        if (hasMissing) {
+          if (!kitGapMap.has(compCatCode)) kitGapMap.set(compCatCode, new Set());
+          kitGapMap.get(compCatCode)!.add(kit.id);
+        }
+      }
+    }
+
+    for (const [compCatCode, kitIds] of kitGapMap) {
+      const cat = categories.find((c) => c.code === compCatCode);
+      const labelBase = cat ? displaySource(cat) : compCatCode;
+      gaps.push({
+        categoryCode: 'kit',
+        field: compCatCode, // used for matrix filtering
+        fieldLabel: labelBase,
+        count: kitIds.size,
+      });
+    }
+
     return gaps;
   }, [products, categories, language]);
 
@@ -495,7 +528,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     const grouped = new Map<string, {
       categoryCode: string;
       categoryName: string;
-      categoryColor: string;
+      color: string;
       productIds: Set<string>;
       gaps: typeof dataGaps;
     }>();
@@ -507,7 +540,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         cat = {
           categoryCode: gap.categoryCode,
           categoryName: category ? displaySource(category) : gap.categoryCode,
-          categoryColor: getCategoryColorVar(gap.categoryCode),
+          color: getCategoryColorVar(category),
           productIds: new Set<string>(),
           gaps: [],
         };
@@ -519,12 +552,30 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     for (const cat of grouped.values()) {
       const catProducts = products.filter((p) => p.category.code === cat.categoryCode);
       for (const gap of cat.gaps) {
-        catProducts
-          .filter((p) => {
-            const val = p[gap.field as keyof ProductWithRelations];
-            return val == null || val === '';
-          })
-          .forEach((p) => cat.productIds.add(p.id));
+        if (cat.categoryCode === 'kit') {
+          // Kit gaps: field is the component category code (e.g., "szu", "cable")
+          const compCatCode = gap.field;
+          const reqFields = categoryRequiredFields[compCatCode];
+          catProducts
+            .filter((p) =>
+              p.kitComponents?.some((comp) => {
+                if (comp.product.category.code !== compCatCode) return false;
+                // Check if ANY required field is missing for this component category
+                return reqFields?.some((fd) => {
+                  const val = comp.product[fd.field as keyof ProductWithRelations];
+                  return val == null || val === '';
+                }) ?? false;
+              })
+            )
+            .forEach((p) => cat.productIds.add(p.id));
+        } else {
+          catProducts
+            .filter((p) => {
+              const val = p[gap.field as keyof ProductWithRelations];
+              return val == null || val === '';
+            })
+            .forEach((p) => cat.productIds.add(p.id));
+        }
       }
     }
 
@@ -733,7 +784,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
               return (
                 <div key={product.id} onClick={() => setSelectedProduct(product)} className="flex items-center gap-3 min-h-[44px] sm:min-h-0 p-2.5 rounded-lg hover:bg-bg-hover active:bg-bg-hover transition-colors group cursor-pointer">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `color-mix(in srgb, ${product.category.color} 8%, transparent)` }}>
-                    <Icon className="w-4 h-4" style={{ color: getCategoryColorVar(product.category.code) }} />
+                    <Icon className="w-4 h-4" style={{ color: getCategoryColorVar(product.category) }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{displayProductName(product)}</p>
@@ -803,12 +854,12 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                           {Icon && (
                             <Icon
                               className="w-3.5 h-3.5 flex-shrink-0"
-                              style={{ color: cat.categoryColor }}
+                              style={{ color: cat.color }}
                             />
                           )}
                           <p
                             className="text-xs font-semibold flex-1 text-left"
-                            style={{ color: cat.categoryColor }}
+                            style={{ color: cat.color }}
                           >
                             {cat.categoryName}
                           </p>
@@ -821,46 +872,46 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                             }`}
                           />
                         </button>
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateRows: isExpanded ? '1fr' : '0fr',
-                            transition: 'grid-template-rows 0.2s ease-out',
+                        <motion.div
+                          initial={false}
+                          animate={{
+                            height: isExpanded ? 'auto' : 0,
+                            opacity: isExpanded ? 1 : 0,
                           }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                          className="overflow-hidden"
                         >
-                          <div className="overflow-hidden">
-                            <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
-                              {cat.gaps.map((gap) => (
-                                <div
-                                  key={gap.field}
-                                  onClick={() =>
-                                    onNavigateToMatrix?.({
-                                      categories: [gap.categoryCode],
-                                      missingFields: [gap.field],
-                                    })
-                                  }
-                                  className="group flex items-center gap-2 py-1.5 cursor-pointer"
+                          <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
+                            {cat.gaps.map((gap) => (
+                              <div
+                                key={gap.field}
+                                onClick={() =>
+                                  onNavigateToMatrix?.({
+                                    categories: [gap.categoryCode],
+                                    missingFields: [gap.field],
+                                  })
+                                }
+                                className="group flex items-center gap-2 py-1.5 cursor-pointer"
+                              >
+                                <span className="text-xs text-text-secondary flex-1 group-hover:text-text-primary transition-colors">
+                                  {gap.fieldLabel}
+                                </span>
+                                <span
+                                  className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full tabular-nums flex-shrink-0 ${
+                                    gap.count >= 6
+                                      ? 'bg-danger/15 text-danger'
+                                      : gap.count >= 3
+                                        ? 'bg-warning/15 text-warning'
+                                        : 'bg-success/15 text-success/80'
+                                  }`}
                                 >
-                                  <span className="text-xs text-text-secondary flex-1 group-hover:text-text-primary transition-colors">
-                                    {gap.fieldLabel}
-                                  </span>
-                                    <span
-                                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full tabular-nums flex-shrink-0 ${
-                                      gap.count >= 6
-                                        ? 'bg-danger/15 text-danger'
-                                        : gap.count >= 3
-                                          ? 'bg-warning/15 text-warning'
-                                          : 'bg-success/15 text-success/80'
-                                    }`}
-                                  >
-                                    {gap.count}
-                                  </span>
-                                  <ChevronRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              ))}
-                            </div>
+                                  {gap.count}
+                                </span>
+                                <ChevronRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            ))}
                           </div>
-                        </div>
+                        </motion.div>
                       </div>
                     );
                   })}

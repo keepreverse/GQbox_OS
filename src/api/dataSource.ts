@@ -37,11 +37,9 @@ export type RawDictItem = {
   nameRu?: string | null;
   categoryId?: string | null;
   parentId?: string | null;
-  hex?: string | null;
-  hexValue?: string | null;
+  color?: string | null;
   shortName?: unknown;
   sortOrder?: number;
-  color?: string | null;
   icon?: string | null;
   description?: string | null;
   contactInfo?: string | null;
@@ -101,6 +99,15 @@ export interface ProductsAPI {
 
   /** Удалить. */
   remove(id: string): Promise<void>;
+
+  /** Получить компоненты комплекта. */
+  getKitComponents(kitId: string): Promise<ProductWithRelations[]>;
+
+  /** Добавить компонент в комплект. */
+  addKitComponent(kitId: string, componentId: string, quantity?: number): Promise<void>;
+
+  /** Удалить компонент из комплекта. */
+  removeKitComponent(kitId: string, componentId: string): Promise<void>;
 }
 
 // ─── Notifications API ─────────────────────────────────────────────────────
@@ -125,6 +132,9 @@ export interface NotificationsAPI {
 export interface SettingsAPI {
   /** Полный сброс к дефолтным значениям (на бэке). */
   reset(): Promise<void>;
+
+  /** Сид (merge) данных из defaults в БД без удаления существующих записей. */
+  seed(): Promise<void>;
 
   /** Скачать JSON-бандл со всеми данными. Возвращает строку-имя для файла. */
   exportToFile(): Promise<string>;
@@ -204,8 +214,9 @@ export function hydrateProduct(
 ): ProductWithRelations {
   const category =
     dicts.categories.find((c) => c.id === raw.categoryId) ?? { ...FALLBACK_CATEGORY };
-  const model =
-    dicts.models.find((m) => m.id === raw.modelId) ?? { ...FALLBACK_MODEL };
+  const model = raw.modelId
+    ? (dicts.models.find((m) => m.id === raw.modelId) ?? { ...FALLBACK_MODEL })
+    : { id: '', categoryId: '', code: '', name_source: '', name_product: '', description: '' };
   const color = raw.colorId ? dicts.colors.find((c) => c.id === raw.colorId) : undefined;
   const supplier = raw.supplierId
     ? dicts.suppliers.find((s) => s.id === raw.supplierId)
@@ -280,7 +291,7 @@ export function hydrateProduct(
     model,
     color,
     supplier,
-    productName: buildName(),
+    productName: raw.productName || buildName(),
     bodyMaterial,
     wireMaterial,
     currentA: raw.currentA,
@@ -317,7 +328,7 @@ export function asCategory(item: RawDictItem): Category {
     code: String(item.code ?? ''),
     name_source: String(item.name_source ?? item.name ?? ''),
     name_product: String(item.name_product ?? item.nameRu ?? item.name ?? item.name_source ?? ''),
-    color: String(item.color ?? item.hex ?? item.hexValue ?? ''),
+    color: String(item.color ?? ''),
     icon: String(item.icon ?? ''),
     description: String(item.description ?? ''),
     sortOrder: Number(item.sortOrder ?? 0),
@@ -341,7 +352,7 @@ export function asColor(item: RawDictItem): Color {
     code: String(item.code ?? ''),
     name_source: String(item.name_source ?? item.name ?? ''),
     name_product: String(item.name_product ?? item.nameRu ?? item.name ?? item.name_source ?? ''),
-    hexValue: String(item.hex ?? item.hexValue ?? '#000000'),
+    color: String(item.color ?? '#000000'),
   };
 }
 

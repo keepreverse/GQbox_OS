@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Reorder, useDragControls } from 'framer-motion';
 import {
   Package,
@@ -205,10 +205,12 @@ function ComponentItem({
 
 export default function KitBuilder() {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries } = useDataSource();
+  const { products: productsApi, dictionaries, notifications } = useDataSource();
   const products = productsApi.list;
   const categories = dictionaries.categories;
   const colors = dictionaries.colors;
+  const colorsRef = useRef(colors);
+  colorsRef.current = colors;
   const [kitSku, setKitSku] = useState('');
   const [kitName, setKitName] = useState('');
   const [components, setComponents] = useState<KitComponent[]>([]);
@@ -255,8 +257,8 @@ export default function KitBuilder() {
   const skuExists = products.some((p) => p.sku.toLowerCase() === kitSku.trim().toLowerCase());
 
   useEffect(() => {
-    setKitName(generateKitName(components, colors));
-  }, [components, colors]);
+    setKitName(generateKitName(components, colorsRef.current));
+  }, [components]);
 
   const addComponent = (product: ProductWithRelations) => {
     setAddSuccess(false);
@@ -295,16 +297,26 @@ export default function KitBuilder() {
       sku: kitSku,
       skuBase: kitSku.replace(/-\w+$/, ''),
       categoryId: 'cat-kit',
-      modelId: 'mod-china-pr',
       isKit: true,
+      productName: kitName,
       powerW: maxPowerW,
       deviceCount: components.reduce((sum, c) => sum + c.quantity, 0),
     };
 
     try {
-      await productsApi.create(draft);
+      const created = await productsApi.create(draft);
+      // Save kit components
+      for (const comp of components) {
+        await productsApi.addKitComponent(created.id, comp.product.id, comp.quantity);
+      }
       setAddSuccess(true);
       showToast(t('kit.toast_created'));
+      notifications.add({
+        title: `${t('kit.notif_created')}: ${kitSku}`,
+        description: kitName,
+        type: 'success',
+        actionView: 'matrix',
+      });
       setKitName('');
       setKitSku('');
       setComponents([]);
@@ -584,7 +596,7 @@ export default function KitBuilder() {
                           return (
                             <Icon
                               className="w-5 h-5"
-                              style={{ color: getCategoryColorVar(cat.code) }}
+                              style={{ color: getCategoryColorVar(cat) }}
                             />
                           );
                         })()}
@@ -619,7 +631,7 @@ export default function KitBuilder() {
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                       <Hash
                         className="w-5 h-5"
-                        style={{ color: getCategoryColorVar(product.category.code) }}
+                        style={{ color: getCategoryColorVar(product.category) }}
                       />
                     </div>
                     <div className="flex-1 min-w-0">

@@ -30,7 +30,7 @@ export interface Color {
   code: string;
   name_source: string;
   name_product: string;
-  hexValue: string;
+  color: string;
 }
 
 export interface Connector {
@@ -85,6 +85,7 @@ export interface RawProduct {
   variantCode?: string;
   lengthVariant?: string;
   supplierSuffix?: string;
+  productName?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -113,6 +114,13 @@ export interface ProductBase {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RawKitComponent {
+  kitId: string;
+  componentId: string;
+  quantity: number;
+  sortOrder?: number;
 }
 
 export interface KitComponent {
@@ -208,6 +216,7 @@ export interface ProductWithRelations {
   tags?: string[];
   media?: ProductMedia[];
   marketplaceListings?: MarketplaceListing[];
+  kitComponents?: { product: ProductWithRelations; quantity: number }[];
 }
 
 export interface SKUPattern {

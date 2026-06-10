@@ -53,12 +53,14 @@ export function Sidebar({
 
   return (
     <aside
-      className={`border-r border-border-subtle bg-bg-secondary flex flex-col overflow-hidden z-[102] flex-shrink-0 transition-[width] duration-150 ease-out ${
+      className={`border-r border-border-subtle bg-bg-secondary flex flex-col overflow-hidden z-[102] flex-shrink-0 transition-[width,transform] duration-300 ease-in-out ${
         isMobile ? 'fixed top-0 bottom-0 left-0' : ''
       }`}
       style={{
-        width: isMobile ? (sidebarOpen ? sidebarWidth : 0) : sidebarCollapsed ? 72 : 244,
+        width: isMobile ? sidebarWidth : sidebarCollapsed ? 72 : 244,
         transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+        pointerEvents: isMobile && !sidebarOpen ? 'none' : 'auto',
+        willChange: isMobile ? 'transform' : 'width',
       }}
     >
       <div
@@ -155,8 +157,10 @@ export function Sidebar({
                 <span className="flex-1 text-left truncate select-none">{item.label}</span>
                 {item.badge && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ml-3 select-none ${
-                      isActive ? 'bg-accent/20 text-accent' : 'bg-bg-elevated text-text-tertiary'
+                    className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-3 mr-2 select-none font-medium tracking-wide border border-border-subtle ${
+                      isActive
+                        ? 'bg-accent/20 text-accent'
+                        : 'bg-bg-elevated text-text-tertiary'
                     }`}
                   >
                     {item.badge}

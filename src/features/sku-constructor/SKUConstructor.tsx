@@ -60,7 +60,7 @@ const initialForm: SKUFormData = {
 
 export default function SKUConstructor() {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries } = useDataSource();
+  const { products: productsApi, dictionaries, notifications } = useDataSource();
   const categories = dictionaries.categories;
   const models = dictionaries.models;
   const colors = dictionaries.colors;
@@ -198,6 +198,12 @@ export default function SKUConstructor() {
       await productsApi.create(draft);
       setAddSuccess(true);
       showToast(t('sku.added_to_matrix').replace('{name}', name));
+      notifications.add({
+        title: `${t('sku.notif_added')}: ${name}`,
+        description: draft.sku,
+        type: 'success',
+        actionView: 'matrix',
+      });
     } catch (err: any) {
       showToast(err?.message || t('sku.toast_duplicate'), 'error');
     }
@@ -327,7 +333,7 @@ export default function SKUConstructor() {
                         <div className="flex items-center gap-1 sm:gap-2">
                           <div
                             className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full flex-shrink-0"
-                            style={{ background: getCategoryColorVar(cat.code) }}
+                            style={{ background: getCategoryColorVar(cat) }}
                           />
                           <span className="text-[11px] sm:text-sm font-medium truncate">
                             {displaySource(cat)}
@@ -645,11 +651,11 @@ export default function SKUConstructor() {
                           className="w-7 sm:w-8 h-7 sm:h-8 rounded-full mx-auto mb-1 flex-shrink-0"
                           style={{
                             background:
-                              color.hexValue === 'gradient'
+                              color.color === 'gradient'
                                 ? 'conic-gradient(in hsl longer hue, red, red)'
-                                : color.hexValue,
+                                : color.color,
                             border:
-                              color.hexValue === 'gradient'
+                              color.color === 'gradient'
                                 ? 'none'
                                 : '1px solid var(--color-border-subtle)',
                           }}

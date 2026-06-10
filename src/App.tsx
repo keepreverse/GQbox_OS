@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@components/layout/Layout';
 import FullScreenLoader from '@components/ui/FullScreenLoader';
 import Dashboard from '@features/dashboard/Dashboard';
@@ -110,9 +110,15 @@ function AppContent() {
           />
         )}
       </AnimatePresence>
-      <Layout currentView={currentView} onViewChange={setCurrentView}>
-        {renderView()}
-      </Layout>
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={minSplashDone && ds.isReady ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Layout currentView={currentView} onViewChange={setCurrentView}>
+          {renderView()}
+        </Layout>
+      </motion.div>
     </>
   );
 }

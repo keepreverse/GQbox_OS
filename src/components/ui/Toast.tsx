@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, AlertTriangle, XCircle } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 export type ToastType = 'success' | 'error' | 'warning';
 
@@ -18,7 +19,7 @@ export function Toast({ data, onClose }: { data: ToastData | null; onClose: () =
     warning: 'bg-warning text-black',
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {data && (
         <motion.div
@@ -26,7 +27,7 @@ export function Toast({ data, onClose }: { data: ToastData | null; onClose: () =
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           onClick={onClose}
-          className={`fixed top-20 right-4 z-[60] flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs shadow-lg cursor-pointer max-w-[min(90vw,400px)] ${bgMap[data.type]}`}
+          className={`fixed top-20 right-4 z-[110] flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs shadow-lg cursor-pointer max-w-[min(90vw,400px)] ${bgMap[data.type]}`}
         >
           <Icon className="w-4 h-4 flex-shrink-0" />
           <span className="truncate" title={data.message}>
@@ -34,6 +35,7 @@ export function Toast({ data, onClose }: { data: ToastData | null; onClose: () =
           </span>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

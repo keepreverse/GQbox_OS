@@ -35,4 +35,8 @@ router.post('/import', (req: Request, res: Response) => {
   }
 });
 
+router.post('/seed', (_req: Request, res: Response) => {
+  res.status(400).json({ error: 'Seed is only available in dev mode (PostgreSQL).' });
+});
+
 export default router;
