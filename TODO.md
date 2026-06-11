@@ -1,0 +1,18 @@
+- [ ] 1. Серверные типы (server/types.ts) + .defaults/productMedia.json
+- [ ] 2. server/utils/jsonStore.ts: добавить productMedia в restore/export/import
+- [ ] 3. server/data/productMedia.json — пустой массив
+- [ ] 4. server/middleware/upload.ts — multer
+- [ ] 5. server/routes/demo/media.ts + server/routes/dev/media.ts
+- [ ] 6. server/index.ts — подключить роуты + /uploads static
+- [ ] 7. server/utils/dbStore.ts — SQL таблица + CRUD
+- [ ] 8. scripts/seed-db.ts — seed product_media
+- [ ] 9. package.json — multer в server deps
+- [ ] 10. src/types/index.ts — расширить ProductMedia
+- [ ] 11. src/utils/media.ts — formatBytes, getMediaUrl
+- [ ] 12. src/api/dataSource.ts — расширить ProductsAPI
+- [ ] 13. src/api/demoDataSource.ts + devDataSource.ts — реализовать
+- [ ] 14. src/features/media/MediaManager.tsx — реальный upload
+- [ ] 15. src/features/product-detail/ProductDetailCard.tsx — img/video
+- [ ] 16. npm install
+- [ ] 17. npx tsc --noEmit
+- [ ] 18. Smoke-test

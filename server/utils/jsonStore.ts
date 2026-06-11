@@ -2,15 +2,23 @@
 // Demo-режим пишет данные в server/data/*.json. .defaults/*.json —
 // «эталонные» файлы, до которых можно откатиться через reset.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, statSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import type { CollectionName, DataBundle, DictionaryItem, RawProduct, RawKitComponent } from '../types';
+import type {
+  CollectionName,
+  DataBundle,
+  DictionaryItem,
+  RawProduct,
+  RawKitComponent,
+  RawProductMedia,
+} from '../types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const DATA_DIR = resolve(__dirname, '..', 'data');
 export const DEFAULTS_DIR = resolve(DATA_DIR, '.defaults');
+export const UPLOADS_DIR = resolve(DATA_DIR, '..', 'uploads');
 
 function ensureDir(dir: string): void {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -69,6 +77,10 @@ export function restoreOne(name: CollectionName): number {
 /**
  * Полный reset всех коллекций из defaults. Если для какой-то коллекции
  * defaults нет — она просто пропускается.
+ *
+ * ВАЖНО: `productMedia` не восстанавливается — медиафайлы и их привязки
+ * к артикулам сохраняются между сбросами, чтобы не терять загруженные файлы.
+ * Физические файлы в server/uploads/ также не удаляются.
  */
 export function restoreAllFromDefaults(): { restored: string[]; skipped: string[] } {
   const restored: string[] = [];
@@ -94,6 +106,21 @@ export function restoreAllFromDefaults(): { restored: string[]; skipped: string[
   return { restored, skipped };
 }
 
+/**
+ * Полностью очищает директорию загрузок.
+ */
+export function clearUploadsDir(): void {
+  if (!existsSync(UPLOADS_DIR)) return;
+  for (const f of readdirSync(UPLOADS_DIR)) {
+    try {
+      const p = resolve(UPLOADS_DIR, f);
+      if (statSync(p).isFile()) unlinkSync(p);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 // ─── Bulk export / import ─────────────────────────────────────────────────
 
 /**
@@ -110,6 +137,7 @@ export function exportAll(): DataBundle {
     chargingProtocols: readCollection<DictionaryItem>('chargingProtocols'),
     materials: readCollection<DictionaryItem>('materials'),
     kitComponents: readCollection<RawKitComponent>('kitComponents'),
+    productMedia: readCollection<RawProductMedia>('productMedia'),
   };
 }
 
@@ -129,6 +157,7 @@ export function importAll(bundle: Partial<DataBundle>): string[] {
     'chargingProtocols',
     'materials',
     'kitComponents',
+    'productMedia',
   ] as CollectionName[]) {
     const data = (bundle as any)?.[name];
     if (Array.isArray(data) && data.length > 0) {

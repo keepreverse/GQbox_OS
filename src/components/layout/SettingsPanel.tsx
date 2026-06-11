@@ -56,8 +56,8 @@ export default function SettingsPanel({
     if (!file) return;
     try {
       const text = await file.text();
+      // importFromFile() уже вызывает refresh() внутри
       await ds.settings.importFromFile(text);
-      await ds.refresh();
       ds.notifications.add({ title: t('settings.notif_imported'), type: 'success' });
       alert('Import successful');
     } catch (err) {
@@ -69,8 +69,8 @@ export default function SettingsPanel({
   const handleReset = useCallback(async () => {
     if (!window.confirm(t('settings.reset_confirm'))) return;
     try {
+      // settings.reset() уже вызывает refresh() внутри
       await ds.settings.reset();
-      await ds.refresh();
       ds.notifications.add({ title: t('settings.notif_reset'), type: 'warning' });
       alert(t('settings.notif_reset'));
     } catch (err) {
@@ -81,8 +81,8 @@ export default function SettingsPanel({
   const handleSeed = useCallback(async () => {
     if (!window.confirm(t('settings.seed_confirm'))) return;
     try {
+      // settings.seed() уже вызывает refresh() внутри
       await ds.settings.seed();
-      await ds.refresh();
       ds.notifications.add({ title: t('settings.notif_seeded'), type: 'success' });
       alert(t('settings.notif_seeded'));
     } catch (err) {

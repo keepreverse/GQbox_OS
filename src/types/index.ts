@@ -131,15 +131,23 @@ export interface KitComponent {
   sortOrder: number;
 }
 
+/**
+ * Медиафайл (фото или видео), привязанный к варианту товара.
+ * `url` — относительный путь от бэка (например, `/uploads/<uuid>.jpg`)
+ * или пустая строка, если файл не загружен. `variantId` соответствует
+ * `products.id` (используем `product.id` на клиенте).
+ */
 export interface ProductMedia {
   id: string;
   variantId: string;
   mediaType: 'image' | 'video';
   url: string;
   fileName: string;
+  mimeType?: string;
+  sizeBytes?: number;
   isPrimary: boolean;
   sortOrder: number;
-  createdAt: string;
+  uploadedAt: string;
 }
 
 export interface MarketplaceListing {

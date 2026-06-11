@@ -117,6 +117,16 @@ button, a, [role="button"], input, select, textarea {
   box-shadow: 0 0 20px var(--color-accent-glow), 0 0 60px color-mix(in srgb, var(--color-accent) 4%, transparent);
 }
 
+/* Page entrance: one-time fade + slide + scale (replaces Framer Motion wrapper) */
+.animate-initial-fade {
+  animation: initialFadeIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes initialFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }

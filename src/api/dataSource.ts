@@ -21,6 +21,7 @@ import type {
   Model,
   Supplier,
   ProductWithRelations,
+  ProductMedia,
   CategoryAttribute,
   NamingTemplate,
   RawProduct,
@@ -45,6 +46,17 @@ export type RawDictItem = {
   contactInfo?: string | null;
   [key: string]: unknown;
 };
+
+// ─── Метаданные для загрузки медиафайла ─────────────────────────────────
+export interface UploadMediaMeta {
+  variantIds: string[];
+  isPrimary?: boolean;
+}
+
+export interface UploadMediaResult {
+  mediaItems: ProductMedia[];
+  localPreviewUrl: string;
+}
 
 // ─── Словарные API ────────────────────────────────────────────────────────
 export interface DictionariesAPI {
@@ -108,6 +120,27 @@ export interface ProductsAPI {
 
   /** Удалить компонент из комплекта. */
   removeKitComponent(kitId: string, componentId: string): Promise<void>;
+
+  // ─── Media ─────────────────────────────────────────────────────────────
+
+  /** Все медиафайлы всех товаров (для Media Manager). */
+  getAllMedia(): ProductMedia[];
+
+  /** Медиафайлы одного варианта. */
+  getMediaForVariant(variantId: string): ProductMedia[];
+
+  /**
+   * Загрузить файл на бэкенд. Возвращает массив созданных записей
+   * (по одной на каждый variantId) и временный blob-URL для мгновенного
+   * превью в UI (revoke вызывает вызывающий код).
+   */
+  uploadMedia(file: File, meta: UploadMediaMeta): Promise<UploadMediaResult>;
+
+  /** Удалить медиафайл (метаданные + физический файл на бэке). */
+  deleteMedia(id: string): Promise<void>;
+
+  /** Сделать файл primary (сбрасывает флаг у остальных в варианте). */
+  setMediaPrimary(id: string): Promise<ProductMedia>;
 }
 
 // ─── Notifications API ─────────────────────────────────────────────────────
@@ -164,6 +197,15 @@ export interface DataSource {
 
   /** Подписка на изменения (вызывается после каждой мутации). */
   subscribe(listener: () => void): () => void;
+
+  /**
+   * Приостановить уведомления подписчиков. После endBatch() будет
+   * ровно один notify(), сколько бы мутаций ни произошло внутри.
+   * Используется для групповых операций (batch delete, массовая загрузка),
+   * чтобы избежать N ре-рендеров подряд.
+   */
+  beginBatch(): void;
+  endBatch(): void;
 }
 
 // ─── Гидрация: сырой продукт + справочники → ProductWithRelations ────────
@@ -210,7 +252,8 @@ export function hydrateProduct(
     connectors: Connector[];
     materials: Material[];
     chargingProtocols: ChargingProtocol[];
-  }
+  },
+  media: ProductMedia[] = []
 ): ProductWithRelations {
   const category =
     dicts.categories.find((c) => c.id === raw.categoryId) ?? { ...FALLBACK_CATEGORY };
@@ -283,6 +326,13 @@ export function hydrateProduct(
     return tags;
   };
 
+  const myMedia = media
+    .filter((m) => m.variantId === raw.id)
+    .sort((a, b) => {
+      if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+      return a.sortOrder - b.sortOrder;
+    });
+
   return {
     id: raw.id ?? '',
     sku: raw.sku,
@@ -313,7 +363,7 @@ export function hydrateProduct(
     description: generateDescription(),
     usp: generateUsp(),
     tags: generateTags(),
-    media: [],
+    media: myMedia,
     marketplaceListings: getMarketplaceListingsBySku(raw.sku),
   };
 }

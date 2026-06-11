@@ -29,10 +29,35 @@ export async function queryOne<T = any>(text: string, params?: any[]): Promise<T
   return rows[0] ?? null;
 }
 
+export async function withTransaction<T>(
+  fn: (tx: { query: typeof query; queryOne: typeof queryOne }) => Promise<T>
+): Promise<T> {
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+    const txQuery: typeof query = async <U = any>(text: string, params?: any[]) => {
+      const result = await client.query(text, params);
+      return result.rows as U[];
+    };
+    const txQueryOne: typeof queryOne = async <U = any>(text: string, params?: any[]) => {
+      const rows = await txQuery<U>(text, params);
+      return rows[0] ?? null;
+    };
+    const result = await fn({ query: txQuery, queryOne: txQueryOne });
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export async function initSchema(): Promise<void> {
   await query(`
     CREATE TABLE IF NOT EXISTS products (
-      id VARCHAR(20) PRIMARY KEY,
+      id VARCHAR(40) PRIMARY KEY,
       sku VARCHAR(50) NOT NULL,
       sku_base VARCHAR(50),
       category_id VARCHAR(50),
@@ -120,8 +145,8 @@ export async function initSchema(): Promise<void> {
 
   await query(`
     CREATE TABLE IF NOT EXISTS kit_components (
-      kit_id VARCHAR(20) NOT NULL,
-      component_id VARCHAR(20) NOT NULL,
+      kit_id VARCHAR(40) NOT NULL,
+      component_id VARCHAR(40) NOT NULL,
       quantity INTEGER NOT NULL DEFAULT 1,
       sort_order INTEGER DEFAULT 0,
       created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -130,6 +155,35 @@ export async function initSchema(): Promise<void> {
       FOREIGN KEY (component_id) REFERENCES products(id) ON DELETE CASCADE
     )
   `);
+
+  // ─── product_media: фото/видео вариантов товаров ─────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS product_media (
+      id VARCHAR(40) PRIMARY KEY,
+      variant_id VARCHAR(40) NOT NULL,
+      media_type VARCHAR(10) NOT NULL,
+      url TEXT NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(80) NOT NULL,
+      size_bytes BIGINT NOT NULL DEFAULT 0,
+      is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      FOREIGN KEY (variant_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_product_media_variant ON product_media(variant_id)`);
+
+  // Migration: widen id columns to fit UUIDs (36 chars) on existing DBs
+  await query(`ALTER TABLE products ALTER COLUMN id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE product_media ALTER COLUMN id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE product_media ALTER COLUMN variant_id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE kit_components ALTER COLUMN kit_id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE kit_components ALTER COLUMN component_id TYPE VARCHAR(40)`);
+
+  // Migration: clean up any records with empty id from prior bug
+  await query(`DELETE FROM product_media WHERE id IS NULL OR id = ''`);
+  await query(`DELETE FROM products WHERE id IS NULL OR id = ''`);
 }
 
 export async function closePool(): Promise<void> {

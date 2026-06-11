@@ -20,11 +20,14 @@ import {
   type ProductsAPI,
   type RawDictItem,
   type SettingsAPI,
+  type UploadMediaMeta,
+  type UploadMediaResult,
 } from './dataSource';
 import type {
   AppNotification,
   CategoryAttribute,
   NamingTemplate,
+  ProductMedia,
   ProductWithRelations,
   RawProduct,
 } from '@app-types';
@@ -50,6 +53,7 @@ export function createDevDataSource(): DataSource {
   // свой экземпляр и свой жизненный цикл.
   let rawProducts: RawProduct[] = [];
   let rawKitComponents: import('@app-types').RawKitComponent[] = [];
+  let rawProductMedia: ProductMedia[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -62,8 +66,10 @@ export function createDevDataSource(): DataSource {
   const listeners = new Set<() => void>();
   let isReady = false;
   let error: string | null = null;
+  let batchCount = 0;
 
   function notify(): void {
+    if (batchCount > 0) return;
     listeners.forEach((fn) => fn());
   }
 
@@ -81,7 +87,8 @@ export function createDevDataSource(): DataSource {
         raw,
         i,
         total,
-        { categories, models, colors, suppliers, connectors, materials, chargingProtocols }
+        { categories, models, colors, suppliers, connectors, materials, chargingProtocols },
+        rawProductMedia
       )
     );
     // Attach kit components to kit products
@@ -217,6 +224,7 @@ export function createDevDataSource(): DataSource {
       await request<unknown>(`${API_PREFIX}/products/${id}`, { method: 'DELETE' });
       rawProducts = rawProducts.filter((p) => p.id !== id);
       rawKitComponents = rawKitComponents.filter((k) => k.kitId !== id);
+      rawProductMedia = rawProductMedia.filter((m) => m.variantId !== id);
       notify();
     },
     async getKitComponents(kitId) {
@@ -244,6 +252,66 @@ export function createDevDataSource(): DataSource {
       await request<unknown>(`${API_PREFIX}/kit-components/${kitId}/${componentId}`, { method: 'DELETE' });
       rawKitComponents = rawKitComponents.filter((k) => !(k.kitId === kitId && k.componentId === componentId));
       notify();
+    },
+
+    // ─── Media ──────────────────────────────────────────────────────────
+    getAllMedia() {
+      return [...rawProductMedia].sort((a, b) => {
+        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+        return a.sortOrder - b.sortOrder;
+      });
+    },
+    getMediaForVariant(variantId) {
+      return rawProductMedia
+        .filter((m) => m.variantId === variantId)
+        .sort((a, b) => {
+          if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+          return a.sortOrder - b.sortOrder;
+        });
+    },
+    async uploadMedia(file: File, meta: UploadMediaMeta): Promise<UploadMediaResult> {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('variantIds', JSON.stringify(meta.variantIds));
+      if (meta.isPrimary) fd.append('isPrimary', 'true');
+      const localPreviewUrl = URL.createObjectURL(file);
+      try {
+        const res = await fetch(`${API_PREFIX}/media`, {
+          method: 'POST',
+          body: fd,
+        });
+        if (!res.ok) {
+          URL.revokeObjectURL(localPreviewUrl);
+          const text = await res.text();
+          throw new ApiError(text || `HTTP ${res.status}`, res.status);
+        }
+        const items: ProductMedia[] = await res.json();
+        rawProductMedia = [...rawProductMedia, ...items];
+        notify();
+        return { mediaItems: items, localPreviewUrl };
+      } catch (err) {
+        URL.revokeObjectURL(localPreviewUrl);
+        throw err;
+      }
+    },
+    async deleteMedia(id) {
+      await request<unknown>(`${API_PREFIX}/media/${id}`, { method: 'DELETE' });
+      rawProductMedia = rawProductMedia.filter((m) => m.id !== id);
+      notify();
+    },
+    async setMediaPrimary(id) {
+      const updated = await request<ProductMedia>(`${API_PREFIX}/media/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isPrimary: true }),
+      });
+      rawProductMedia = rawProductMedia.map((m) => {
+        if (m.variantId === updated.variantId) {
+          return { ...m, isPrimary: m.id === id };
+        }
+        return m;
+      });
+      notify();
+      return updated;
     },
   };
 
@@ -318,14 +386,16 @@ export function createDevDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, media] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
         request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
+        request<ProductMedia[]>(`${API_PREFIX}/media`).catch(() => [] as ProductMedia[]),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
+      rawProductMedia = media;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }
@@ -356,6 +426,11 @@ export function createDevDataSource(): DataSource {
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    beginBatch() { batchCount++; },
+    endBatch() {
+      batchCount = Math.max(0, batchCount - 1);
+      if (batchCount === 0) notify();
     },
   };
 }

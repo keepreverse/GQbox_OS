@@ -42,6 +42,24 @@ export interface RawKitComponent {
   sortOrder?: number;
 }
 
+/**
+ * Медиафайл (фото или видео), привязанный к варианту товара.
+ * `variantId` — это `products.id`. Файл лежит на диске в `server/uploads/`,
+ * а в БД/JSON хранится только относительный URL вида `/uploads/<file>`.
+ */
+export interface RawProductMedia {
+  id: string;
+  variantId: string;
+  mediaType: 'image' | 'video';
+  url: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  isPrimary: boolean;
+  sortOrder: number;
+  uploadedAt: string;
+}
+
 export type DictType =
   | 'categories'
   | 'models'
@@ -89,6 +107,7 @@ export type DataBundle = {
   chargingProtocols: DictionaryItem[];
   materials: DictionaryItem[];
   kitComponents: RawKitComponent[];
+  productMedia: RawProductMedia[];
 };
 
 export interface NotificationRow {
@@ -112,6 +131,7 @@ export const COLLECTIONS = [
   'materials',
   'notifications',
   'kitComponents',
+  'productMedia',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 

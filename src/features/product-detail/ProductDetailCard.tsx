@@ -15,10 +15,11 @@ import {
   ShoppingBag,
   Package,
 } from 'lucide-react';
-import type { ProductWithRelations } from '@app-types';
+import type { ProductWithRelations, ProductMedia } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '@utils/display';
 import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
+import { getMediaUrl, hasPlayableUrl, formatBytes } from '@utils/media';
 import Modal from '@components/ui/Modal';
 
 interface ProductDetailCardProps {
@@ -27,10 +28,15 @@ interface ProductDetailCardProps {
   highlightedFields?: string[];
 }
 
-export default function ProductDetailCard({ product, onClose, highlightedFields = [] }: ProductDetailCardProps) {
+export default function ProductDetailCard({
+  product,
+  onClose,
+  highlightedFields = [],
+}: ProductDetailCardProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(true);
   const [nestedProduct, setNestedProduct] = useState<ProductWithRelations | null>(null);
+  const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -65,71 +71,35 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
 
   const specs = [
     { icon: Zap, label: t('detail.power'), value: product.powerW ? `${product.powerW}W` : '—', field: 'powerW' },
-    {
-      icon: Battery,
-      label: t('detail.current'),
-      value: product.currentA ? `${product.currentA}A` : '—',
-      field: 'currentA',
-    },
-    {
-      icon: Zap,
-      label: t('detail.voltage'),
-      value: product.voltageV ? `${product.voltageV}V` : '—',
-      field: 'voltageV',
-    },
-    {
-      icon: Ruler,
-      label: t('detail.length'),
-      value: product.lengthM ? `${product.lengthM}м` : '—',
-      field: 'lengthM',
-    },
+    { icon: Battery, label: t('detail.current'), value: product.currentA ? `${product.currentA}A` : '—', field: 'currentA' },
+    { icon: Zap, label: t('detail.voltage'), value: product.voltageV ? `${product.voltageV}V` : '—', field: 'voltageV' },
+    { icon: Ruler, label: t('detail.length'), value: product.lengthM ? `${product.lengthM}м` : '—', field: 'lengthM' },
     { icon: Users, label: t('detail.devices'), value: product.deviceCount || '—', field: 'deviceCount' },
-    {
-      icon: LinkIcon,
-      label: t('detail.speed'),
-      value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—',
-      field: 'dataTransferMbps',
-    },
+    { icon: LinkIcon, label: t('detail.speed'), value: product.dataTransferMbps ? `${product.dataTransferMbps} Mbps` : '—', field: 'dataTransferMbps' },
   ];
 
   const connections = [
-    {
-      label: t('detail.input'),
-      value: product.connectorFemale ? displaySource(product.connectorFemale) : '—',
-      field: 'connectorFemale',
-    },
-    {
-      label: t('detail.output'),
-      value: product.connectorMale ? displaySource(product.connectorMale) : '—',
-      field: 'connectorMale',
-    },
-    {
-      label: t('detail.protocol'),
-      value: product.chargingProtocol ? displaySource(product.chargingProtocol) : '—',
-      field: 'chargingProtocol',
-    },
-    {
-      label: t('detail.connection'),
-      value: product.connectionType || '—',
-      field: 'connectionType',
-    },
+    { label: t('detail.input'), value: product.connectorFemale ? displaySource(product.connectorFemale) : '—', field: 'connectorFemale' },
+    { label: t('detail.output'), value: product.connectorMale ? displaySource(product.connectorMale) : '—', field: 'connectorMale' },
+    { label: t('detail.protocol'), value: product.chargingProtocol ? displaySource(product.chargingProtocol) : '—', field: 'chargingProtocol' },
+    { label: t('detail.connection'), value: product.connectionType || '—', field: 'connectionType' },
   ];
 
   const materials = [
-    {
-      label: t('detail.body'),
-      value: product.bodyMaterial ? displayName(product.bodyMaterial) : '—',
-      field: 'bodyMaterial',
-    },
-    {
-      label: t('detail.wire'),
-      value: product.wireMaterial ? displayName(product.wireMaterial) : '—',
-      field: 'wireMaterial',
-    },
+    { label: t('detail.body'), value: product.bodyMaterial ? displayName(product.bodyMaterial) : '—', field: 'bodyMaterial' },
+    { label: t('detail.wire'), value: product.wireMaterial ? displayName(product.wireMaterial) : '—', field: 'wireMaterial' },
   ];
 
   const media = product.media || [];
-  const primaryMedia = media.find((m) => m.isPrimary) || media[0];
+  const sortedMedia = useMemo(
+    () =>
+      [...media].sort((a, b) => {
+        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+        return a.sortOrder - b.sortOrder;
+      }),
+    [media]
+  );
+  const currentMedia = sortedMedia[selectedMediaIdx] ?? null;
   const singleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'single');
   const bundleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'bundle');
 
@@ -146,6 +116,30 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
     </span>
   );
 
+  function renderMediaPreview(m: ProductMedia, size: 'sm' | 'md' | 'lg' = 'md') {
+    const url = getMediaUrl(m.url);
+    const iconSize =
+      size === 'lg'
+        ? 'w-10 h-10 sm:w-12 sm:h-12'
+        : size === 'sm'
+          ? 'w-3 h-3 sm:w-3.5 sm:h-3.5'
+          : 'w-4 h-4 sm:w-5 sm:h-5';
+
+    if (!hasPlayableUrl(m)) {
+      return m.mediaType === 'image' ? (
+        <ImageIcon className={`${iconSize} text-text-muted`} />
+      ) : (
+        <Video className={`${iconSize} text-text-muted`} />
+      );
+    }
+
+    if (m.mediaType === 'image') {
+      return <img src={url} alt={m.fileName} className="w-full h-full object-cover" loading="lazy" />;
+    }
+
+    return <video src={url} className="w-full h-full object-cover" muted playsInline preload="metadata" />;
+  }
+
   const modalContent = (
     <>
       <div className="flex items-start justify-between p-3 sm:p-4 border-b border-border-subtle bg-bg-secondary/50 sticky top-0 z-10">
@@ -154,7 +148,6 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
             <code className="text-[11px] sm:text-sm text-accent px-1.5 sm:px-2 py-0.5 rounded bg-accent/10 border border-accent/20">
               {product.sku}
             </code>
-
           </div>
           <h2 className="text-sm sm:text-base font-semibold text-text-primary mb-0.5 leading-snug line-clamp-2">
             {product.productName}
@@ -172,14 +165,10 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
                     style={{
-                      background:
-                        product.color.color === 'gradient'
-                          ? 'conic-gradient(in hsl longer hue, red, red)'
-                          : product.color.color,
-                      border:
-                        product.color.color === 'gradient'
-                          ? 'none'
-                          : '1px solid var(--color-border-subtle)',
+                      background: product.color.color === 'gradient'
+                        ? 'conic-gradient(in hsl longer hue, red, red)'
+                        : product.color.color,
+                      border: product.color.color === 'gradient' ? 'none' : '1px solid var(--color-border-subtle)',
                     }}
                   />
                   <span>{displaySource(product.color)}</span>
@@ -204,39 +193,67 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 {t('detail.media')}
+                {currentMedia && (
+                  <span className="text-[9px] text-text-muted ml-auto">
+                    {selectedMediaIdx + 1}/{sortedMedia.length}
+                  </span>
+                )}
               </h3>
-              {primaryMedia ? (
-                <div className="rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden">
-                  <div className="aspect-video w-full flex items-center justify-center">
-                    {primaryMedia.mediaType === 'image' ? (
-                      <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-text-muted" />
-                    ) : (
-                      <Video className="w-10 h-10 sm:w-12 sm:h-12 text-text-muted" />
-                    )}
+              {currentMedia ? (
+                <div
+                  className="rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden cursor-pointer"
+                  onClick={() => {
+                    const url = getMediaUrl(currentMedia.url);
+                    if (url) window.open(url, '_blank');
+                  }}
+                >
+                  <div className="aspect-video w-full flex items-center justify-center bg-bg-tertiary">
+                    {renderMediaPreview(currentMedia, 'lg')}
                   </div>
                 </div>
               ) : (
                 <div className="aspect-video rounded-xl bg-bg-tertiary/50 border border-border-subtle border-dashed flex items-center justify-center">
-                  <span className="text-[10px] sm:text-xs text-text-tertiary">
-                    {t('detail.no_media')}
-                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <ImageIcon className="w-6 h-6 text-text-muted" />
+                    <span className="text-[10px] sm:text-xs text-text-tertiary">{t('detail.no_media')}</span>
+                  </div>
                 </div>
               )}
-              {media.length > 1 && (
-                <div className="flex gap-1.5 overflow-x-auto">
-                  {media.slice(1, 5).map((m, i) => (
-                    <div
-                      key={i}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-bg-tertiary border border-border-subtle flex-shrink-0 flex items-center justify-center"
-                    >
-                      {m.mediaType === 'image' ? (
-                        <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
-                      ) : (
-                        <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
-                      )}
-                    </div>
-                  ))}
+              {sortedMedia.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {sortedMedia.map((m, i) => {
+                    const url = getMediaUrl(m.url);
+                    const isActive = i === selectedMediaIdx;
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedMediaIdx(i)}
+                        className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center transition-all duration-150 ${
+                          isActive ? 'border-accent ring-1 ring-accent/30' : 'border-border-subtle hover:border-border-default'
+                        }`}
+                        aria-label={`${t('detail.media')} ${i + 1}`}
+                      >
+                        {hasPlayableUrl(m) ? (
+                          m.mediaType === 'image' ? (
+                            <img src={url} alt={m.fileName} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <video src={url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                          )
+                        ) : m.mediaType === 'image' ? (
+                          <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
+                        ) : (
+                          <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
+                        )}
+                        {m.isPrimary && <div className="absolute top-0 left-0 w-full h-full ring-1 ring-warning/30 rounded-lg pointer-events-none" />}
+                      </button>
+                    );
+                  })}
                 </div>
+              )}
+              {currentMedia && currentMedia.sizeBytes && (
+                <p className="text-[9px] text-text-muted text-right">
+                  {currentMedia.fileName} · {formatBytes(currentMedia.sizeBytes)}
+                </p>
               )}
             </div>
 
@@ -249,7 +266,6 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 <p className="text-[11px] sm:text-xs text-text-secondary leading-relaxed">{desc}</p>
               </div>
             )}
-
             {usp && (
               <div className="space-y-1.5">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
@@ -259,7 +275,6 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 <p className="text-[11px] sm:text-xs text-text-secondary leading-relaxed">{usp}</p>
               </div>
             )}
-
             {tags.length > 0 && (
               <div className="space-y-1.5">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
@@ -268,17 +283,13 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 </h3>
                 <div className="flex flex-wrap gap-1">
                   {tags.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-bg-tertiary text-text-secondary border border-border-subtle"
-                    >
+                    <span key={i} className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-bg-tertiary text-text-secondary border border-border-subtle">
                       {tag}
                     </span>
                   ))}
                 </div>
               </div>
             )}
-
             {(singleListings.length > 0 || bundleListings.length > 0) && (
               <div className="space-y-2">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
@@ -288,25 +299,14 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {singleListings.length > 0 && (
                     <div className="space-y-1.5">
-                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">
-                        {t('detail.listed_as_product')}
-                      </p>
+                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.listed_as_product')}</p>
                       <div className="space-y-1">
                         {singleListings.map((listing, i) => (
-                          <a
-                            key={`single-${i}`}
-                            href={listing.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors"
-                          >
+                          <a key={`single-${i}`} href={listing.url} target="_blank" rel="noreferrer"
+                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
                             <div className="min-w-0 flex-1">
-                              <p className="text-[10px] sm:text-xs text-text-primary truncate">
-                                {listing.title}
-                              </p>
-                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">
-                                {listing.article}
-                              </p>
+                              <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
+                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">{listing.article}</p>
                             </div>
                             <MarketplaceBadge marketplace={listing.marketplace} />
                           </a>
@@ -316,25 +316,14 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                   )}
                   {bundleListings.length > 0 && (
                     <div className="space-y-1.5">
-                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">
-                        {t('detail.included_in_bundles')}
-                      </p>
+                      <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.included_in_bundles')}</p>
                       <div className="space-y-1">
                         {bundleListings.map((listing, i) => (
-                          <a
-                            key={`bundle-${i}`}
-                            href={listing.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors"
-                          >
+                          <a key={`bundle-${i}`} href={listing.url} target="_blank" rel="noreferrer"
+                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
                             <div className="min-w-0 flex-1">
-                              <p className="text-[10px] sm:text-xs text-text-primary truncate">
-                                {listing.title}
-                              </p>
-                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">
-                                {listing.article}
-                              </p>
+                              <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
+                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">{listing.article}</p>
                             </div>
                             <MarketplaceBadge marketplace={listing.marketplace} />
                           </a>
@@ -345,7 +334,6 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 </div>
               </div>
             )}
-
           </div>
 
           <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 bg-bg-tertiary/30">
@@ -358,18 +346,15 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                 <div className="space-y-2">
                   {product.kitComponents.map((comp, idx) => {
                     const compProduct = comp.product;
-                    const compReqFields = categoryRequiredFields[compProduct.category.code];
-                    const compMissing = new Set<string>();
-                    if (compReqFields) {
-                      for (const fd of compReqFields) {
-                        const val = compProduct[fd.field as keyof ProductWithRelations];
-                        if (val == null || val === '') {
-                          compMissing.add(fd.field);
+                    const compHl = (field: string) => {
+                      const reqFields = categoryRequiredFields[compProduct.category.code];
+                      if (!reqFields) return '';
+                      for (const fd of reqFields) {
+                        if (fd.field === field) {
+                          const val = compProduct[field as keyof ProductWithRelations];
+                          if (val == null || val === '') return 'ring-1 ring-warning/30 bg-warning/[0.03]';
                         }
                       }
-                    }
-                    const compHl = (field: string) => {
-                      if (compMissing.has(field)) return 'ring-1 ring-warning/30 bg-warning/[0.03]';
                       return '';
                     };
                     const compSpecs = [
@@ -380,29 +365,14 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                       { icon: Users, label: t('detail.devices'), value: compProduct.deviceCount || '—', field: 'deviceCount' },
                       { icon: LinkIcon, label: t('detail.speed'), value: compProduct.dataTransferMbps ? `${compProduct.dataTransferMbps} Mbps` : '—', field: 'dataTransferMbps' },
                     ];
-                    const compConnections = [
-                      { label: t('detail.input'), value: compProduct.connectorFemale ? displaySource(compProduct.connectorFemale) : '—', field: 'connectorFemale' },
-                      { label: t('detail.output'), value: compProduct.connectorMale ? displaySource(compProduct.connectorMale) : '—', field: 'connectorMale' },
-                      { label: t('detail.protocol'), value: compProduct.chargingProtocol ? displaySource(compProduct.chargingProtocol) : '—', field: 'chargingProtocol' },
-                      { label: t('detail.connection'), value: compProduct.connectionType || '—', field: 'connectionType' },
-                    ];
-                    const compMaterials = [
-                      { label: t('detail.body'), value: compProduct.bodyMaterial ? displayName(compProduct.bodyMaterial) : '—', field: 'bodyMaterial' },
-                      { label: t('detail.wire'), value: compProduct.wireMaterial ? displayName(compProduct.wireMaterial) : '—', field: 'wireMaterial' },
-                    ];
                     return (
                       <div key={idx} className="rounded-lg border border-border-subtle bg-bg-tertiary/50 p-2 sm:p-3 space-y-2">
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-2">
-                            <span
-                              className="text-[10px] sm:text-xs font-medium text-text-primary cursor-pointer hover:text-accent transition-colors"
-                              onClick={() => setNestedProduct(compProduct)}
-                            >
+                            <span className="text-[10px] sm:text-xs font-medium text-text-primary cursor-pointer hover:text-accent transition-colors" onClick={() => setNestedProduct(compProduct)}>
                               {compProduct.productName}
                             </span>
-                            <span className="text-[9px] sm:text-[10px] text-text-secondary">
-                              ×{comp.quantity}
-                            </span>
+                            <span className="text-[9px] sm:text-[10px] text-text-secondary">×{comp.quantity}</span>
                             <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-bg-tertiary text-text-secondary border border-border-subtle">
                               {displaySource(compProduct.category)}
                             </span>
@@ -420,22 +390,6 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                             </div>
                           ))}
                         </div>
-                        <div className="space-y-1">
-                          {compConnections.map((conn, i) => (
-                            <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${compHl(conn.field)}`}>
-                              <span className="text-[9px] sm:text-[10px] text-text-tertiary">{conn.label}</span>
-                              <span className="text-[10px] sm:text-xs font-medium text-text-primary">{conn.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="space-y-1">
-                          {compMaterials.map((mat, i) => (
-                            <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${compHl(mat.field)}`}>
-                              <span className="text-[9px] sm:text-[10px] text-text-tertiary">{mat.label}</span>
-                              <span className="text-[10px] sm:text-xs font-medium text-text-primary">{mat.value}</span>
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     );
                   })}
@@ -450,24 +404,16 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                   </h3>
                   <div className="grid grid-cols-2 gap-1.5">
                     {specs.map((spec, i) => (
-                      <div
-                        key={i}
-                        className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(spec.field)}`}
-                      >
+                      <div key={i} className={`p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(spec.field)}`}>
                         <div className="flex items-center gap-1 mb-0.5">
                           <spec.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
-                          <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                            {spec.label}
-                          </span>
+                          <span className="text-[9px] sm:text-[10px] text-text-tertiary">{spec.label}</span>
                         </div>
-                        <p className="text-[10px] sm:text-xs font-medium text-text-primary">
-                          {spec.value}
-                        </p>
+                        <p className="text-[10px] sm:text-xs font-medium text-text-primary">{spec.value}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                     <Plug className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -475,21 +421,13 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                   </h3>
                   <div className="space-y-1">
                     {connections.map((conn, i) => (
-                      <div
-                        key={i}
-                        className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(conn.field)}`}
-                      >
-                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                          {conn.label}
-                        </span>
-                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">
-                          {conn.value}
-                        </span>
+                      <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(conn.field)}`}>
+                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">{conn.label}</span>
+                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">{conn.value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                     <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -497,21 +435,13 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                   </h3>
                   <div className="space-y-1">
                     {materials.map((mat, i) => (
-                      <div
-                        key={i}
-                        className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(mat.field)}`}
-                      >
-                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">
-                          {mat.label}
-                        </span>
-                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">
-                          {mat.value}
-                        </span>
+                      <div key={i} className={`flex justify-between items-center p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle ${hl(mat.field)}`}>
+                        <span className="text-[9px] sm:text-[10px] text-text-tertiary">{mat.label}</span>
+                        <span className="text-[10px] sm:text-xs font-medium text-text-primary">{mat.value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-
                 {product.supplier && (
                   <div className="space-y-2">
                     <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
@@ -519,13 +449,9 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
                       {t('detail.supplier')}
                     </h3>
                     <div className={`p-2 sm:p-2.5 rounded-lg bg-bg-tertiary border border-border-subtle ${hl('supplier')}`}>
-                      <p className="text-[10px] sm:text-xs font-medium text-text-primary">
-                        {product.supplier.name}
-                      </p>
+                      <p className="text-[10px] sm:text-xs font-medium text-text-primary">{product.supplier.name}</p>
                       {product.supplier.code !== '-' && (
-                        <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">
-                          Code: {product.supplier.code}
-                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">Code: {product.supplier.code}</p>
                       )}
                     </div>
                   </div>
@@ -554,12 +480,7 @@ export default function ProductDetailCard({ product, onClose, highlightedFields 
       >
         {modalContent}
       </Modal>
-      {nestedProduct && (
-        <ProductDetailCard
-          product={nestedProduct}
-          onClose={handleNestedClose}
-        />
-      )}
+      {nestedProduct && <ProductDetailCard product={nestedProduct} onClose={handleNestedClose} />}
     </>
   );
 }

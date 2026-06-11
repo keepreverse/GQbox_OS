@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { resolve } from 'path';
 
 // Demo mode (JSON-only, без fallback на БД)
 import demoProducts from './routes/demo/products';
@@ -7,6 +8,7 @@ import demoDictionaries from './routes/demo/dictionaries';
 import demoSettings from './routes/demo/settings';
 import demoNotifications from './routes/demo/notifications';
 import demoKitComponents from './routes/demo/kitComponents';
+import demoMedia from './routes/demo/media';
 
 // Dev mode (PostgreSQL-only)
 import devProducts from './routes/dev/products';
@@ -14,6 +16,7 @@ import devDictionaries from './routes/dev/dictionaries';
 import devSettings from './routes/dev/settings';
 import devNotifications from './routes/dev/notifications';
 import devKitComponents from './routes/dev/kitComponents';
+import devMedia from './routes/dev/media';
 
 import { errorHandler } from './middleware/errorHandler';
 import { closePool } from './utils/db';
@@ -22,7 +25,28 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+
+// Multer (multipart/form-data) для /api/*/media не использует JSON-парсер,
+// поэтому монтируем multer-роуты ДО express.json(). Но express.json() с
+// `verify: false` безопасно игнорирует multipart. Чтобы не ломать
+// остальные роуты, держим JSON-парсер после static (см. ниже).
+//
+// Сначала — статика загруженных медиафайлов.
+const UPLOADS_DIR = resolve(process.cwd(), 'server', 'uploads');
+app.use('/uploads', express.static(UPLOADS_DIR, {
+  maxAge: '7d',
+  fallthrough: false,
+}));
+
+// JSON-парсер для всех остальных роутов (кроме multipart /api/*/media).
+app.use((req, res, next) => {
+  const ct = (req.headers['content-type'] || '').toString();
+  if (ct.startsWith('multipart/form-data')) {
+    next();
+    return;
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
 
 // ─── Public health ────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
@@ -39,6 +63,7 @@ app.use('/api/demo/dictionaries', demoDictionaries);
 app.use('/api/demo', demoSettings);
 app.use('/api/demo/notifications', demoNotifications);
 app.use('/api/demo/kit-components', demoKitComponents);
+app.use('/api/demo/media', demoMedia);
 
 // ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
 app.use('/api/dev/products', devProducts);
@@ -46,6 +71,7 @@ app.use('/api/dev/dictionaries', devDictionaries);
 app.use('/api/dev', devSettings);
 app.use('/api/dev/notifications', devNotifications);
 app.use('/api/dev/kit-components', devKitComponents);
+app.use('/api/dev/media', devMedia);
 
 app.use(errorHandler);
 
@@ -59,6 +85,7 @@ app.listen(PORT, () => {
   console.log(`GQbox API running on http://localhost:${PORT}`);
   console.log(`  demo: /api/demo/*  (JSON files)`);
   console.log(`  dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
+  console.log(`  static: /uploads/*  (uploaded media files)`);
 });
 
 process.on('SIGINT', async () => {
