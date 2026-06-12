@@ -17,6 +17,7 @@ import devSettings from './routes/dev/settings';
 import devNotifications from './routes/dev/notifications';
 import devKitComponents from './routes/dev/kitComponents';
 import devMedia from './routes/dev/media';
+import devInspect from './routes/dev/inspect';
 
 import { errorHandler } from './middleware/errorHandler';
 import { closePool } from './utils/db';
@@ -24,7 +25,10 @@ import { closePool } from './utils/db';
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: false,
+}));
 
 // Multer (multipart/form-data) для /api/*/media не использует JSON-парсер,
 // поэтому монтируем multer-роуты ДО express.json(). Но express.json() с
@@ -72,6 +76,7 @@ app.use('/api/dev', devSettings);
 app.use('/api/dev/notifications', devNotifications);
 app.use('/api/dev/kit-components', devKitComponents);
 app.use('/api/dev/media', devMedia);
+app.use('/api/dev/inspect', devInspect);
 
 app.use(errorHandler);
 

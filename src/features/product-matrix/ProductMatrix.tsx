@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef, useDeferredValue } from 'react';
-import { AnimatePresence } from 'framer-motion';
+// Framer Motion removed to prevent forced reflow on data mutations
 import {
   Download,
   Eye,
@@ -22,7 +22,7 @@ import {
   List,
   Check,
 } from 'lucide-react';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
@@ -74,11 +74,12 @@ export default function ProductMatrix({
   onInitialFiltersApplied,
 }: ProductMatrixProps = {}) {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries, notifications } = useDataSource();
-  const products = productsApi.list;
-  const categories = dictionaries.categories;
-  const suppliers = dictionaries.suppliers;
-  const colors = dictionaries.colors;
+  const { ds, version } = useDataSourceVersion('products');
+  const products = useMemo(() => ds.products.list, [ds, version]);
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
+  const suppliers = useMemo(() => ds.dictionaries.suppliers, [ds, version]);
+  const colors = useMemo(() => ds.dictionaries.colors, [ds, version]);
+  const notifications = ds.notifications;
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -503,7 +504,7 @@ export default function ProductMatrix({
           <div className="relative" ref={pageSizeRef}>
             <button
               onClick={() => setPageSizeOpen(!pageSizeOpen)}
-              className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3 min-w-[88px] rounded-lg border text-xs sm:text-sm transition-all cursor-pointer bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+              className="flex items-center justify-center gap-1.5 h-11 sm:h-10 px-3 min-w-[88px] rounded-lg border text-xs sm:text-sm transition-[colors,opacity,transform,box-shadow] cursor-pointer bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary"
             >
               <List className="w-3.5 h-3.5" />
               <span className="tabular-nums">{pageSize}</span>
@@ -535,7 +536,7 @@ export default function ProductMatrix({
           <button
             onClick={handleExport}
             disabled={exporting || filteredProducts.length === 0}
-            className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-[120px] px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40 flex-shrink-0"
           >
             {exporting ? (
               <Check className="w-3.5 h-3.5 text-success" />
@@ -555,13 +556,13 @@ export default function ProductMatrix({
             placeholder={t('matrix.search')}
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full px-4 text-text-primary transition-all duration-150 h-11 sm:h-10"
+            className="w-full px-4 text-text-primary transition-[colors,opacity,transform,box-shadow] duration-150 h-11 sm:h-10"
           />
         </div>
         {activeFiltersCount > 0 && (
           <button
             onClick={clearAllFilters}
-            className="h-11 sm:h-10 min-w-0 flex items-center gap-1.5 px-3 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer bg-bg-secondary border-border-subtle text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
+            className="h-11 sm:h-10 min-w-0 flex items-center gap-1.5 px-3 rounded-lg border text-sm transition-[colors,opacity,transform,box-shadow] duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer bg-bg-secondary border-border-subtle text-text-tertiary hover:bg-bg-hover hover:text-text-primary"
           >
             <X className="w-3.5 h-3.5" />
             <span>{t('matrix.clear')}</span>
@@ -569,7 +570,7 @@ export default function ProductMatrix({
         )}
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-all duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+          className={`h-11 sm:h-10 min-w-[120px] justify-center flex items-center gap-2 px-4 rounded-lg border text-sm transition-[colors,opacity,transform,box-shadow] duration-150 outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
             showFilters || activeFiltersCount > 0
               ? 'bg-bg-elevated text-text-primary border border-border-strong'
               : 'bg-bg-secondary border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary'
@@ -580,7 +581,7 @@ export default function ProductMatrix({
           />
           {t('matrix.filters')}
           {activeFiltersCount > 0 && (
-            <span className="ml-1 w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center transition-all duration-150 scale-in">
+            <span className="ml-1 w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center transition-[colors,opacity,transform,box-shadow] duration-150 scale-in">
               {activeFiltersCount}
             </span>
           )}
@@ -859,15 +860,15 @@ export default function ProductMatrix({
       </div>
 
       {/* Product Detail Card */}
-      <AnimatePresence>
-        {selectedProduct && (
+      {selectedProduct && (
+        <div className="animate-fade-in-fast">
           <ProductDetailCard
             product={selectedProduct}
             onClose={handleDetailClose}
             highlightedFields={selectedMissingFields}
           />
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

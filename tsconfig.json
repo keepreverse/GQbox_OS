@@ -27,7 +27,8 @@
       "@hooks/*": ["./src/hooks/*"],
       "@utils/*": ["./src/utils/*"],
       "@constants/*": ["./src/constants/*"],
-      "@api/*": ["./src/api/*"]
+      "@api/*": ["./src/api/*"],
+      "@i18n/*": ["./src/i18n/*"]
     },
 
     /* Linting */
@@ -36,5 +37,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "server", "vite.config.ts"]
+  "include": ["src", "server", "scripts", "vite.config.ts"]
 }

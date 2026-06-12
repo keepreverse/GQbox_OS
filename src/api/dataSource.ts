@@ -22,6 +22,8 @@ import type {
   Supplier,
   ProductWithRelations,
   ProductMedia,
+  MediaFile,
+  MediaLink,
   CategoryAttribute,
   NamingTemplate,
   RawProduct,
@@ -54,7 +56,8 @@ export interface UploadMediaMeta {
 }
 
 export interface UploadMediaResult {
-  mediaItems: ProductMedia[];
+  file: MediaFile;
+  links: MediaLink[];
   localPreviewUrl: string;
 }
 
@@ -123,24 +126,29 @@ export interface ProductsAPI {
 
   // ─── Media ─────────────────────────────────────────────────────────────
 
-  /** Все медиафайлы всех товаров (для Media Manager). */
-  getAllMedia(): ProductMedia[];
+  /** Все медиафайлы (для Media Manager). */
+  getAllMedia(): (MediaFile & { linkedSkus: string[] })[];
 
-  /** Медиафайлы одного варианта. */
-  getMediaForVariant(variantId: string): ProductMedia[];
+  /** Медиафайлы одного варианта (сгруппированные по файлам). */
+  getMediaForVariant(variantId: string): MediaFile[];
+
+  /** Все связи медиафайлов. */
+  getAllMediaLinks(): MediaLink[];
 
   /**
-   * Загрузить файл на бэкенд. Возвращает массив созданных записей
-   * (по одной на каждый variantId) и временный blob-URL для мгновенного
-   * превью в UI (revoke вызывает вызывающий код).
+   * Загрузить файл на бэкенд. Возвращает созданный файл и связи
+   * + временный blob-URL для мгновенного превью в UI.
    */
   uploadMedia(file: File, meta: UploadMediaMeta): Promise<UploadMediaResult>;
 
-  /** Удалить медиафайл (метаданные + физический файл на бэке). */
-  deleteMedia(id: string): Promise<void>;
+  /** Удалить медиафайл (метаданные + физический файл на бэке) + все связи. */
+  deleteMedia(fileId: string): Promise<void>;
 
-  /** Сделать файл primary (сбрасывает флаг у остальных в варианте). */
-  setMediaPrimary(id: string): Promise<ProductMedia>;
+  /** Удалить только связь файла с вариантом. */
+  deleteMediaLink(fileId: string, variantId: string): Promise<void>;
+
+  /** Сделать файл primary для конкретного варианта. */
+  setMediaPrimary(fileId: string, variantId: string): Promise<MediaLink>;
 }
 
 // ─── Notifications API ─────────────────────────────────────────────────────
@@ -176,6 +184,42 @@ export interface SettingsAPI {
   importFromFile(text: string): Promise<void>;
 }
 
+// ─── Inspector API (только dev-режим) ─────────────────────────────────────
+export interface InspectorColumnInfo {
+  name: string;
+  dataType: string;
+  isNullable: boolean;
+}
+
+export interface InspectorTableInfo {
+  name: string;
+  rowEstimate: number;
+  totalBytes: number;
+  totalSize: string;
+  columns: InspectorColumnInfo[];
+}
+
+export interface InspectorQueryResult {
+  columns: string[];
+  rows: Record<string, unknown>[];
+  rowCount: number;
+  truncated: boolean;
+}
+
+export interface InspectorAPI {
+  /** Доступен ли инспектор (только dev-режим + БД). */
+  readonly available: boolean;
+
+  /** Список всех таблиц схемы public с метаданными. */
+  listTables(): Promise<InspectorTableInfo[]>;
+
+  /** Полный дамп таблицы (LIMIT 5000). Использует `SELECT *`. */
+  dumpTable(table: string): Promise<InspectorQueryResult>;
+
+  /** Выполнить произвольный read-only SQL. */
+  runQuery(sql: string): Promise<InspectorQueryResult>;
+}
+
 // ─── Главный контракт ─────────────────────────────────────────────────────
 export interface DataSource {
   /** 'demo' | 'dev' — какой режим активен. */
@@ -191,16 +235,20 @@ export interface DataSource {
   readonly dictionaries: DictionariesAPI;
   readonly notifications: NotificationsAPI;
   readonly settings: SettingsAPI;
+  readonly inspector: InspectorAPI;
 
   /** Перезагрузить все данные с бэка. */
   refresh(): Promise<void>;
 
   /** Подписка на изменения (вызывается после каждой мутации). */
-  subscribe(listener: () => void): () => void;
+  subscribe(listener: (topic?: string) => void): () => void;
+
+  /** Уведомить подписчиков. `topic` позволяет селективную подписку. */
+  notify(topic?: string): void;
 
   /**
    * Приостановить уведомления подписчиков. После endBatch() будет
-   * ровно один notify(), сколько бы мутаций ни произошло внутри.
+   * ровно один notify('all'), сколько бы мутаций ни произошло внутри.
    * Используется для групповых операций (batch delete, массовая загрузка),
    * чтобы избежать N ре-рендеров подряд.
    */
@@ -253,7 +301,8 @@ export function hydrateProduct(
     materials: Material[];
     chargingProtocols: ChargingProtocol[];
   },
-  media: ProductMedia[] = []
+  mediaFiles: MediaFile[] = [],
+  mediaLinks: MediaLink[] = []
 ): ProductWithRelations {
   const category =
     dicts.categories.find((c) => c.id === raw.categoryId) ?? { ...FALLBACK_CATEGORY };
@@ -326,12 +375,30 @@ export function hydrateProduct(
     return tags;
   };
 
-  const myMedia = media
-    .filter((m) => m.variantId === raw.id)
+  const myLinks = mediaLinks
+    .filter((l) => l.variantId === raw.id)
     .sort((a, b) => {
       if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
       return a.sortOrder - b.sortOrder;
     });
+
+  const myMedia: ProductMedia[] = myLinks.map((l) => {
+    const file = mediaFiles.find((f) => f.id === l.fileId);
+    return {
+      id: l.fileId,
+      variantId: l.variantId,
+      mediaType: file?.mimeType?.startsWith('video/') ? 'video' : 'image',
+      url: file?.url ?? '',
+      fileName: file?.originalName ?? '',
+      mimeType: file?.mimeType,
+      sizeBytes: file?.sizeBytes,
+      isPrimary: l.isPrimary,
+      sortOrder: l.sortOrder,
+      uploadedAt: l.uploadedAt,
+    };
+  });
+
+  const myFiles = mediaFiles.filter((f) => myLinks.some((l) => l.fileId === f.id));
 
   return {
     id: raw.id ?? '',
@@ -364,6 +431,8 @@ export function hydrateProduct(
     usp: generateUsp(),
     tags: generateTags(),
     media: myMedia,
+    mediaFiles: myFiles,
+    mediaLinks: myLinks,
     marketplaceListings: getMarketplaceListingsBySku(raw.sku),
   };
 }

@@ -1,5 +1,5 @@
 import { Fragment, useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// Framer Motion removed to prevent forced reflow on data mutations
 import {
   ChevronRight,
   ChevronLeft,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion, useDataSourceAPI } from '@api/dataSourceContext';
 import { useLanguage } from '@context/LanguageContext';
 import { displayName, displaySource, getCategoryColorVar } from '@utils/display';
 
@@ -60,15 +60,16 @@ const initialForm: SKUFormData = {
 
 export default function SKUConstructor() {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries, notifications } = useDataSource();
-  const categories = dictionaries.categories;
-  const models = dictionaries.models;
-  const colors = dictionaries.colors;
-  const suppliers = dictionaries.suppliers;
-  const connectors = dictionaries.connectors;
-  const chargingProtocols = dictionaries.chargingProtocols;
-  const materials = dictionaries.materials;
-  const products = productsApi.list;
+  const { ds, version } = useDataSourceVersion('products');
+  const { notifications } = useDataSourceAPI();
+  const products = useMemo(() => ds.products.list, [ds, version]);
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
+  const models = useMemo(() => ds.dictionaries.models, [ds, version]);
+  const colors = useMemo(() => ds.dictionaries.colors, [ds, version]);
+  const suppliers = useMemo(() => ds.dictionaries.suppliers, [ds, version]);
+  const connectors = useMemo(() => ds.dictionaries.connectors, [ds, version]);
+  const chargingProtocols = useMemo(() => ds.dictionaries.chargingProtocols, [ds, version]);
+  const materials = useMemo(() => ds.dictionaries.materials, [ds, version]);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<SKUFormData>(initialForm);
   const [generatedSKU, setGeneratedSKU] = useState('');
@@ -195,7 +196,7 @@ export default function SKUConstructor() {
     };
     const name = generatedName || generatedSKU;
     try {
-      await productsApi.create(draft);
+      await ds.products.create(draft);
       setAddSuccess(true);
       showToast(t('sku.added_to_matrix').replace('{name}', name));
       notifications.add({
@@ -303,13 +304,10 @@ export default function SKUConstructor() {
 
       {/* Form Content */}
       <div className="glass rounded-xl p-3 sm:p-6 min-h-0">
-        <AnimatePresence mode="wait">
+        <div className="animate-fade-in">
           {step === 1 && (
-            <motion.div
+            <div
               key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step1')}</h3>
@@ -375,15 +373,12 @@ export default function SKUConstructor() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {step === 2 && (
-            <motion.div
+            <div
               key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step2')}</h3>
@@ -467,15 +462,12 @@ export default function SKUConstructor() {
                   {form.lengthVariant && !form.variantCode ? '-' + form.lengthVariant : ''}
                 </code>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {step === 3 && (
-            <motion.div
+            <div
               key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step3')}</h3>
@@ -618,15 +610,12 @@ export default function SKUConstructor() {
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {step === 4 && (
-            <motion.div
+            <div
               key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step4')}</h3>
@@ -707,15 +696,12 @@ export default function SKUConstructor() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {step === 5 && (
-            <motion.div
+            <div
               key="step5"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
               className="space-y-4 sm:space-y-6"
             >
               <h3 className="text-base sm:text-lg font-medium">{t('sku.step5')}</h3>
@@ -726,9 +712,7 @@ export default function SKUConstructor() {
                   <p className="text-text-secondary text-sm">{t('sku.auto_generated_hint')}</p>
                 </div>
               ) : (
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                <div
                   className="space-y-4"
                 >
                   <div className="p-4 sm:p-5 rounded-xl bg-bg-tertiary border border-border-subtle space-y-2 sm:space-y-3">
@@ -828,11 +812,11 @@ export default function SKUConstructor() {
                       <p className="text-xs sm:text-sm truncate">{selectedSupplier?.name}</p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* Navigation */}

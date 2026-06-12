@@ -1,18 +1,29 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import Layout from '@components/layout/Layout';
 import FullScreenLoader from '@components/ui/FullScreenLoader';
-import Dashboard from '@features/dashboard/Dashboard';
-import Architecture from '@features/architecture/Architecture';
-import ProductMatrix from '@features/product-matrix/ProductMatrix';
-import SKUConstructor from '@features/sku-constructor/SKUConstructor';
-import DictionaryManager from '@features/dictionary/DictionaryManager';
-import KitBuilder from '@features/kit-builder/KitBuilder';
-import MediaManager from '@features/media/MediaManager';
-import AIHub from '@features/ai-hub/AIHub';
 import type { ViewType, MatrixFilters } from '@app-types';
 import { LanguageProvider } from '@context/LanguageContext';
-import { DataSourceProvider, useDataSource } from '@api/dataSourceContext';
+import { DevModeProvider } from '@context/DevModeContext';
+import { DataSourceProvider, useDataSourceStatus } from '@api/dataSourceContext';
+
+const Dashboard = lazy(() => import('@features/dashboard/Dashboard'));
+const Architecture = lazy(() => import('@features/architecture/Architecture'));
+const ProductMatrix = lazy(() => import('@features/product-matrix/ProductMatrix'));
+const SKUConstructor = lazy(() => import('@features/sku-constructor/SKUConstructor'));
+const DictionaryManager = lazy(() => import('@features/dictionary/DictionaryManager'));
+const KitBuilder = lazy(() => import('@features/kit-builder/KitBuilder'));
+const MediaManager = lazy(() => import('@features/media/MediaManager'));
+const AIHub = lazy(() => import('@features/ai-hub/AIHub'));
+const DBInspector = lazy(() => import('@features/db-inspector/DBInspector'));
 
 function getInitialView(): ViewType {
   try {
@@ -28,19 +39,25 @@ function getInitialView(): ViewType {
         'kit-builder',
         'media',
         'ai-hub',
+        'db-inspector',
       ];
-      if (validViews.includes(saved as ViewType)) return saved as ViewType;
+      if (validViews.includes(saved as ViewType) && saved !== 'db-inspector') {
+        return saved as ViewType;
+      }
     }
   } catch {}
   return 'dashboard';
 }
 
 function AppContent() {
-  const ds = useDataSource();
+  const status = useDataSourceStatus();
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView);
   const [pendingMatrixFilters, setPendingMatrixFilters] = useState<MatrixFilters | null>(null);
   const [minSplashDone, setMinSplashDone] = useState(false);
   const [showDevFallback, setShowDevFallback] = useState(false);
+  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+  const [, startViewTransition] = useTransition();
 
   useEffect(() => {
     const timer = setTimeout(() => setMinSplashDone(true), 2200);
@@ -48,35 +65,41 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    if (ds.mode !== 'dev' || !ds.error) {
+    if (status.mode !== 'dev' || !status.error) {
       setShowDevFallback(false);
       return;
     }
     const timer = setTimeout(() => setShowDevFallback(true), 5000);
     return () => clearTimeout(timer);
-  }, [ds.error, ds.mode]);
-  const viewRef = useRef(currentView);
-  viewRef.current = currentView;
+  }, [status.error, status.mode]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('gqbox_view', viewRef.current);
+      if (currentView !== 'db-inspector') {
+        localStorage.setItem('gqbox_view', currentView);
+      }
     } catch {}
   }, [currentView]);
 
+  const handleViewChange = useCallback((view: ViewType) => {
+    startViewTransition(() => {
+      setCurrentView(view);
+    });
+  }, []);
+
   const navigateToMatrix = useCallback((filters: MatrixFilters) => {
     setPendingMatrixFilters(filters);
-    setCurrentView('matrix');
-  }, []);
+    handleViewChange('matrix');
+  }, [handleViewChange]);
 
   const handleInitialFiltersApplied = useCallback(() => {
     setPendingMatrixFilters(null);
   }, []);
 
-  const renderView = () => {
+  const viewContent = useMemo(() => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onViewChange={setCurrentView} onNavigateToMatrix={navigateToMatrix} />;
+        return <Dashboard onViewChange={handleViewChange} onNavigateToMatrix={navigateToMatrix} />;
       case 'architecture':
         return <Architecture />;
       case 'matrix':
@@ -96,29 +119,51 @@ function AppContent() {
         return <MediaManager />;
       case 'ai-hub':
         return <AIHub />;
+      case 'db-inspector':
+        return <DBInspector />;
       default:
-        return <Dashboard onViewChange={setCurrentView} onNavigateToMatrix={navigateToMatrix} />;
+        return <Dashboard onViewChange={handleViewChange} onNavigateToMatrix={navigateToMatrix} />;
     }
-  };
+  }, [currentView, pendingMatrixFilters, handleViewChange, navigateToMatrix, handleInitialFiltersApplied]);
 
-  const contentShown = minSplashDone && ds.isReady;
+  // Мемоизируем children отдельно, чтобы Layout не ре-рендерился
+  // при каждой перерисовке AppContent (например, при isRefreshing).
+  const layoutChildren = useMemo(
+    () => <Suspense fallback={null}>{viewContent}</Suspense>,
+    [viewContent]
+  );
+
+  const contentShown = minSplashDone && status.isReady;
   const everShown = useRef(false);
-  if (contentShown && !everShown.current) everShown.current = true;
+
+  useEffect(() => {
+    if (contentShown) everShown.current = true;
+  }, [contentShown]);
+
+  useEffect(() => {
+    if (!contentShown) {
+      setShowLoader(true);
+      setLoaderExiting(false);
+    } else if (showLoader) {
+      setLoaderExiting(true);
+      const timer = setTimeout(() => setShowLoader(false), 550);
+      return () => clearTimeout(timer);
+    }
+  }, [contentShown, showLoader]);
 
   return (
     <>
-      <AnimatePresence>
-        {!contentShown && (
-          <FullScreenLoader
-            devError={ds.mode === 'dev' && showDevFallback ? ds.error : null}
-          />
-        )}
-      </AnimatePresence>
+      {showLoader && (
+        <FullScreenLoader
+          exiting={loaderExiting}
+          devError={status.mode === 'dev' && showDevFallback ? status.error : null}
+        />
+      )}
 
       {contentShown && (
         <div className={everShown.current ? undefined : 'animate-initial-fade'}>
-          <Layout currentView={currentView} onViewChange={setCurrentView}>
-            {renderView()}
+          <Layout currentView={currentView} onViewChange={handleViewChange}>
+            {layoutChildren}
           </Layout>
         </div>
       )}
@@ -129,9 +174,11 @@ function AppContent() {
 export default function App() {
   return (
     <LanguageProvider>
-      <DataSourceProvider>
-        <AppContent />
-      </DataSourceProvider>
+      <DevModeProvider>
+        <DataSourceProvider>
+          <AppContent />
+        </DataSourceProvider>
+      </DevModeProvider>
     </LanguageProvider>
   );
 }

@@ -7,12 +7,11 @@
     "dev": "concurrently --no-stdin -n client,server -c cyan,magenta \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
     "dev:server": "tsx watch --env-file=.env server/index.ts",
-    "db:start": "pg_ctl start -D C:\\pgdata -o \"-c logging_collector=off\" -l C:\\pgdata\\pg.log",
-    "db:stop": "pg_ctl stop -D C:\\pgdata -m fast",
+    "db:start": "pg_isready -q && echo Already running || (del C:\\pgdata\\postmaster.pid 2>nul & pg_ctl start -D C:\\pgdata -o \"-c logging_collector=off\" -l C:\\pgdata\\pg.log)",
+    "db:stop": "pg_isready -q && pg_ctl stop -D C:\\pgdata -m fast || echo PostgreSQL was not running",
     "db:seed": "tsx --env-file=.env scripts/seed-db.ts",
     "build": "vite build",
-    "preview": "vite preview",
-    "seed:db": "tsx --env-file=.env scripts/seed-db.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -23,7 +22,6 @@
     "cors": "^2.8.6",
     "date-fns": "^4.3.0",
     "express": "^5.2.1",
-    "framer-motion": "^12.40.0",
     "geist": "^1.7.2",
     "lucide-react": "^1.16.0",
     "multer": "^1.4.5-lts.1",

@@ -137,6 +137,8 @@ export function exportAll(): DataBundle {
     chargingProtocols: readCollection<DictionaryItem>('chargingProtocols'),
     materials: readCollection<DictionaryItem>('materials'),
     kitComponents: readCollection<RawKitComponent>('kitComponents'),
+    mediaFiles: readCollection<import('../types').MediaFile>('mediaFiles'),
+    mediaLinks: readCollection<import('../types').MediaLink>('mediaLinks'),
     productMedia: readCollection<RawProductMedia>('productMedia'),
   };
 }

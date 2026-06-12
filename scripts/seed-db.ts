@@ -9,6 +9,7 @@ import {
   kitComponentInsertSql,
   kitComponentToDbParams,
 } from '../server/utils/mappers';
+import { generateProductName, buildDictMaps } from '../server/utils/productNaming';
 import { DICT_TYPES } from '../server/types';
 import type { RawProduct, DictionaryItem, RawKitComponent, RawProductMedia } from '../server/types';
 
@@ -21,16 +22,34 @@ async function main() {
   await query('DELETE FROM dictionaries');
   await query('DELETE FROM notifications');
 
+  // Load dictionaries into memory FIRST (needed for product name generation)
+  const dictData: Record<string, DictionaryItem[]> = {};
+  for (const type of DICT_TYPES) {
+    dictData[type] = readCollection<DictionaryItem>(type);
+  }
+
+  const dictMaps = {
+    categories: buildDictMaps(dictData['categories']),
+    models: buildDictMaps(dictData['models']),
+    colors: buildDictMaps(dictData['colors']),
+    connectors: buildDictMaps(dictData['connectors']),
+  };
+
   const products = readCollection<RawProduct>('products');
+  let generatedCount = 0;
   for (const p of products) {
     if (!p.id || !p.sku) continue;
+    if (!p.productName) {
+      p.productName = generateProductName(p, dictMaps);
+      generatedCount++;
+    }
     const vals = productToDbParams(p as any);
     await query(productInsertSql(), vals);
   }
-  console.log(`Seeded ${products.length} products`);
+  console.log(`Seeded ${products.length} products (${generatedCount} names generated)`);
 
   for (const type of DICT_TYPES) {
-    const data = readCollection<DictionaryItem>(type);
+    const data = dictData[type];
     if (data.length === 0) continue;
     for (const item of data) {
       if (!item.id) continue;

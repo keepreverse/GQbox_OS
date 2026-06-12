@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { useEffect, useState, memo } from 'react';
 import {
   LayoutDashboard,
   Cpu,
@@ -11,9 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  Database,
 } from 'lucide-react';
 import type { ViewType } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
+import { useDataSourceAPI } from '@api/dataSourceContext';
 
 interface SidebarProps {
   isMobile: boolean;
@@ -27,7 +29,7 @@ interface SidebarProps {
   onOpenSettings: () => void;
 }
 
-export function Sidebar({
+function SidebarComponent({
   isMobile,
   sidebarOpen,
   sidebarCollapsed,
@@ -39,6 +41,16 @@ export function Sidebar({
   onOpenSettings,
 }: SidebarProps) {
   const { t } = useLanguage();
+  const { inspector } = useDataSourceAPI();
+
+  // Снимаем will-change после окончания анимации width/transform,
+  // чтобы не держать лишний GPU-layer всё время.
+  const [hintWillChange, setHintWillChange] = useState(true);
+  useEffect(() => {
+    setHintWillChange(true);
+    const id = setTimeout(() => setHintWillChange(false), 350);
+    return () => clearTimeout(id);
+  }, [isMobile, sidebarOpen, sidebarCollapsed, sidebarWidth]);
 
   const navItems = [
     { id: 'dashboard' as ViewType, label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -49,6 +61,9 @@ export function Sidebar({
     { id: 'media' as ViewType, label: t('nav.media'), icon: Image },
     { id: 'architecture' as ViewType, label: t('nav.architecture'), icon: Cpu },
     { id: 'ai-hub' as ViewType, label: t('nav.ai-hub'), icon: Sparkles, badge: t('nav.beta') },
+    ...(inspector.available
+      ? [{ id: 'db-inspector' as ViewType, label: t('nav.db-inspector'), icon: Database }]
+      : []),
   ];
 
   return (
@@ -60,7 +75,7 @@ export function Sidebar({
         width: isMobile ? sidebarWidth : sidebarCollapsed ? 72 : 244,
         transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
         pointerEvents: isMobile && !sidebarOpen ? 'none' : 'auto',
-        willChange: isMobile ? 'transform' : 'width',
+        willChange: hintWillChange ? (isMobile ? 'transform' : 'width') : 'auto',
       }}
     >
       <div
@@ -97,47 +112,36 @@ export function Sidebar({
           </div>
         </div>
 
-        <motion.button
-          initial={false}
-          animate={{ opacity: sidebarCollapsed ? 0 : 1 }}
-          transition={{
-            duration: sidebarCollapsed ? 0.1 : 0.2,
-            delay: sidebarCollapsed ? 0 : 0.05,
-            ease: [0.4, 0, 0.2, 1],
-          }}
+        <button
           onClick={onCollapse}
-          className="absolute right-0 top-0 h-full w-11 sm:w-10 border-l border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 flex items-center justify-center z-20 cursor-pointer bg-bg-secondary outline-none [-webkit-tap-highlight-color:transparent]"
-          style={{ pointerEvents: sidebarCollapsed ? 'none' : 'auto' }}
+          className={`absolute right-0 top-0 h-full w-11 sm:w-10 border-l border-border-subtle text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 flex items-center justify-center z-20 cursor-pointer bg-bg-secondary outline-none [-webkit-tap-highlight-color:transparent] transition-opacity duration-200 ${
+            sidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
           title={t('layout.collapse_menu')}
         >
           <ChevronLeft className="w-3.5 h-3.5" />
-        </motion.button>
+        </button>
 
-        <motion.button
-          initial={false}
-          animate={{ opacity: sidebarCollapsed ? 1 : 0, y: sidebarCollapsed ? 0 : 20 }}
-          transition={{
-            duration: sidebarCollapsed ? 0.2 : 0.1,
-            delay: sidebarCollapsed ? 0.05 : 0,
-            ease: [0.4, 0, 0.2, 1],
-          }}
+        <button
           onClick={onExpand}
-          className="absolute bottom-0 left-0 w-[72px] h-11 sm:h-6 text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 flex items-center justify-center z-20 cursor-pointer bg-bg-secondary outline-none [-webkit-tap-highlight-color:transparent]"
-          style={{ pointerEvents: sidebarCollapsed ? 'auto' : 'none' }}
+          className={`absolute bottom-0 left-0 w-[72px] h-11 sm:h-6 text-text-tertiary hover:text-text-primary hover:bg-bg-hover/50 flex items-center justify-center z-20 cursor-pointer bg-bg-secondary outline-none [-webkit-tap-highlight-color:transparent] transition-all duration-200 ${
+            sidebarCollapsed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'
+          }`}
           title={t('layout.expand_menu')}
         >
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-border-subtle" />
           <ChevronRight className="w-3.5 h-3.5" />
-        </motion.button>
+        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-0">
+      <nav className="flex-1 overflow-y-auto py-0" aria-label="Main navigation">
         {navItems.map((item) => {
           const isActive = currentView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
+              aria-current={isActive ? 'page' : undefined}
               className={`w-full h-12 text-sm flex items-center pl-[24px] transition-colors border-b border-border-subtle/30 last:border-0 cursor-pointer overflow-hidden outline-none [-webkit-tap-highlight-color:transparent] ${
                 isActive
                   ? 'bg-bg-tertiary text-accent border-l-2 border-l-accent'
@@ -200,3 +204,5 @@ export function Sidebar({
     </aside>
   );
 }
+
+export const Sidebar = memo(SidebarComponent);

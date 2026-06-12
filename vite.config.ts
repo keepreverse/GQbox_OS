@@ -22,11 +22,18 @@ export default defineConfig({
       "@utils": path.resolve(__dirname, "src/utils"),
       "@constants": path.resolve(__dirname, "src/constants"),
       "@api": path.resolve(__dirname, "src/api"),
+      "@i18n": path.resolve(__dirname, "src/i18n"),
     },
   },
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
+    },
+    watch: {
+      ignored: [
+        '**/server/data/**',
+        '**/server/uploads/**',
+      ],
     },
   },
 });

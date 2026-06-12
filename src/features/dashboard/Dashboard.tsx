@@ -1,5 +1,4 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useMemo, useState, useEffect, useCallback, useRef, memo } from 'react';
 import {
   Cable,
   Zap,
@@ -25,7 +24,6 @@ import {
   Ruler,
   Palette,
 } from 'lucide-react';
-// Обрати внимание: ResponsiveContainer удален за ненадобностью!
 import {
   BarChart,
   Bar,
@@ -46,7 +44,7 @@ import type { ViewType, MatrixFilters } from '@app-types';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
 import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import type { ProductWithRelations } from '@app-types';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import { categoryRequiredFields } from './dataGapsConfig';
 
 const DASH_INITIAL_KEY = 'gqbox_dash_initial_v2';
@@ -77,31 +75,40 @@ const tooltipStyle = {
 const tooltipItemStyle = { color: 'var(--color-text-primary)' };
 const tooltipLabelStyle = { color: 'var(--color-text-secondary)', marginBottom: '4px' };
 
-/* 
-  СОВЕРШЕННЫЙ КОНТЕЙНЕР ГРАФИКОВ
-  - Работает через Render Prop, передавая точную ширину в пикселях.
-  - Никаких ошибок width(-1) в консоли.
-  - Идеально гладкая заморозка размера при движении сайдбара.
+/*
+  КОНТЕЙНЕР ГРАФИКОВ
+  - Render Prop, точная ширина в пикселях, без width(-1).
+  - Заморозка при движении сайдбара и resize окна.
+  - 2px порог + 50ms дебаунс для ResizeObserver.
 */
 function ChartContainer({ height, children }: { height: number; children: (width: number) => React.ReactNode }) {
   const { sidebarCollapsed } = useLayout();
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>(0);
   const [frozenWidth, setFrozenWidth] = useState<number | null>(null);
+  const lastReportedWidth = useRef<number>(0);
 
-  // Вычисляем точную ширину контейнера
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const obs = new ResizeObserver((entries) => {
-      const w = entries[0].contentRect.width;
-      if (w > 0) setWidth(w);
+      const w = Math.round(entries[0].contentRect.width);
+      if (w <= 0) return;
+      if (Math.abs(w - lastReportedWidth.current) < 2) return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        lastReportedWidth.current = w;
+        setWidth(w);
+      }, 50);
     });
     obs.observe(el);
-    return () => obs.disconnect();
+    return () => {
+      obs.disconnect();
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
   }, []);
 
-  // Замораживаем ширину при изменении состояния сайдбара
   const prevSidebar = useRef(sidebarCollapsed);
   useEffect(() => {
     if (prevSidebar.current !== sidebarCollapsed) {
@@ -110,7 +117,6 @@ function ChartContainer({ height, children }: { height: number; children: (width
     }
   }, [sidebarCollapsed, width]);
 
-  // Размораживаем ширину через 150мс (длительность анимации сайдбара)
   useEffect(() => {
     if (frozenWidth !== null) {
       const t = setTimeout(() => setFrozenWidth(null), 150);
@@ -118,33 +124,220 @@ function ChartContainer({ height, children }: { height: number; children: (width
     }
   }, [frozenWidth]);
 
+  const frozenWidthRef = useRef<number | null>(null);
+  const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const handleResize = () => {
+      if (width > 0 && frozenWidthRef.current === null) {
+        frozenWidthRef.current = width;
+        setFrozenWidth(width);
+      }
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => {
+        frozenWidthRef.current = null;
+        setFrozenWidth(null);
+      }, 200);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+    };
+  }, [width]);
+
   const displayWidth = frozenWidth !== null ? frozenWidth : width;
 
   return (
     <div ref={containerRef} className="relative w-full overflow-hidden" style={{ height }}>
-      <AnimatePresence>
-        {width === 0 && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-20 bg-bg-tertiary/40 animate-pulse rounded-lg"
-          />
-        )}
-      </AnimatePresence>
       <div
-        className="absolute top-0 left-0 h-full"
+        className="absolute inset-0 z-20 bg-bg-tertiary/40 rounded-lg"
         style={{
-          width: displayWidth > 0 ? displayWidth : '100%',
-          opacity: width > 0 ? 1 : 0,
-          transition: frozenWidth !== null ? 'none' : 'opacity 0.3s ease-out',
+          opacity: width === 0 ? 1 : 0,
+          transition: 'opacity 0.15s ease',
+          pointerEvents: width === 0 ? 'auto' : 'none',
+          animation: width === 0 ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
         }}
-      >
-        {width > 0 && children(displayWidth)}
-      </div>
+      />
+      {width > 0 && (
+        <div
+          className="absolute top-0 left-0 h-full"
+          style={{ width: displayWidth }}
+        >
+          {children(displayWidth)}
+        </div>
+      )}
     </div>
   );
 }
+
+// ─── Мемоизированные компоненты графиков ─────────────────────────────────────
+// React.memo предотвращает пересчёт SVG-layout Recharts при любом ре-рендере
+// родителя (Dashboard). Графики обновляются только при изменении данных/ширины.
+
+type CategoryData = Array<{ name: string; code: string; color: string; count: number }>;
+
+const CategoryBarChart = memo(function CategoryBarChart({
+  width, height, data, onClick, itemsLabel,
+}: {
+  width: number; height: number; data: CategoryData; onClick: (data: any) => void; itemsLabel: string;
+}) {
+  return (
+    <BarChart width={width} height={height} data={data} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+      <XAxis dataKey="name" tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }} axisLine={false} tickLine={false} angle={20} textAnchor="start" height={70} interval={0} dx={-12} />
+      <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
+      <Tooltip isAnimationActive={false} cursor={{ fill: 'var(--color-accent-dim)' }} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} formatter={(value: any) => [value, itemsLabel]} />
+      <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={32} isAnimationActive={false} onClick={onClick} style={{ cursor: 'pointer' }}>
+        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+      </Bar>
+    </BarChart>
+  );
+});
+
+type DistributionData = Array<{ name: string; value: number; code?: string; color?: string; values?: number[] }>;
+
+const DistributionPieChart = memo(function DistributionPieChart({
+  width, height, data, onClick, getSliceColor, total, itemsLabel,
+}: {
+  width: number; height: number; data: DistributionData; onClick: (data: any) => void;
+  getSliceColor: (entry: any, index: number) => string; total: number; itemsLabel: string;
+}) {
+  return (
+    <PieChart width={width} height={height}>
+      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="pointer-events-none select-none">
+        <tspan x="50%" dy="-0.1em" fontSize="24" fontWeight="600" fill="var(--color-text-primary)">{total}</tspan>
+        <tspan x="50%" dy="1.6em" fontSize="10" fill="var(--color-text-tertiary)" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>{itemsLabel}</tspan>
+      </text>
+      <Pie data={data} cx="50%" cy="50%" innerRadius="42%" outerRadius="78%" paddingAngle={1} dataKey="value" stroke="var(--color-bg-secondary)" strokeWidth={2} isAnimationActive={false} onClick={onClick} style={{ cursor: 'pointer' }}>
+        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={getSliceColor(entry, index)} />)}
+      </Pie>
+      <Tooltip isAnimationActive={false} cursor={{ fill: 'var(--color-accent-dim)' }} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(value: any) => [value, itemsLabel]} />
+    </PieChart>
+  );
+});
+
+type SupplierData = Array<{ name: string; code: string; count: number; color: string; maxCount: number }>;
+
+function SupplierTooltipContent({ active, payload, label, itemsLabel }: any) {
+  if (!active || !payload || !payload.length) return null;
+  const countEntry = payload.find((p: any) => p.dataKey === 'count');
+  if (!countEntry) return null;
+  return (
+    <div style={tooltipStyle} className="px-3 py-2">
+      <div style={tooltipLabelStyle}>{label}</div>
+      <div style={tooltipItemStyle}>{countEntry.value} {itemsLabel}</div>
+    </div>
+  );
+}
+
+const SupplierAreaChart = memo(function SupplierAreaChart({
+  width, height, data, onNavigate, itemsLabel,
+}: {
+  width: number; height: number; data: SupplierData; onNavigate: (filters: MatrixFilters) => void; itemsLabel: string;
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const handleBarClick = useCallback((data: any) => {
+    const entry = data?.payload || data;
+    if (entry?.code) onNavigate({ suppliers: [entry.code] });
+  }, [onNavigate]);
+
+  const handleBarEnter = useCallback((event: any) => {
+    const entry = event?.payload || event;
+    const idx = data.findIndex((s: any) => s.code === entry?.code);
+    if (idx !== -1) setHoveredIndex(idx);
+  }, [data]);
+
+  const handleBarLeave = useCallback(() => setHoveredIndex(null), []);
+
+  const handleDotClick = useCallback((e: React.MouseEvent, code: string) => {
+    e.stopPropagation();
+    onNavigate({ suppliers: [code] });
+  }, [onNavigate]);
+
+  const handleDotEnter = useCallback((index: number) => setHoveredIndex(index), []);
+  const handleDotLeave = useCallback((index: number) => {
+    setHoveredIndex((prev) => (prev === index ? null : prev));
+  }, []);
+
+  const renderDot = useCallback((props: any) => {
+    const { cx, cy, payload, index } = props;
+    if (!payload || cx == null || cy == null) return null;
+    return (
+      <g key={`hit-${index}`} style={{ cursor: 'pointer' }} onClick={(e) => handleDotClick(e, payload.code)} onMouseEnter={() => handleDotEnter(index)} onMouseLeave={() => handleDotLeave(index)}>
+        <circle cx={cx} cy={cy} r={20} fill="transparent" />
+      </g>
+    );
+  }, [handleDotClick, handleDotEnter, handleDotLeave]);
+
+  const renderActiveDot = useCallback((props: any) => {
+    const { cx, cy, payload, index } = props;
+    if (!payload || cx == null || cy == null) return null;
+    return (
+      <g style={{ cursor: 'pointer' }} onClick={(e) => handleDotClick(e, payload.code)} onMouseEnter={() => handleDotEnter(index)}>
+        <circle cx={cx} cy={cy} r={8} fill={payload.color} opacity={0.18} />
+        <circle cx={cx} cy={cy} r={3.5} fill={payload.color} />
+      </g>
+    );
+  }, [handleDotClick, handleDotEnter]);
+
+  const renderHighlightBand = useCallback((props: any) => {
+    const { xAxisMap, offset } = props;
+    if (!xAxisMap) return null;
+    const xAxis = Object.values(xAxisMap)[0] as any;
+    if (!xAxis) return null;
+    const isVisible = hoveredIndex !== null;
+    const bandwidth = xAxis.bandwidth ? xAxis.bandwidth() : 0;
+    const xPos = isVisible ? xAxis.x(hoveredIndex) - bandwidth / 2 : -1000;
+    return (
+      <rect x={xPos} y={offset.top} width={bandwidth} height={offset.height} fill="var(--color-accent)" style={{ fillOpacity: isVisible ? 0.07 : 0, transition: 'fill-opacity 0.2s ease-out', pointerEvents: 'none' }} />
+    );
+  }, [hoveredIndex]);
+
+  const renderPeakHits = useCallback((props: any) => {
+    const { xAxisMap, yAxisMap } = props;
+    if (!xAxisMap || !yAxisMap) return null;
+    const xAxis = Object.values(xAxisMap)[0] as any;
+    const yAxis = Object.values(yAxisMap)[0] as any;
+    if (!xAxis || !yAxis) return null;
+    return (
+      <g>
+        {data.map((entry, index) => {
+          const cx = xAxis.x(index);
+          const cy = yAxis.scale(entry.count);
+          if (cx == null || cy == null) return null;
+          return (
+            <circle key={`peak-hit-${index}`} cx={cx} cy={cy} r={22} fill="transparent" style={{ cursor: 'pointer' }} onClick={(e) => handleDotClick(e, entry.code)} onMouseEnter={() => handleDotEnter(index)} onMouseLeave={() => handleDotLeave(index)} />
+          );
+        })}
+      </g>
+    );
+  }, [data, handleDotClick, handleDotEnter, handleDotLeave]);
+
+  const tooltipContent = useMemo(() => <SupplierTooltipContent itemsLabel={itemsLabel} />, [itemsLabel]);
+
+  return (
+    <AreaChart width={width} height={height} data={data}>
+      <defs>
+        <linearGradient id="supplierGrad" x1="0" y1="0" x2="1" y2="0">
+          {data.map((entry, i) => <stop key={i} offset={`${(i / (data.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={0.3} />)}
+          <stop offset="100%" stopColor={data[data.length - 1]?.color || 'var(--color-accent)'} stopOpacity={0} />
+        </linearGradient>
+        <linearGradient id="supplierStroke" x1="0" y1="0" x2="1" y2="0">
+          {data.map((entry, i) => <stop key={i} offset={`${(i / (data.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={1} />)}
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+      <XAxis dataKey="name" tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
+      <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
+      <Tooltip isAnimationActive={false} cursor={{ stroke: 'var(--color-text-tertiary)', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.4 }} content={tooltipContent} />
+      <Area type={"linear" as any} dataKey="count" stroke="url(#supplierStroke)" fill="url(#supplierGrad)" isAnimationActive={false} dot={renderDot} activeDot={renderActiveDot} />
+      <Bar dataKey="maxCount" fill="transparent" isAnimationActive={false} onClick={handleBarClick} onMouseEnter={handleBarEnter} onMouseLeave={handleBarLeave} style={{ cursor: 'pointer' }} />
+      <Customized component={renderHighlightBand} />
+      <Customized component={renderPeakHits} />
+    </AreaChart>
+  );
+});
 
 interface DashboardProps {
   onViewChange?: (view: ViewType) => void;
@@ -153,29 +346,16 @@ interface DashboardProps {
 
 export default function Dashboard({ onViewChange, onNavigateToMatrix }: DashboardProps) {
   const { t, language } = useLanguage();
-  const { products: productsApi, dictionaries } = useDataSource();
-  const products = productsApi.list;
-  const categories = dictionaries.categories;
-  const colors = dictionaries.colors;
+  const { ds, version } = useDataSourceVersion('products');
+  const products = useMemo(() => ds.products.list, [ds, version]);
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
+  const colors = useMemo(() => ds.dictionaries.colors, [ds, version]);
 
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
 
-  const SupplierTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload || !payload.length) return null;
-    const countEntry = payload.find((p: any) => p.dataKey === 'count');
-    if (!countEntry) return null;
-
-    return (
-      <div style={tooltipStyle} className="px-3 py-2">
-        <div style={tooltipLabelStyle}>{label}</div>
-        <div style={tooltipItemStyle}>
-          {countEntry.value} {t('dash.items')}
-        </div>
-      </div>
-    );
-  };
+  const itemsLabel = t('dash.items');
 
   const stats = useMemo(() => {
     const total = products.length;
@@ -215,7 +395,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
 
   const powerDistribution = useMemo(() => {
     const buckets = [
-      { name: '≤20W', min: 0, max: 20 },
+      { name: '\u226420W', min: 0, max: 20 },
       { name: '21-60W', min: 21, max: 60 },
       { name: '61-100W', min: 61, max: 100 },
       { name: '>100W', min: 101, max: Infinity },
@@ -231,10 +411,10 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
 
   const lengthDistribution = useMemo(() => {
     const buckets = [
-      { name: '≤1м', min: 0, max: 1 },
-      { name: '1-2м', min: 1.1, max: 2 },
-      { name: '2-3м', min: 2.1, max: 3 },
-      { name: '>3м', min: 3.1, max: Infinity },
+      { name: '\u22641\u043C', min: 0, max: 1 },
+      { name: '1-2\u043C', min: 1.1, max: 2 },
+      { name: '2-3\u043C', min: 2.1, max: 3 },
+      { name: '>3\u043C', min: 3.1, max: Infinity },
     ];
     return buckets
       .map((b) => {
@@ -265,7 +445,8 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     return powerDistribution;
   }, [metric, powerDistribution, lengthDistribution, colorDistribution]);
 
-  const [hoveredSupplierIndex, setHoveredSupplierIndex] = useState<number | null>(null);
+  const distributionTotal = useMemo(() => distributionData.reduce((sum, d) => sum + d.value, 0), [distributionData]);
+
   const initialRef = useRef<{ active: number; kits: number; categories: number } | null>(null);
 
   if (initialRef.current === null) {
@@ -300,18 +481,18 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     };
   }, [stats, categories]);
 
-  const chartColors = ['var(--color-info)', 'var(--color-accent)', 'var(--color-warning)', 'var(--color-danger)'];
+  const chartColors = useMemo(() => ['var(--color-info)', 'var(--color-accent)', 'var(--color-warning)', 'var(--color-danger)'], []);
 
-  const getSliceColor = (entry: any, index: number): string => {
+  const getSliceColor = useCallback((entry: any, index: number): string => {
     if (metric === 'color') return entry?.color || 'var(--color-accent)';
     return chartColors[index % chartColors.length];
-  };
+  }, [metric, chartColors]);
 
-  const metrics: { key: MetricKey; label: string; icon: React.ElementType }[] = [
+  const metrics: { key: MetricKey; label: string; icon: React.ElementType }[] = useMemo(() => [
     { key: 'power', label: t('dash.distPower'), icon: Zap },
     { key: 'length', label: t('dash.distLength'), icon: Ruler },
     { key: 'color', label: t('dash.distColor'), icon: Palette },
-  ];
+  ], [t]);
 
   const handleSliceClick = useCallback((data: any) => {
     if (!onNavigateToMatrix) return;
@@ -326,136 +507,9 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
     onNavigateToMatrix?.({ categories: entry?.code ? [entry.code] : [] });
   }, [onNavigateToMatrix]);
 
-  const handleSupplierBarClick = useCallback((data: any) => {
-    const entry = data?.payload || data;
-    if (entry?.code) onNavigateToMatrix?.({ suppliers: [entry.code] });
+  const handleSupplierNavigate = useCallback((filters: MatrixFilters) => {
+    onNavigateToMatrix?.(filters);
   }, [onNavigateToMatrix]);
-
-  const handleSupplierBarEnter = useCallback((data: any) => {
-    const entry = data?.payload || data;
-    const idx = stats.supplierStats.findIndex((s) => s.code === entry?.code);
-    if (idx !== -1) setHoveredSupplierIndex(idx);
-  }, [stats.supplierStats]);
-
-  const handleSupplierBarLeave = useCallback(() => {
-    setHoveredSupplierIndex(null);
-  }, []);
-
-  const handleSupplierDotClick = useCallback(
-    (e: React.MouseEvent, code: string) => {
-      e.stopPropagation();
-      onNavigateToMatrix?.({ suppliers: [code] });
-    },
-    [onNavigateToMatrix]
-  );
-
-  const handleSupplierDotEnter = useCallback(
-    (index: number) => setHoveredSupplierIndex(index),
-    []
-  );
-
-  const handleSupplierDotLeave = useCallback(
-    (index: number) => {
-      setHoveredSupplierIndex((prev) => (prev === index ? null : prev));
-    },
-    []
-  );
-
-  const renderSupplierDot = useCallback(
-    (props: any) => {
-      const { cx, cy, payload, index } = props;
-      if (!payload || cx == null || cy == null) return null;
-      return (
-        <g
-          key={`hit-${index}`}
-          style={{ cursor: 'pointer' }}
-          onClick={(e) => handleSupplierDotClick(e, payload.code)}
-          onMouseEnter={() => handleSupplierDotEnter(index)}
-          onMouseLeave={() => handleSupplierDotLeave(index)}
-        >
-          <circle cx={cx} cy={cy} r={20} fill="transparent" />
-        </g>
-      );
-    },
-    [handleSupplierDotClick, handleSupplierDotEnter, handleSupplierDotLeave]
-  );
-
-  const renderSupplierActiveDot = useCallback(
-    (props: any) => {
-      const { cx, cy, payload, index } = props;
-      if (!payload || cx == null || cy == null) return null;
-      return (
-        <g
-          style={{ cursor: 'pointer' }}
-          onClick={(e) => handleSupplierDotClick(e, payload.code)}
-          onMouseEnter={() => handleSupplierDotEnter(index)}
-        >
-          <circle cx={cx} cy={cy} r={8} fill={payload.color} opacity={0.18} />
-          <circle cx={cx} cy={cy} r={3.5} fill={payload.color} />
-        </g>
-      );
-    },
-    [handleSupplierDotClick, handleSupplierDotEnter]
-  );
-
-  const renderSupplierHighlightBand = useCallback(
-    (props: any) => {
-      const { xAxisMap, offset } = props;
-      if (!xAxisMap) return null;
-      const xAxis = Object.values(xAxisMap)[0] as any;
-      if (!xAxis) return null;
-      const isVisible = hoveredSupplierIndex !== null;
-      const bandwidth = xAxis.bandwidth ? xAxis.bandwidth() : 0;
-      const xPos = isVisible ? xAxis.x(hoveredSupplierIndex) - bandwidth / 2 : -1000;
-      return (
-        <motion.rect
-          x={xPos}
-          y={offset.top}
-          width={bandwidth}
-          height={offset.height}
-          fill="var(--color-accent)"
-          initial={false}
-          animate={{ fillOpacity: isVisible ? 0.07 : 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          pointerEvents="none"
-        />
-      );
-    },
-    [hoveredSupplierIndex]
-  );
-
-  const renderSupplierPeakHits = useCallback(
-    (props: any) => {
-      const { xAxisMap, yAxisMap } = props;
-      if (!xAxisMap || !yAxisMap) return null;
-      const xAxis = Object.values(xAxisMap)[0] as any;
-      const yAxis = Object.values(yAxisMap)[0] as any;
-      if (!xAxis || !yAxis) return null;
-      return (
-        <g>
-          {stats.supplierStats.map((entry, index) => {
-            const cx = xAxis.x(index);
-            const cy = yAxis.scale(entry.count);
-            if (cx == null || cy == null) return null;
-            return (
-              <circle
-                key={`peak-hit-${index}`}
-                cx={cx}
-                cy={cy}
-                r={22}
-                fill="transparent"
-                style={{ cursor: 'pointer' }}
-                onClick={(e) => handleSupplierDotClick(e, entry.code)}
-                onMouseEnter={() => handleSupplierDotEnter(index)}
-                onMouseLeave={() => handleSupplierDotLeave(index)}
-              />
-            );
-          })}
-        </g>
-      );
-    },
-    [stats.supplierStats, handleSupplierDotClick, handleSupplierDotEnter, handleSupplierDotLeave]
-  );
 
   const dataGaps = useMemo(() => {
     const gaps: Array<{
@@ -465,7 +519,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       count: number;
     }> = [];
 
-    // Regular products (non-kit)
     for (const cat of categories) {
       const reqFields = categoryRequiredFields[cat.code];
       if (!reqFields) continue;
@@ -487,9 +540,8 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       }
     }
 
-    // Kit products: check components — aggregate by component category
     const kitProducts = products.filter((p) => p.isKit);
-    const kitGapMap = new Map<string, Set<string>>(); // compCatCode -> Set<kitId>
+    const kitGapMap = new Map<string, Set<string>>();
 
     for (const kit of kitProducts) {
       for (const comp of kit.kitComponents || []) {
@@ -497,7 +549,6 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         const reqFields = categoryRequiredFields[compCatCode];
         if (!reqFields) continue;
 
-        // Check if ANY required field is missing for this component
         const hasMissing = reqFields.some((fd) => {
           const val = comp.product[fd.field as keyof ProductWithRelations];
           return val == null || val === '';
@@ -515,7 +566,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       const labelBase = cat ? displaySource(cat) : compCatCode;
       gaps.push({
         categoryCode: 'kit',
-        field: compCatCode, // used for matrix filtering
+        field: compCatCode,
         fieldLabel: labelBase,
         count: kitIds.size,
       });
@@ -553,14 +604,12 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
       const catProducts = products.filter((p) => p.category.code === cat.categoryCode);
       for (const gap of cat.gaps) {
         if (cat.categoryCode === 'kit') {
-          // Kit gaps: field is the component category code (e.g., "szu", "cable")
           const compCatCode = gap.field;
           const reqFields = categoryRequiredFields[compCatCode];
           catProducts
             .filter((p) =>
               p.kitComponents?.some((comp) => {
                 if (comp.product.category.code !== compCatCode) return false;
-                // Check if ANY required field is missing for this component category
                 return reqFields?.some((fd) => {
                   const val = comp.product[fd.field as keyof ProductWithRelations];
                   return val == null || val === '';
@@ -627,7 +676,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         ].map((stat) => {
           const data = statsWithDelta[stat.key as 'active' | 'kits' | 'categories'];
           return (
-            <div key={stat.label} className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-all duration-300">
+            <div key={stat.label} className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200">
               <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-35 transition-opacity duration-500" style={{ background: stat.accent }} />
               <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: stat.accent }}>
                 <stat.icon className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
@@ -648,7 +697,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
           );
         })}
 
-        <div className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-all duration-300 flex flex-col">
+        <div className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200 flex flex-col">
           <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-accent/20 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
           <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: 'var(--color-accent)' }}>
             <Zap className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
@@ -678,25 +727,15 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
           <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.catDist')}</h3>
           <div className="pt-1 sm:pt-2">
             <div style={{ transform: 'translateX(clamp(-1rem, -0.625vw - 0.5rem, -0.5rem))' }}>
-              {/* Передаем функцию, которая получает готовую пиксельную ширину */}
               <ChartContainer height={260}>
                 {(width) => (
-                  <BarChart width={width} height={260} data={stats.byCategory} barCategoryGap="20%" barGap={2} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
-                    <XAxis dataKey="name" tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }} axisLine={false} tickLine={false} angle={20} textAnchor="start" height={70} interval={0} dx={-12} />
-                    <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip isAnimationActive={false} cursor={{ fill: 'var(--color-accent-dim)' }} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} formatter={(value) => [value, t('dash.items')]} />
-                    <Bar
-                      dataKey="count"
-                      radius={[4, 4, 0, 0]}
-                      maxBarSize={32}
-                      isAnimationActive={false}
-                      onClick={handleCategoryBarClick}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {stats.byCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                    </Bar>
-                  </BarChart>
+                  <CategoryBarChart
+                    width={width}
+                    height={260}
+                    data={stats.byCategory}
+                    onClick={handleCategoryBarClick}
+                    itemsLabel={itemsLabel}
+                  />
                 )}
               </ChartContainer>
             </div>
@@ -727,33 +766,15 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
             <div className="relative z-10">
               <ChartContainer height={200}>
                 {(width) => (
-                  <PieChart width={width} height={200}>
-                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="pointer-events-none select-none">
-                      <tspan x="50%" dy="-0.1em" fontSize="24" fontWeight="600" fill="var(--color-text-primary)">
-                        {distributionData.reduce((sum, d) => sum + d.value, 0)}
-                      </tspan>
-                      <tspan x="50%" dy="1.6em" fontSize="10" fill="var(--color-text-tertiary)" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {t('dash.items')}
-                      </tspan>
-                    </text>
-                    <Pie
-                      data={distributionData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="42%"
-                      outerRadius="78%"
-                      paddingAngle={1}
-                      dataKey="value"
-                      stroke="var(--color-bg-secondary)"
-                      strokeWidth={2}
-                      isAnimationActive={false}
-                      onClick={(data: any) => handleSliceClick(data)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {distributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={getSliceColor(entry, index)} />)}
-                    </Pie>
-                    <Tooltip isAnimationActive={false} cursor={{ fill: 'var(--color-accent-dim)' }} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(value) => [value, t('dash.items')]} />
-                  </PieChart>
+                  <DistributionPieChart
+                    width={width}
+                    height={200}
+                    data={distributionData}
+                    onClick={handleSliceClick}
+                    getSliceColor={getSliceColor}
+                    total={distributionTotal}
+                    itemsLabel={itemsLabel}
+                  />
                 )}
               </ChartContainer>
             </div>
@@ -800,40 +821,20 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         <div className="flex flex-col gap-4 lg:flex-1">
           <div className="glass rounded-xl p-3 sm:p-5">
             <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.supplierDist')}</h3>
-          <div className="pt-1 sm:pt-2">
-            <ChartContainer height={120}>
-              {(width) => (
-                <AreaChart width={width} height={120} data={stats.supplierStats}>
-                  <defs>
-                    <linearGradient id="supplierGrad" x1="0" y1="0" x2="1" y2="0">
-                      {stats.supplierStats.map((entry, i) => <stop key={i} offset={`${(i / (stats.supplierStats.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={0.3} />)}
-                      <stop offset="100%" stopColor={stats.supplierStats[stats.supplierStats.length - 1]?.color || 'var(--color-accent)'} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="supplierStroke" x1="0" y1="0" x2="1" y2="0">
-                      {stats.supplierStats.map((entry, i) => <stop key={i} offset={`${(i / (stats.supplierStats.length - 1)) * 100}%`} stopColor={entry.color} stopOpacity={1} />)}
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip isAnimationActive={false} cursor={{ stroke: 'var(--color-text-tertiary)', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.4 }} content={<SupplierTooltip />} />
-                  <Area
-                    type={"catmullRom" as any}
-                    dataKey="count"
-                    stroke="url(#supplierStroke)"
-                    fill="url(#supplierGrad)"
-                    isAnimationActive={false}
-                    dot={renderSupplierDot}
-                    activeDot={renderSupplierActiveDot}
+            <div className="pt-1 sm:pt-2">
+              <ChartContainer height={120}>
+                {(width) => (
+                  <SupplierAreaChart
+                    width={width}
+                    height={120}
+                    data={stats.supplierStats}
+                    onNavigate={handleSupplierNavigate}
+                    itemsLabel={itemsLabel}
                   />
-                  <Bar dataKey="maxCount" fill="transparent" isAnimationActive={false} onClick={handleSupplierBarClick} onMouseEnter={handleSupplierBarEnter} onMouseLeave={handleSupplierBarLeave} style={{ cursor: 'pointer' }} />
-                  <Customized component={renderSupplierHighlightBand} />
-                  <Customized component={renderSupplierPeakHits} />
-                </AreaChart>
-              )}
-            </ChartContainer>
+                )}
+              </ChartContainer>
+            </div>
           </div>
-        </div>
 
           <div className="glass rounded-xl p-3 sm:p-5 flex-1 min-h-0 flex flex-col">
             <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 flex-shrink-0">
@@ -872,16 +873,17 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                             }`}
                           />
                         </button>
-                        <motion.div
-                          initial={false}
-                          animate={{
-                            height: isExpanded ? 'auto' : 0,
+                        <div
+                          className="overflow-hidden"
+                          style={{
+                            display: 'grid',
+                            gridTemplateRows: isExpanded ? '1fr' : '0fr',
+                            transition: 'grid-template-rows 0.2s ease-out, opacity 0.2s ease-out',
                             opacity: isExpanded ? 1 : 0,
                           }}
-                          transition={{ duration: 0.2, ease: 'easeOut' }}
-                          className="overflow-hidden"
                         >
-                          <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
+                          <div className="min-h-0">
+                            <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
                             {cat.gaps.map((gap) => (
                               <div
                                 key={gap.field}
@@ -910,8 +912,9 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
                                 <ChevronRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </div>
                             ))}
+                           </div>
                           </div>
-                        </motion.div>
+                        </div>
                       </div>
                     );
                   })}
@@ -924,9 +927,11 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedProduct && <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />}
-      </AnimatePresence>
+      {selectedProduct && (
+        <div className="animate-fade-in-fast">
+          <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,108 +1,18 @@
 [
   {
-    "id": "notif-1781165173818-83l6qs",
+    "id": "notif-1781308560916-qiwj7p",
     "title": "Данные сброшены до стандартных",
     "description": null,
-    "createdAt": "2026-06-11T08:06:13.818Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781165210862-qe87lt",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:06:50.862Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781165769539-7k0alv",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:16:09.539Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781165779254-l6rqap",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:16:19.254Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781165790155-akvlir",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:16:30.155Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781165991293-mw2yom",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:19:51.293Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781166265812-kxjgyw",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:24:25.812Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781166643013-d20i88",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:30:43.013Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781166648914-x1nqqe",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:30:48.914Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781166945116-ta7jnb",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T08:35:45.116Z",
-    "unread": false,
-    "type": "warning",
-    "actionView": null
-  },
-  {
-    "id": "notif-1781193539000-clvswt",
-    "title": "Данные сброшены до стандартных",
-    "description": null,
-    "createdAt": "2026-06-11T15:58:59.000Z",
+    "createdAt": "2026-06-12T23:56:00.916Z",
     "unread": true,
     "type": "warning",
     "actionView": null
   },
   {
-    "id": "notif-1781193548530-myfwgy",
+    "id": "notif-1781308586126-qma02q",
     "title": "Данные сброшены до стандартных",
     "description": null,
-    "createdAt": "2026-06-11T15:59:08.530Z",
+    "createdAt": "2026-06-12T23:56:26.126Z",
     "unread": true,
     "type": "warning",
     "actionView": null

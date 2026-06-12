@@ -10,7 +10,7 @@ import { useLanguage } from '@context/LanguageContext';
 import { displaySource } from '@utils/display';
 import Modal from '@components/ui/Modal';
 import ColorPicker from '@components/ui/ColorPicker';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import type { Column } from '@app-types/table';
 
@@ -78,9 +78,10 @@ const DictionaryCardItem = memo(function DictionaryCardItem({
   onEdit,
 }: DictionaryCardItemProps) {
   const { t } = useLanguage();
-  const { dictionaries } = useDataSource();
+  const { ds, version } = useDataSourceVersion('dictionaries');
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
   const parentCategory =
-    kind === 'models' ? dictionaries.categories.find((c) => c.id === item.categoryId) : undefined;
+    kind === 'models' ? categories.find((c) => c.id === item.categoryId) : undefined;
 
   const rawName = kind === 'suppliers' ? item.name : item.name_product;
   const hasName = !!rawName;
@@ -223,7 +224,7 @@ function AddDictionaryForm({ onSubmit, onCancel }: AddDictionaryFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={!canSave}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
         >
           <Check className="w-3.5 h-3.5" /> {t('dict.save')}
         </button>
@@ -380,7 +381,7 @@ function EditDictionaryForm({ item, kind, categories, onSubmit, onCancel }: Edit
           type="button"
           onClick={handleSubmit}
           disabled={!canSave}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium border border-accent/40"
         >
           <Check className="w-3.5 h-3.5" /> {t('dict.save')}
         </button>
@@ -391,14 +392,15 @@ function EditDictionaryForm({ item, kind, categories, onSubmit, onCancel }: Edit
 
 export default function DictionaryManager() {
   const { t, language } = useLanguage();
-  const { dictionaries, notifications } = useDataSource();
-  const categories = dictionaries.categories;
-  const models = dictionaries.models;
-  const colors = dictionaries.colors;
-  const suppliers = dictionaries.suppliers;
-  const connectors = dictionaries.connectors;
-  const chargingProtocols = dictionaries.chargingProtocols;
-  const materials = dictionaries.materials;
+  const { ds, version } = useDataSourceVersion('dictionaries');
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
+  const models = useMemo(() => ds.dictionaries.models, [ds, version]);
+  const colors = useMemo(() => ds.dictionaries.colors, [ds, version]);
+  const suppliers = useMemo(() => ds.dictionaries.suppliers, [ds, version]);
+  const connectors = useMemo(() => ds.dictionaries.connectors, [ds, version]);
+  const chargingProtocols = useMemo(() => ds.dictionaries.chargingProtocols, [ds, version]);
+  const materials = useMemo(() => ds.dictionaries.materials, [ds, version]);
+  const notifications = ds.notifications;
   const isNarrow = useIsNarrow();
   const [activeDict, setActiveDict] = useState<DictType>('categories');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -510,7 +512,7 @@ export default function DictionaryManager() {
       }
 
       try {
-        await dictionaries.add(apiType, item as any);
+        await ds.dictionaries.add(apiType, item as any);
         notifications.add({ title: `${t('dict.notif_added')}: ${data.nameProduct}`, description: `[${data.code}]`, type: 'success', actionView: 'dictionary' });
         showToast(t('dict.toast_added').replace('{name}', data.nameProduct));
         setShowAddForm(false);
@@ -520,7 +522,7 @@ export default function DictionaryManager() {
         return false;
       }
     },
-    [activeDict, t, showToast, dictDataMap, dictionaries]
+    [activeDict, t, showToast, dictDataMap, ds, version]
   );
 
   const handleStartEdit = useCallback((item: any) => {
@@ -584,7 +586,7 @@ export default function DictionaryManager() {
       }
 
       try {
-        await dictionaries.update(apiType, item.id, updates);
+        await ds.dictionaries.update(apiType, item.id, updates);
         notifications.add({ title: `${t('dict.notif_updated')}: ${data.nameProduct}`, type: 'info', actionView: 'dictionary' });
         showToast(t('dict.save_success').replace('{name}', data.nameProduct));
         setEditingId(null);
@@ -594,7 +596,7 @@ export default function DictionaryManager() {
         return false;
       }
     },
-    [activeDict, t, showToast, dictDataMap, dictionaries, notifications]
+    [activeDict, t, showToast, dictDataMap, ds, version, notifications]
   );
 
   const handleCancelEdit = useCallback(() => {
@@ -1106,7 +1108,7 @@ export default function DictionaryManager() {
             setEditingId(null);
             setShowAddForm(!showAddForm);
           }}
-          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
           <Plus className="w-4 h-4" /> {t('dict.add')}
         </button>
@@ -1117,7 +1119,7 @@ export default function DictionaryManager() {
           <button
             key={dict.id}
             onClick={() => setActiveDict(dict.id)}
-            className={`flex h-11 sm:h-10 min-w-0 sm:min-w-[120px] items-center justify-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer ${
+            className={`flex h-11 sm:h-10 min-w-0 sm:min-w-[120px] items-center justify-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-[colors,opacity,transform,box-shadow] cursor-pointer ${
               activeDict === dict.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
                 : 'bg-bg-secondary text-text-secondary border border-border-subtle hover:bg-bg-hover hover:text-text-primary'

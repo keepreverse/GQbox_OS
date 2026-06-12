@@ -47,7 +47,7 @@ export default function Toggle({
       disabled={disabled}
       className={`
         inline-flex items-center rounded-full border
-        transition-all duration-150 ease-out
+        transition-[colors,opacity,transform,box-shadow] duration-150 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50
         focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary
         ${
@@ -65,7 +65,7 @@ export default function Toggle({
     >
       <span
         className={`
-          block rounded-full transition-all duration-150 ease-out
+          block rounded-full transition-[colors,opacity,transform,box-shadow] duration-150 ease-out
           ${checked ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.4)]' : 'bg-text-tertiary'}
         `}
         style={{ width: KNOB_SIZE, height: KNOB_SIZE }}

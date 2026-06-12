@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import type { ViewType } from '@app-types';
 import { MOBILE_BREAKPOINT_PX } from '@constants/breakpoints';
 import { LayoutProvider } from '@context/LayoutContext';
+import { useDevMode } from '@context/DevModeContext';
 import { useMediaQuery } from '@hooks/useMediaQuery';
 import { useClickOutside } from '@hooks/useClickOutside';
 import { useEscapeKey } from '@hooks/useEscapeKey';
@@ -16,36 +16,42 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function Layout({ currentView, onViewChange, children }: LayoutProps) {
+/**
+ * Изолируем AnimatePresence + motion.div в memo-компонент.
+ * Рендерится только при смене currentView или children.
+ * При открытии dropdown/настроек Layout рендерится, но этот компонент — нет.
+ */
+const ViewContent = memo(function ViewContent({
+  currentView,
+  children,
+}: {
+  currentView: ViewType;
+  children: React.ReactNode;
+}) {
+  return (
+    <div key={currentView} className="p-3 sm:p-6 max-w-[1600px] mx-auto flex flex-col min-h-0 animate-fade-in">
+      {children}
+    </div>
+  );
+});
+
+function LayoutComponent({ currentView, onViewChange, children }: LayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [developerMode, setDeveloperMode] = useState<boolean>(() => {
-    try {
-      const val = localStorage.getItem('gqbox_dev_mode');
-      if (val === null) return false;
-      return val === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('gqbox_dev_mode', String(developerMode));
-    } catch {}
-  }, [developerMode]);
+  const { devMode } = useDevMode();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
 
-  const scrollResetRef = (el: HTMLDivElement | null) => {
-    if (el && mainRef.current) {
+  // Сбрасываем scroll при смене view
+  useEffect(() => {
+    if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
-  };
+  }, [currentView]);
 
   useClickOutside(
     dropdownRef,
@@ -121,17 +127,12 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
   return (
     <LayoutProvider value={layoutCtx}>
       <div className="flex h-[100dvh] overflow-hidden bg-bg-primary text-text-primary noise-overlay">
-        <AnimatePresence>
-          {isMobile && sidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 bg-black/40 z-[101] backdrop-blur-sm cursor-pointer"
-            />
-          )}
-        </AnimatePresence>
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/40 z-[101] cursor-pointer animate-fade-in-fast"
+          />
+        )}
 
         <Sidebar
           isMobile={isMobile}
@@ -149,7 +150,7 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
           <TopBar
             isMobile={isMobile}
             sidebarOpen={sidebarOpen}
-            developerMode={developerMode}
+            developerMode={devMode}
             notificationsOpen={notificationsOpen}
             dropdownRef={dropdownRef}
             onOpenMobileSidebar={handleOpenMobileSidebar}
@@ -164,29 +165,17 @@ export default function Layout({ currentView, onViewChange, children }: LayoutPr
             id="main-content"
             className="flex-1 overflow-y-auto overflow-x-hidden grid-pattern relative"
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentView}
-                ref={scrollResetRef}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="p-3 sm:p-6 max-w-[1600px] mx-auto flex flex-col min-h-0"
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            <ViewContent currentView={currentView}>{children}</ViewContent>
           </main>
         </div>
 
         <SettingsPanel
           open={settingsOpen}
           onOpenChange={setSettingsOpen}
-          developerMode={developerMode}
-          onDeveloperModeChange={setDeveloperMode}
         />
       </div>
     </LayoutProvider>
   );
 }
+
+export default memo(LayoutComponent);

@@ -43,10 +43,32 @@ export interface RawKitComponent {
 }
 
 /**
- * Медиафайл (фото или видео), привязанный к варианту товара.
- * `variantId` — это `products.id`. Файл лежит на диске в `server/uploads/`,
- * а в БД/JSON хранится только относительный URL вида `/uploads/<file>`.
+ * Уникальный медиафайл (фото или видео) в хранилище.
+ * Файл лежит на диске в `server/uploads/` или на NAS.
+ * В БД/JSON хранится только относительный URL вида `/uploads/<file>`.
  */
+export interface MediaFile {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  createdAt: string;
+}
+
+/**
+ * Связь медиафайла с вариантом товара (M:N).
+ */
+export interface MediaLink {
+  fileId: string;
+  variantId: string;
+  isPrimary: boolean;
+  sortOrder: number;
+  uploadedAt: string;
+}
+
+/** @deprecated используйте MediaFile + MediaLink */
 export interface RawProductMedia {
   id: string;
   variantId: string;
@@ -108,6 +130,8 @@ export type DataBundle = {
   materials: DictionaryItem[];
   kitComponents: RawKitComponent[];
   productMedia: RawProductMedia[];
+  mediaFiles: MediaFile[];
+  mediaLinks: MediaLink[];
 };
 
 export interface NotificationRow {
@@ -132,6 +156,8 @@ export const COLLECTIONS = [
   'notifications',
   'kitComponents',
   'productMedia',
+  'mediaFiles',
+  'mediaLinks',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 

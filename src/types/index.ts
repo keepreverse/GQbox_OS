@@ -132,10 +132,33 @@ export interface KitComponent {
 }
 
 /**
+ * Уникальный медиафайл (фото или видео) в хранилище.
+ * `url` — относительный путь от бэка (например, `/uploads/<uuid>.jpg`).
+ */
+export interface MediaFile {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  createdAt: string;
+}
+
+/**
+ * Связь медиафайла с вариантом товара (M:N).
+ */
+export interface MediaLink {
+  fileId: string;
+  variantId: string;
+  isPrimary: boolean;
+  sortOrder: number;
+  uploadedAt: string;
+}
+
+/**
+ * @deprecated используйте MediaFile + MediaLink.
  * Медиафайл (фото или видео), привязанный к варианту товара.
- * `url` — относительный путь от бэка (например, `/uploads/<uuid>.jpg`)
- * или пустая строка, если файл не загружен. `variantId` соответствует
- * `products.id` (используем `product.id` на клиенте).
  */
 export interface ProductMedia {
   id: string;
@@ -223,6 +246,8 @@ export interface ProductWithRelations {
   usp?: string;
   tags?: string[];
   media?: ProductMedia[];
+  mediaFiles?: MediaFile[];
+  mediaLinks?: MediaLink[];
   marketplaceListings?: MarketplaceListing[];
   kitComponents?: { product: ProductWithRelations; quantity: number }[];
 }
@@ -298,7 +323,8 @@ export type ViewType =
   | 'product-detail'
   | 'kit-builder'
   | 'media'
-  | 'ai-hub';
+  | 'ai-hub'
+  | 'db-inspector';
 
 export interface MatrixFilters {
   categories?: string[];

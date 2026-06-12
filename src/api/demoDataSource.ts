@@ -15,6 +15,7 @@ import {
   asSupplier,
   type DataSource,
   type DictionariesAPI,
+  type InspectorAPI,
   type NotificationsAPI,
   type ProductsAPI,
   type RawDictItem,
@@ -26,7 +27,8 @@ import type {
   AppNotification,
   CategoryAttribute,
   NamingTemplate,
-  ProductMedia,
+  MediaFile,
+  MediaLink,
   ProductWithRelations,
   RawProduct,
 } from '@app-types';
@@ -51,7 +53,8 @@ export function createDemoDataSource(): DataSource {
   // In-memory кэш
   let rawProducts: RawProduct[] = [];
   let rawKitComponents: import('@app-types').RawKitComponent[] = [];
-  let rawProductMedia: ProductMedia[] = [];
+  let rawMediaFiles: MediaFile[] = [];
+  let rawMediaLinks: MediaLink[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -61,14 +64,14 @@ export function createDemoDataSource(): DataSource {
     chargingProtocols: [],
     materials: [],
   };
-  const listeners = new Set<() => void>();
+  const listeners = new Set<(topic?: string) => void>();
   let isReady = false;
   let error: string | null = null;
   let batchCount = 0;
 
-  function notify(): void {
+  function notify(topic?: string): void {
     if (batchCount > 0) return;
-    listeners.forEach((fn) => fn());
+    listeners.forEach((fn) => fn(topic));
   }
 
   function buildHydrated(): ProductWithRelations[] {
@@ -86,7 +89,8 @@ export function createDemoDataSource(): DataSource {
         i,
         total,
         { categories, models, colors, suppliers, connectors, materials, chargingProtocols },
-        rawProductMedia
+        rawMediaFiles,
+        rawMediaLinks
       )
     );
     // Attach kit components to kit products
@@ -147,7 +151,7 @@ export function createDemoDataSource(): DataSource {
         body: JSON.stringify(item),
       });
       dicts[type] = [...(dicts[type] ?? []), item];
-      notify();
+      notify('dictionaries');
     },
     async update(type, id, patch) {
       await request<RawDictItem>(`${API_PREFIX}/dictionaries/${type}/${id}`, {
@@ -157,14 +161,14 @@ export function createDemoDataSource(): DataSource {
       const list = dicts[type] ?? [];
       const idx = list.findIndex((d) => d.id === id);
       if (idx !== -1) list[idx] = { ...list[idx], ...patch };
-      notify();
+      notify('dictionaries');
     },
     async remove(type, id) {
       await request<unknown>(`${API_PREFIX}/dictionaries/${type}/${id}`, {
         method: 'DELETE',
       });
       dicts[type] = (dicts[type] ?? []).filter((d) => d.id !== id);
-      notify();
+      notify('dictionaries');
     },
   };
 
@@ -204,7 +208,7 @@ export function createDemoDataSource(): DataSource {
         body: JSON.stringify(raw),
       });
       rawProducts = [...rawProducts, created];
-      notify();
+      notify('products');
       const all = buildHydrated();
       return all.find((p) => p.id === created.id) ?? created as unknown as ProductWithRelations;
     },
@@ -214,7 +218,7 @@ export function createDemoDataSource(): DataSource {
         body: JSON.stringify(patch),
       });
       rawProducts = rawProducts.map((p) => (p.id === id ? updated : p));
-      notify();
+      notify('products');
       const all = buildHydrated();
       return all.find((p) => p.id === id) ?? updated as unknown as ProductWithRelations;
     },
@@ -222,13 +226,13 @@ export function createDemoDataSource(): DataSource {
       await request<unknown>(`${API_PREFIX}/products/${id}`, { method: 'DELETE' });
       rawProducts = rawProducts.filter((p) => p.id !== id);
       rawKitComponents = rawKitComponents.filter((k) => k.kitId !== id);
-      rawProductMedia = rawProductMedia.filter((m) => m.variantId !== id);
-      notify();
+      rawMediaLinks = rawMediaLinks.filter((l) => l.variantId !== id);
+      notify('products');
     },
     async getKitComponents(kitId) {
       const rows = await request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components/${kitId}`);
       rawKitComponents = rawKitComponents.filter((k) => k.kitId !== kitId).concat(rows);
-      notify();
+      notify('products');
       const all = buildHydrated();
       const kit = all.find((p) => p.id === kitId);
       return kit?.kitComponents?.map((c) => c.product) ?? [];
@@ -244,28 +248,43 @@ export function createDemoDataSource(): DataSource {
       } else {
         rawKitComponents.push({ kitId, componentId, quantity, sortOrder: 0 });
       }
-      notify();
+      notify('products');
     },
     async removeKitComponent(kitId, componentId) {
       await request<unknown>(`${API_PREFIX}/kit-components/${kitId}/${componentId}`, { method: 'DELETE' });
       rawKitComponents = rawKitComponents.filter((k) => !(k.kitId === kitId && k.componentId === componentId));
-      notify();
+      notify('products');
     },
 
     // ─── Media ──────────────────────────────────────────────────────────
     getAllMedia() {
-      return [...rawProductMedia].sort((a, b) => {
-        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
-        return a.sortOrder - b.sortOrder;
-      });
+      const linksByFile = new Map<string, string[]>();
+      for (const l of rawMediaLinks) {
+        const arr = linksByFile.get(l.fileId) ?? [];
+        arr.push(l.variantId);
+        linksByFile.set(l.fileId, arr);
+      }
+      return rawMediaFiles.map((f) => ({
+        ...f,
+        linkedSkus: linksByFile.get(f.id) ?? [],
+      }));
     },
     getMediaForVariant(variantId) {
-      return rawProductMedia
-        .filter((m) => m.variantId === variantId)
-        .sort((a, b) => {
-          if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
-          return a.sortOrder - b.sortOrder;
-        });
+      const fileIds = new Set(
+        rawMediaLinks
+          .filter((l) => l.variantId === variantId)
+          .sort((a, b) => {
+            if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+            return a.sortOrder - b.sortOrder;
+          })
+          .map((l) => l.fileId)
+      );
+      return Array.from(fileIds)
+        .map((id) => rawMediaFiles.find((f) => f.id === id))
+        .filter(Boolean) as MediaFile[];
+    },
+    getAllMediaLinks() {
+      return [...rawMediaLinks];
     },
     async uploadMedia(file: File, meta: UploadMediaMeta): Promise<UploadMediaResult> {
       const fd = new FormData();
@@ -283,32 +302,38 @@ export function createDemoDataSource(): DataSource {
           const text = await res.text();
           throw new ApiError(text || `HTTP ${res.status}`, res.status);
         }
-        const items: ProductMedia[] = await res.json();
-        rawProductMedia = [...rawProductMedia, ...items];
-        notify();
-        return { mediaItems: items, localPreviewUrl };
+        const { file: mediaFile, links }: { file: MediaFile; links: MediaLink[] } = await res.json();
+        rawMediaFiles = [...rawMediaFiles, mediaFile];
+        rawMediaLinks = [...rawMediaLinks, ...links];
+        notify('products');
+        return { file: mediaFile, links, localPreviewUrl };
       } catch (err) {
         URL.revokeObjectURL(localPreviewUrl);
         throw err;
       }
     },
-    async deleteMedia(id) {
-      await request<unknown>(`${API_PREFIX}/media/${id}`, { method: 'DELETE' });
-      rawProductMedia = rawProductMedia.filter((m) => m.id !== id);
-      notify();
+    async deleteMedia(fileId) {
+      await request<unknown>(`${API_PREFIX}/media/${fileId}`, { method: 'DELETE' });
+      rawMediaFiles = rawMediaFiles.filter((f) => f.id !== fileId);
+      rawMediaLinks = rawMediaLinks.filter((l) => l.fileId !== fileId);
+      notify('products');
     },
-    async setMediaPrimary(id) {
-      const updated = await request<ProductMedia>(`${API_PREFIX}/media/${id}`, {
+    async deleteMediaLink(fileId, variantId) {
+      await request<unknown>(`${API_PREFIX}/media/link/${fileId}/${variantId}`, { method: 'DELETE' });
+      rawMediaLinks = rawMediaLinks.filter((l) => !(l.fileId === fileId && l.variantId === variantId));
+      notify('products');
+    },
+    async setMediaPrimary(fileId, variantId) {
+      const updated = await request<MediaLink>(`${API_PREFIX}/media/${fileId}/primary/${variantId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ isPrimary: true }),
       });
-      rawProductMedia = rawProductMedia.map((m) => {
-        if (m.variantId === updated.variantId) {
-          return { ...m, isPrimary: m.id === id };
+      rawMediaLinks = rawMediaLinks.map((l) => {
+        if (l.variantId === variantId) {
+          return { ...l, isPrimary: l.fileId === fileId };
         }
-        return m;
+        return l;
       });
-      notify();
+      notify('products');
       return updated;
     },
   };
@@ -329,28 +354,29 @@ export function createDemoDataSource(): DataSource {
         body: JSON.stringify(n),
       });
       notificationsCache = [created, ...notificationsCache];
-      notify();
+      notify('notifications');
     },
     async markRead(id) {
       await request<unknown>(`${API_PREFIX}/notifications/${id}`, { method: 'PATCH' });
       const n = notificationsCache.find((x) => x.id === id);
       if (n) n.unread = false;
-      notify();
+      notify('notifications');
     },
     async markAllRead() {
+      if (notificationsCache.filter((n) => n.unread).length === 0) return;
       await request<unknown>(`${API_PREFIX}/notifications/mark-all-read`, { method: 'PATCH' });
       for (const n of notificationsCache) n.unread = false;
-      notify();
+      notify('notifications');
     },
     async remove(id) {
       await request<unknown>(`${API_PREFIX}/notifications/${id}`, { method: 'DELETE' });
       notificationsCache = notificationsCache.filter((x) => x.id !== id);
-      notify();
+      notify('notifications');
     },
     async clear() {
       await request<unknown>(`${API_PREFIX}/notifications`, { method: 'DELETE' });
       notificationsCache = [];
-      notify();
+      notify('notifications');
     },
   };
 
@@ -383,29 +409,37 @@ export function createDemoDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps, media] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
         request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
-        request<ProductMedia[]>(`${API_PREFIX}/media`).catch(() => [] as ProductMedia[]),
+        request<MediaFile[]>(`${API_PREFIX}/media`).catch(() => [] as MediaFile[]),
+        request<MediaLink[]>(`${API_PREFIX}/media/links`).catch(() => [] as MediaLink[]),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
-      rawProductMedia = media;
+      rawMediaFiles = mediaFiles;
+      rawMediaLinks = mediaLinks;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }
       notificationsCache = notifs;
       isReady = true;
       error = null;
-      notify();
     } catch (e) {
       error = e instanceof ApiError ? e.message : (e as Error).message;
       isReady = false;
-      notify();
     }
+    notify('all');
   }
+
+  const inspector: InspectorAPI = {
+    get available() { return false; },
+    async listTables() { return []; },
+    async dumpTable() { return { columns: [], rows: [], rowCount: 0, truncated: false }; },
+    async runQuery() { return { columns: [], rows: [], rowCount: 0, truncated: false }; },
+  };
 
   return {
     mode: 'demo',
@@ -419,15 +453,17 @@ export function createDemoDataSource(): DataSource {
     dictionaries,
     notifications,
     settings,
+    inspector,
     refresh,
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
+    notify,
     beginBatch() { batchCount++; },
     endBatch() {
       batchCount = Math.max(0, batchCount - 1);
-      if (batchCount === 0) notify();
+      if (batchCount === 0) notify('all');
     },
   };
 }

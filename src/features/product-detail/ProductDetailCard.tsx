@@ -15,12 +15,16 @@ import {
   ShoppingBag,
   Package,
 } from 'lucide-react';
-import type { ProductWithRelations, ProductMedia } from '@app-types';
+import type { ProductWithRelations, MediaFile, MediaLink } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '@utils/display';
 import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import { getMediaUrl, hasPlayableUrl, formatBytes } from '@utils/media';
+import { useDataSourceAPI } from '@api/dataSourceContext';
+import { useToast } from '@hooks/useToast';
 import Modal from '@components/ui/Modal';
+import Lightbox from '@components/ui/Lightbox';
+import ConfirmModal from '@components/ui/ConfirmModal';
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;
@@ -34,9 +38,12 @@ export default function ProductDetailCard({
   highlightedFields = [],
 }: ProductDetailCardProps) {
   const { t } = useLanguage();
+  const ds = useDataSourceAPI();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(true);
   const [nestedProduct, setNestedProduct] = useState<ProductWithRelations | null>(null);
-  const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+  const [confirmDeleteLink, setConfirmDeleteLink] = useState<MediaLink | null>(null);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -90,18 +97,52 @@ export default function ProductDetailCard({
     { label: t('detail.wire'), value: product.wireMaterial ? displayName(product.wireMaterial) : '—', field: 'wireMaterial' },
   ];
 
-  const media = product.media || [];
-  const sortedMedia = useMemo(
+  const mediaFiles = product.mediaFiles ?? [];
+  const mediaLinks = product.mediaLinks ?? [];
+  const sortedFiles = useMemo(
     () =>
-      [...media].sort((a, b) => {
-        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
-        return a.sortOrder - b.sortOrder;
+      [...mediaFiles].sort((a, b) => {
+        const aLink = mediaLinks.find((l) => l.fileId === a.id);
+        const bLink = mediaLinks.find((l) => l.fileId === b.id);
+        if (aLink?.isPrimary !== bLink?.isPrimary) return aLink?.isPrimary ? -1 : 1;
+        return (aLink?.sortOrder ?? 0) - (bLink?.sortOrder ?? 0);
       }),
-    [media]
+    [mediaFiles, mediaLinks]
   );
-  const currentMedia = sortedMedia[selectedMediaIdx] ?? null;
+  const currentFile = sortedFiles[lightboxIndex >= 0 ? lightboxIndex : 0] ?? null;
+
   const singleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'single');
   const bundleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'bundle');
+
+  const handleTogglePrimary = useCallback(
+    async (fileId: string) => {
+      try {
+        await ds.products.setMediaPrimary(fileId, product.id);
+        showToast(t('media.toast.primary_set'));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        showToast(msg, 'error');
+      }
+    },
+    [ds.products, product.id, showToast, t]
+  );
+
+  const handleDeleteLink = useCallback(
+    async (fileId: string, variantId: string) => {
+      try {
+        if (ds.products.deleteMediaLink) {
+          await ds.products.deleteMediaLink(fileId, variantId);
+          showToast(t('media.toast.unlinked') + ' 1');
+        } else {
+          throw new Error('deleteMediaLink not supported');
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        showToast(msg, 'error');
+      }
+    },
+    [ds.products, showToast, t]
+  );
 
   const MarketplaceBadge = ({ marketplace }: { marketplace: 'wb' | 'ozon' }) => (
     <span
@@ -116,8 +157,8 @@ export default function ProductDetailCard({
     </span>
   );
 
-  function renderMediaPreview(m: ProductMedia, size: 'sm' | 'md' | 'lg' = 'md') {
-    const url = getMediaUrl(m.url);
+  function renderMediaPreview(file: MediaFile, size: 'sm' | 'md' | 'lg' = 'md') {
+    const url = getMediaUrl(file.url);
     const iconSize =
       size === 'lg'
         ? 'w-10 h-10 sm:w-12 sm:h-12'
@@ -125,16 +166,16 @@ export default function ProductDetailCard({
           ? 'w-3 h-3 sm:w-3.5 sm:h-3.5'
           : 'w-4 h-4 sm:w-5 sm:h-5';
 
-    if (!hasPlayableUrl(m)) {
-      return m.mediaType === 'image' ? (
+    if (!hasPlayableUrl(file)) {
+      return file.mimeType.startsWith('image/') ? (
         <ImageIcon className={`${iconSize} text-text-muted`} />
       ) : (
         <Video className={`${iconSize} text-text-muted`} />
       );
     }
 
-    if (m.mediaType === 'image') {
-      return <img src={url} alt={m.fileName} className="w-full h-full object-cover" loading="lazy" />;
+    if (file.mimeType.startsWith('image/')) {
+      return <img src={url} alt={file.originalName} className="w-full h-full object-cover" loading="lazy" />;
     }
 
     return <video src={url} className="w-full h-full object-cover" muted playsInline preload="metadata" />;
@@ -193,22 +234,22 @@ export default function ProductDetailCard({
               <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 {t('detail.media')}
-                {currentMedia && (
+                {currentFile && (
                   <span className="text-[9px] text-text-muted ml-auto">
-                    {selectedMediaIdx + 1}/{sortedMedia.length}
+                    {lightboxIndex >= 0 ? lightboxIndex + 1 : 1}/{sortedFiles.length}
                   </span>
                 )}
               </h3>
-              {currentMedia ? (
+              {currentFile ? (
                 <div
                   className="rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden cursor-pointer"
                   onClick={() => {
-                    const url = getMediaUrl(currentMedia.url);
-                    if (url) window.open(url, '_blank');
+                    const idx = sortedFiles.findIndex((f) => f.id === currentFile.id);
+                    if (idx !== -1) setLightboxIndex(idx);
                   }}
                 >
                   <div className="aspect-video w-full flex items-center justify-center bg-bg-tertiary">
-                    {renderMediaPreview(currentMedia, 'lg')}
+                    {renderMediaPreview(currentFile, 'lg')}
                   </div>
                 </div>
               ) : (
@@ -219,40 +260,41 @@ export default function ProductDetailCard({
                   </div>
                 </div>
               )}
-              {sortedMedia.length > 1 && (
+              {sortedFiles.length > 1 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {sortedMedia.map((m, i) => {
-                    const url = getMediaUrl(m.url);
-                    const isActive = i === selectedMediaIdx;
+                  {sortedFiles.map((f, i) => {
+                    const url = getMediaUrl(f.url);
+                    const isActive = i === (lightboxIndex >= 0 ? lightboxIndex : 0);
+                    const link = mediaLinks.find((l) => l.fileId === f.id);
                     return (
                       <button
-                        key={m.id}
-                        onClick={() => setSelectedMediaIdx(i)}
-                        className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center transition-all duration-150 ${
+                        key={f.id}
+                        onClick={() => setLightboxIndex(i)}
+                        className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center transition-[colors,opacity,transform,box-shadow] duration-150 ${
                           isActive ? 'border-accent ring-1 ring-accent/30' : 'border-border-subtle hover:border-border-default'
                         }`}
                         aria-label={`${t('detail.media')} ${i + 1}`}
                       >
-                        {hasPlayableUrl(m) ? (
-                          m.mediaType === 'image' ? (
-                            <img src={url} alt={m.fileName} className="w-full h-full object-cover" loading="lazy" />
+                        {hasPlayableUrl(f) ? (
+                          f.mimeType.startsWith('image/') ? (
+                            <img src={url} alt={f.originalName} className="w-full h-full object-cover" loading="lazy" />
                           ) : (
                             <video src={url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
                           )
-                        ) : m.mediaType === 'image' ? (
+                        ) : f.mimeType.startsWith('image/') ? (
                           <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
                         ) : (
                           <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-muted" />
                         )}
-                        {m.isPrimary && <div className="absolute top-0 left-0 w-full h-full ring-1 ring-warning/30 rounded-lg pointer-events-none" />}
+                        {link?.isPrimary && <div className="absolute top-0 left-0 w-full h-full ring-1 ring-warning/30 rounded-lg pointer-events-none" />}
                       </button>
                     );
                   })}
                 </div>
               )}
-              {currentMedia && currentMedia.sizeBytes && (
+              {currentFile && (
                 <p className="text-[9px] text-text-muted text-right">
-                  {currentMedia.fileName} · {formatBytes(currentMedia.sizeBytes)}
+                  {currentFile.originalName} · {formatBytes(currentFile.sizeBytes)}
                 </p>
               )}
             </div>
@@ -461,6 +503,37 @@ export default function ProductDetailCard({
           </div>
         </div>
       </div>
+
+      {/* Lightbox */}
+      <Lightbox
+        open={lightboxIndex >= 0}
+        files={sortedFiles}
+        links={mediaLinks}
+        currentIndex={lightboxIndex >= 0 ? lightboxIndex : 0}
+        onClose={() => setLightboxIndex(-1)}
+        onChangeIndex={setLightboxIndex}
+        variantId={product.id}
+        onTogglePrimary={handleTogglePrimary}
+        onDelete={(fileId) => {
+          const link = mediaLinks.find((l) => l.fileId === fileId);
+          if (link) setConfirmDeleteLink(link);
+        }}
+      />
+
+      {/* Confirm Unlink */}
+      <ConfirmModal
+        open={!!confirmDeleteLink}
+        title={t('media.confirm_unlink_title')}
+        description={t('media.confirm_unlink_desc')}
+        variant="warning"
+        onConfirm={() => {
+          if (confirmDeleteLink) {
+            handleDeleteLink(confirmDeleteLink.fileId, confirmDeleteLink.variantId);
+            setConfirmDeleteLink(null);
+          }
+        }}
+        onCancel={() => setConfirmDeleteLink(null)}
+      />
     </>
   );
 

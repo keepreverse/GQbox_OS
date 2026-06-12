@@ -145,151 +145,209 @@ export async function getAllKitComponents(): Promise<import('../types').RawKitCo
   return rows.map(mapKitComponentRow);
 }
 
-// ─── Product Media ───────────────────────────────────────────────────────
+// ─── Media Files ─────────────────────────────────────────────────────────
 
-function mapProductMediaRow(r: any): RawProductMedia {
-  return {
+export async function getAllMediaFiles(): Promise<import('../types').MediaFile[]> {
+  const rows = await query<any>('SELECT * FROM media_files ORDER BY created_at DESC');
+  return rows.map((r: any) => ({
     id: r.id,
-    variantId: r.variant_id,
-    mediaType: r.media_type,
-    url: r.url,
-    fileName: r.file_name,
+    filename: r.filename,
+    originalName: r.original_name,
     mimeType: r.mime_type,
     sizeBytes: Number(r.size_bytes ?? 0),
-    isPrimary: !!r.is_primary,
-    sortOrder: Number(r.sort_order ?? 0),
-    uploadedAt: r.uploaded_at,
+    url: r.url,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function getMediaFileById(id: string): Promise<import('../types').MediaFile | null> {
+  const row = await queryOne<any>('SELECT * FROM media_files WHERE id = $1', [id]);
+  if (!row) return null;
+  return {
+    id: row.id,
+    filename: row.filename,
+    originalName: row.original_name,
+    mimeType: row.mime_type,
+    sizeBytes: Number(row.size_bytes ?? 0),
+    url: row.url,
+    createdAt: row.created_at,
   };
 }
 
-export async function getAllProductMedia(): Promise<RawProductMedia[]> {
-  const rows = await query<any>(
-    'SELECT * FROM product_media ORDER BY variant_id, is_primary DESC, sort_order, uploaded_at'
-  );
-  return rows.map(mapProductMediaRow);
-}
-
-export async function getProductMediaForVariant(
+export async function getMediaLinksForVariant(
   variantId: string
-): Promise<RawProductMedia[]> {
+): Promise<import('../types').MediaLink[]> {
   const rows = await query<any>(
-    `SELECT * FROM product_media
+    `SELECT * FROM product_media_links
      WHERE variant_id = $1
      ORDER BY is_primary DESC, sort_order, uploaded_at`,
     [variantId]
   );
-  return rows.map(mapProductMediaRow);
+  return rows.map((r: any) => ({
+    fileId: r.file_id,
+    variantId: r.variant_id,
+    isPrimary: !!r.is_primary,
+    sortOrder: Number(r.sort_order ?? 0),
+    uploadedAt: r.uploaded_at,
+  }));
 }
 
-export async function getProductMediaById(id: string): Promise<RawProductMedia | null> {
-  const row = await queryOne<any>('SELECT * FROM product_media WHERE id = $1', [id]);
-  return row ? mapProductMediaRow(row) : null;
+export async function getAllMediaLinks(): Promise<import('../types').MediaLink[]> {
+  const rows = await query<any>('SELECT * FROM product_media_links ORDER BY uploaded_at DESC');
+  return rows.map((r: any) => ({
+    fileId: r.file_id,
+    variantId: r.variant_id,
+    isPrimary: !!r.is_primary,
+    sortOrder: Number(r.sort_order ?? 0),
+    uploadedAt: r.uploaded_at,
+  }));
 }
 
-export async function getNextProductMediaId(): Promise<string> {
-  return randomUUID();
+export async function getMediaLinksForFile(
+  fileId: string
+): Promise<import('../types').MediaLink[]> {
+  const rows = await query<any>(
+    'SELECT * FROM product_media_links WHERE file_id = $1',
+    [fileId]
+  );
+  return rows.map((r: any) => ({
+    fileId: r.file_id,
+    variantId: r.variant_id,
+    isPrimary: !!r.is_primary,
+    sortOrder: Number(r.sort_order ?? 0),
+    uploadedAt: r.uploaded_at,
+  }));
 }
 
-export async function createProductMedia(
-  raw: Omit<RawProductMedia, 'id'> & { id?: string }
-): Promise<RawProductMedia> {
-  const id = raw.id ?? (await getNextProductMediaId());
-  return insertProductMediaRow({ ...raw, id });
-}
-
-export async function insertProductMediaRow(
-  item: RawProductMedia,
+export async function insertMediaFile(
+  file: Omit<import('../types').MediaFile, 'id'> & { id?: string },
   q: typeof query = query
-): Promise<RawProductMedia> {
-  const finalItem: RawProductMedia = item.id ? item : { ...item, id: randomUUID() };
+): Promise<import('../types').MediaFile> {
+  const finalFile: import('../types').MediaFile = file.id
+    ? (file as import('../types').MediaFile)
+    : { ...file, id: randomUUID() };
   await q(
-    `INSERT INTO product_media
-       (id, variant_id, media_type, url, file_name, mime_type, size_bytes,
-        is_primary, sort_order, uploaded_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    `INSERT INTO media_files (id, filename, original_name, mime_type, size_bytes, url, created_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)
+     ON CONFLICT (id) DO UPDATE SET
+       filename = EXCLUDED.filename,
+       original_name = EXCLUDED.original_name,
+       mime_type = EXCLUDED.mime_type,
+       size_bytes = EXCLUDED.size_bytes,
+       url = EXCLUDED.url,
+       created_at = EXCLUDED.created_at`,
     [
-      finalItem.id,
-      finalItem.variantId,
-      finalItem.mediaType,
-      finalItem.url,
-      finalItem.fileName,
-      finalItem.mimeType,
-      finalItem.sizeBytes,
-      finalItem.isPrimary,
-      finalItem.sortOrder,
-      finalItem.uploadedAt,
+      finalFile.id,
+      finalFile.filename,
+      finalFile.originalName,
+      finalFile.mimeType,
+      finalFile.sizeBytes,
+      finalFile.url,
+      finalFile.createdAt,
     ]
   );
-  return finalItem;
+  return finalFile;
 }
 
-export async function updateProductMedia(
-  id: string,
-  patch: Partial<RawProductMedia>
-): Promise<RawProductMedia | null> {
-  const existing = await getProductMediaById(id);
-  if (!existing) return null;
-  const merged: RawProductMedia = {
-    ...existing,
-    isPrimary:
-      typeof patch.isPrimary === 'boolean' ? patch.isPrimary : existing.isPrimary,
-    sortOrder:
-      typeof patch.sortOrder === 'number' ? patch.sortOrder : existing.sortOrder,
+export async function insertMediaLink(
+  link: import('../types').MediaLink,
+  q: typeof query = query
+): Promise<import('../types').MediaLink> {
+  await q(
+    `INSERT INTO product_media_links (file_id, variant_id, is_primary, sort_order, uploaded_at)
+     VALUES ($1,$2,$3,$4,$5)
+     ON CONFLICT (file_id, variant_id) DO UPDATE SET
+       is_primary = EXCLUDED.is_primary,
+       sort_order = EXCLUDED.sort_order,
+       uploaded_at = EXCLUDED.uploaded_at`,
+    [link.fileId, link.variantId, link.isPrimary, link.sortOrder, link.uploadedAt]
+  );
+  return link;
+}
+
+export async function updateMediaLink(
+  fileId: string,
+  variantId: string,
+  patch: Partial<import('../types').MediaLink>
+): Promise<import('../types').MediaLink | null> {
+  const row = await queryOne<any>(
+    'SELECT * FROM product_media_links WHERE file_id = $1 AND variant_id = $2',
+    [fileId, variantId]
+  );
+  if (!row) return null;
+  const current: import('../types').MediaLink = {
+    fileId: row.file_id,
+    variantId: row.variant_id,
+    isPrimary: !!row.is_primary,
+    sortOrder: Number(row.sort_order ?? 0),
+    uploadedAt: row.uploaded_at,
+  };
+  const merged: import('../types').MediaLink = {
+    ...current,
+    isPrimary: typeof patch.isPrimary === 'boolean' ? patch.isPrimary : current.isPrimary,
+    sortOrder: typeof patch.sortOrder === 'number' ? patch.sortOrder : current.sortOrder,
   };
   if (merged.isPrimary) {
     await query(
-      'UPDATE product_media SET is_primary = FALSE WHERE variant_id = $1 AND id <> $2',
-      [merged.variantId, id]
+      'UPDATE product_media_links SET is_primary = FALSE WHERE variant_id = $1 AND file_id <> $2',
+      [merged.variantId, fileId]
     );
   }
   await query(
-    `UPDATE product_media
+    `UPDATE product_media_links
      SET is_primary = $1, sort_order = $2
-     WHERE id = $3`,
-    [merged.isPrimary, merged.sortOrder, id]
+     WHERE file_id = $3 AND variant_id = $4`,
+    [merged.isPrimary, merged.sortOrder, fileId, variantId]
   );
   return merged;
 }
 
-export async function updateProductMediaTx(
-  q: typeof query,
-  id: string,
-  patch: Partial<RawProductMedia>
-): Promise<RawProductMedia | null> {
-  const existing = await q<any>('SELECT * FROM product_media WHERE id = $1', [id]);
-  if (!existing[0]) return null;
-  const current = mapProductMediaRow(existing[0]);
-  const merged: RawProductMedia = {
-    ...current,
-    isPrimary:
-      typeof patch.isPrimary === 'boolean' ? patch.isPrimary : current.isPrimary,
-    sortOrder:
-      typeof patch.sortOrder === 'number' ? patch.sortOrder : current.sortOrder,
-  };
-  if (merged.isPrimary) {
-    await q(
-      'UPDATE product_media SET is_primary = FALSE WHERE variant_id = $1 AND id <> $2',
-      [merged.variantId, id]
-    );
-  }
-  await q(
-    `UPDATE product_media
-     SET is_primary = $1, sort_order = $2
-     WHERE id = $3`,
-    [merged.isPrimary, merged.sortOrder, id]
-  );
-  return merged;
-}
-
-export async function deleteProductMedia(id: string): Promise<RawProductMedia | null> {
-  const existing = await getProductMediaById(id);
+export async function deleteMediaFile(id: string): Promise<import('../types').MediaFile | null> {
+  const existing = await getMediaFileById(id);
   if (!existing) return null;
-  await query('DELETE FROM product_media WHERE id = $1', [id]);
+  await query('DELETE FROM media_files WHERE id = $1', [id]);
   return existing;
 }
 
-export async function clearProductMediaForVariant(variantId: string): Promise<void> {
-  await query('DELETE FROM product_media WHERE variant_id = $1', [variantId]);
+export async function deleteMediaLink(
+  fileId: string,
+  variantId: string
+): Promise<import('../types').MediaLink | null> {
+  const row = await queryOne<any>(
+    'SELECT * FROM product_media_links WHERE file_id = $1 AND variant_id = $2',
+    [fileId, variantId]
+  );
+  if (!row) return null;
+  await query(
+    'DELETE FROM product_media_links WHERE file_id = $1 AND variant_id = $2',
+    [fileId, variantId]
+  );
+  return {
+    fileId: row.file_id,
+    variantId: row.variant_id,
+    isPrimary: !!row.is_primary,
+    sortOrder: Number(row.sort_order ?? 0),
+    uploadedAt: row.uploaded_at,
+  };
+}
+
+export async function clearMediaLinksForVariant(variantId: string): Promise<void> {
+  await query('DELETE FROM product_media_links WHERE variant_id = $1', [variantId]);
+}
+
+/** Вспомогательная: вернуть MediaFile + linkedSkus для фронтенда */
+export async function getMediaFilesWithLinks(): Promise<
+  (import('../types').MediaFile & { linkedSkus: string[] })[]
+> {
+  const files = await getAllMediaFiles();
+  const links = await getAllMediaLinks();
+  const linksByFile = new Map<string, string[]>();
+  for (const l of links) {
+    const arr = linksByFile.get(l.fileId) ?? [];
+    arr.push(l.variantId);
+    linksByFile.set(l.fileId, arr);
+  }
+  return files.map((f) => ({ ...f, linkedSkus: linksByFile.get(f.id) ?? [] }));
 }
 
 // ─── Dictionaries ─────────────────────────────────────────────────────────
@@ -352,7 +410,7 @@ export async function deleteDictionaryItem(
 // ─── Bulk operations: reset / import / export ─────────────────────────────
 
 export async function truncateAll(): Promise<void> {
-  await query('TRUNCATE products, dictionaries, kit_components, notifications, product_media RESTART IDENTITY CASCADE');
+  await query('TRUNCATE products, dictionaries, kit_components, notifications, media_files, product_media_links RESTART IDENTITY CASCADE');
 }
 
 export async function exportAll(): Promise<DataBundle> {
@@ -362,7 +420,26 @@ export async function exportAll(): Promise<DataBundle> {
     dicts[t] = await getDictionary(t);
   }
   const kitComps = await query<import('../types').RawKitComponent>('SELECT * FROM kit_components ORDER BY kit_id, sort_order');
-  const productMedia = await getAllProductMedia();
+  const mediaFiles = await getAllMediaFiles();
+  const mediaLinks = await getAllMediaLinks();
+  // Для обратной совместимости с JSON-экспортом — собираем старый формат productMedia
+  const productMedia: import('../types').RawProductMedia[] = [];
+  for (const link of mediaLinks) {
+    const file = mediaFiles.find((f) => f.id === link.fileId);
+    if (!file) continue;
+    productMedia.push({
+      id: file.id,
+      variantId: link.variantId,
+      mediaType: file.mimeType.startsWith('video/') ? 'video' : 'image',
+      url: file.url,
+      fileName: file.originalName,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+      isPrimary: link.isPrimary,
+      sortOrder: link.sortOrder,
+      uploadedAt: link.uploadedAt,
+    });
+  }
   return {
     products,
     categories: dicts.categories ?? [],
@@ -373,6 +450,8 @@ export async function exportAll(): Promise<DataBundle> {
     chargingProtocols: dicts.chargingProtocols ?? [],
     materials: dicts.materials ?? [],
     kitComponents: kitComps,
+    mediaFiles,
+    mediaLinks,
     productMedia,
   };
 }
@@ -398,27 +477,31 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
         await query(kitComponentInsertSql(), vals);
       }
     } else if (name === 'productMedia') {
-      await query('DELETE FROM product_media');
+      await query('DELETE FROM product_media_links');
+      await query('DELETE FROM media_files');
+      const fileMap = new Map<string, import('../types').MediaFile>();
       for (const m of data as RawProductMedia[]) {
-        await query(
-          `INSERT INTO product_media
-             (id, variant_id, media_type, url, file_name, mime_type, size_bytes,
-              is_primary, sort_order, uploaded_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-           ON CONFLICT (id) DO NOTHING`,
-          [
-            m.id,
-            m.variantId,
-            m.mediaType,
-            m.url,
-            m.fileName,
-            m.mimeType,
-            m.sizeBytes,
-            m.isPrimary,
-            m.sortOrder,
-            m.uploadedAt,
-          ]
-        );
+        let file = fileMap.get(m.url);
+        if (!file) {
+          file = {
+            id: m.id,
+            filename: m.url.replace(/^\/uploads\//, ''),
+            originalName: m.fileName,
+            mimeType: m.mimeType,
+            sizeBytes: m.sizeBytes,
+            url: m.url,
+            createdAt: m.uploadedAt,
+          };
+          fileMap.set(m.url, file);
+          await insertMediaFile(file);
+        }
+        await insertMediaLink({
+          fileId: file.id,
+          variantId: m.variantId,
+          isPrimary: m.isPrimary,
+          sortOrder: m.sortOrder,
+          uploadedAt: m.uploadedAt,
+        });
       }
     } else {
       await query('DELETE FROM dictionaries WHERE type = $1', [name]);

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "./theme.css";
 
+@source "./**/*.{ts,tsx}";
+
 @theme inline {
   --color-bg-primary: var(--color-bg-primary);
   --color-bg-secondary: var(--color-bg-secondary);
@@ -65,6 +67,8 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  /* Prevent FOUT (Flash of Unstyled Text) layout shifts by matching fallback font metrics to Geist */
+  font-size-adjust: 0.53;
 }
 
 /* Eliminate 300ms tap delay on touch devices */
@@ -127,6 +131,24 @@ button, a, [role="button"], input, select, textarea {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* FullScreenLoader text entrance */
+@keyframes loaderTextIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); filter: blur(10px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+}
+
+/* FullScreenLoader line entrance */
+@keyframes loaderLineIn {
+  from { opacity: 0; transform: scaleX(0) translateY(10px); filter: blur(10px); }
+  to   { opacity: 1; transform: scaleX(1) translateY(0); filter: blur(0px); }
+}
+
+/* FullScreenLoader gradient sweep */
+@keyframes loaderGradient {
+  0%   { background-position: 150% 0%; }
+  100% { background-position: -150% 0%; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -143,6 +165,15 @@ button, a, [role="button"], input, select, textarea {
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0); }
   to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-fast {
+  animation: fadeInFast 0.15s ease-out;
+}
+
+@keyframes fadeInFast {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .table-fade-in {
@@ -453,6 +484,14 @@ html {
   .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
   [style*="dev-mode-scan"] { animation: none !important; }
   .dev-mode-glow { animation: none !important; }
+  .animate-initial-fade,
+  .animate-fade-in,
+  .animate-card-in,
+  .animate-slide-in,
+  .scale-in,
+  .table-fade-in { animation: none !important; transform: none !important; opacity: 1 !important; }
+  [style*="animation: loaderTextIn"] { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  [style*="animation: loaderLineIn"] { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
 }
 
 /* Skip link for accessibility */

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Database,
   Link2,
@@ -66,7 +65,7 @@ export default function Architecture() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex h-11 sm:h-10 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-all cursor-pointer flex-shrink-0 ${
+            className={`flex h-11 sm:h-10 min-w-[132px] items-center justify-center gap-2 px-3 rounded-lg text-xs sm:text-sm transition-[colors,opacity,transform,box-shadow] cursor-pointer flex-shrink-0 ${
               activeTab === tab.id
                 ? 'bg-bg-elevated text-text-primary shadow-sm font-medium'
                 : 'text-text-tertiary hover:bg-bg-hover hover:text-text-secondary'
@@ -273,10 +272,9 @@ export default function Architecture() {
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {currentEntities.map((entity) => (
-                <motion.div
+                <div
                   key={entity.name}
-                  whileHover={{ scale: 1.02 }}
-                  className={`min-h-[44px] sm:min-h-0 p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`min-h-[44px] sm:min-h-0 p-3 rounded-lg border cursor-pointer transition-[colors,opacity,transform,box-shadow] hover:scale-[1.02] ${
                     expandedEntity === entity.name
                       ? 'border-accent/50 bg-accent/15'
                       : 'border-border-subtle bg-bg-tertiary/50 hover:border-border-default'
@@ -292,7 +290,7 @@ export default function Architecture() {
                   <p className="text-[10px] text-text-tertiary">
                     {entity.fields.length} {t('arch.schema.fields')}
                   </p>
-                </motion.div>
+                </div>
               ))}
             </div>
 

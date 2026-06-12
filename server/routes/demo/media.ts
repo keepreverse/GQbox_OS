@@ -3,7 +3,7 @@ import { readCollection, writeCollection, UPLOADS_DIR } from '../../utils/jsonSt
 import { upload, detectMediaType } from '../../middleware/upload';
 import { unlinkSync, existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import type { RawProductMedia } from '../../types';
+import type { MediaFile, MediaLink } from '../../types';
 
 const router = Router();
 
@@ -12,20 +12,8 @@ function param(req: Request, name: string): string {
   return Array.isArray(v) ? (v[0] ?? '') : (v ?? '');
 }
 
-function nextMediaId(items: RawProductMedia[]): string {
-  const max = items.reduce((m, x) => {
-    const n = parseInt((x.id || '').replace(/^pm/, ''), 10);
-    return Number.isFinite(n) ? Math.max(m, n) : m;
-  }, 0);
-  return `pm${max + 1}`;
-}
-
 function buildUrl(filename: string): string {
   return `/uploads/${filename}`;
-}
-
-function toPublic(m: RawProductMedia): RawProductMedia {
-  return { ...m };
 }
 
 function parseVariantIds(raw: unknown): string[] {
@@ -55,36 +43,77 @@ function readAllProducts(): { id: string }[] {
   }
 }
 
+// GET /media — все файлы с привязанными SKU
 router.get('/', (req: Request, res: Response) => {
   try {
-    const all = readCollection<RawProductMedia>('productMedia');
+    const files = readCollection<MediaFile>('mediaFiles');
+    const links = readCollection<MediaLink>('mediaLinks');
     const variantId = typeof req.query.variantId === 'string' ? req.query.variantId : null;
-    const filtered = variantId ? all.filter((m) => m.variantId === variantId) : all;
-    const sorted = [...filtered].sort((a, b) => {
-      if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
-      return a.sortOrder - b.sortOrder;
-    });
-    res.json(sorted.map(toPublic));
+
+    if (variantId) {
+      const variantLinks = links.filter((l) => l.variantId === variantId);
+      res.json(variantLinks);
+      return;
+    }
+
+    const linksByFile = new Map<string, string[]>();
+    for (const l of links) {
+      const arr = linksByFile.get(l.fileId) ?? [];
+      arr.push(l.variantId);
+      linksByFile.set(l.fileId, arr);
+    }
+
+    const result = files.map((f) => ({
+      ...f,
+      linkedSkus: linksByFile.get(f.id) ?? [],
+    }));
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.get('/:id', (req: Request, res: Response) => {
+// GET /media/links — все связи (для кэширования на фронтенде)
+// ВАЖНО: должен быть ДО /:fileId, иначе Express матчит "links" как fileId.
+router.get('/links', (_req: Request, res: Response) => {
   try {
-    const id = param(req, 'id');
-    const all = readCollection<RawProductMedia>('productMedia');
-    const m = all.find((x) => x.id === id);
+    const links = readCollection<MediaLink>('mediaLinks');
+    res.json(links);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /media/variant/:variantId — все связи для SKU
+// ВАЖНО: должен быть ДО /:fileId.
+router.get('/variant/:variantId', (req: Request, res: Response) => {
+  try {
+    const variantId = param(req, 'variantId');
+    const links = readCollection<MediaLink>('mediaLinks');
+    const variantLinks = links.filter((l) => l.variantId === variantId);
+    res.json(variantLinks);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /media/:fileId — один файл
+router.get('/:fileId', (req: Request, res: Response) => {
+  try {
+    const id = param(req, 'fileId');
+    const files = readCollection<MediaFile>('mediaFiles');
+    const m = files.find((x) => x.id === id);
     if (!m) {
       res.status(404).json({ error: 'Media not found' });
       return;
     }
-    res.json(toPublic(m));
+    res.json(m);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// POST /media — загрузка файла
 router.post(
   '/',
   upload.single('file'),
@@ -132,100 +161,118 @@ router.post(
         return;
       }
 
-      const all = readCollection<RawProductMedia>('productMedia');
-      const created: RawProductMedia[] = [];
+      const files = readCollection<MediaFile>('mediaFiles');
+      const links = readCollection<MediaLink>('mediaLinks');
 
-      if (isPrimary) {
-        for (const vid of validIds) {
-          for (let i = 0; i < all.length; i++) {
-            if (all[i].variantId === vid) {
-              all[i] = { ...all[i], isPrimary: false };
-            }
+      const mediaFile: MediaFile = {
+        id: crypto.randomUUID(),
+        filename: file.filename,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        sizeBytes: file.size,
+        url: buildUrl(file.filename),
+        createdAt: new Date().toISOString(),
+      };
+      files.push(mediaFile);
+
+      const createdLinks: MediaLink[] = [];
+      for (let i = 0; i < validIds.length; i++) {
+        const vid = validIds[i];
+        const existingLinks = links.filter((l) => l.variantId === vid);
+        if (isPrimary && i === 0) {
+          for (const l of links) {
+            if (l.variantId === vid) l.isPrimary = false;
           }
         }
-      }
-
-      for (const vid of validIds) {
-        const existingCount = all.filter((m) => m.variantId === vid).length;
-        const id = nextMediaId(all);
-        const newItem: RawProductMedia = {
-          id,
+        const link: MediaLink = {
+          fileId: mediaFile.id,
           variantId: vid,
-          mediaType: type,
-          url: buildUrl(file.filename),
-          fileName: file.originalname,
-          mimeType: file.mimetype,
-          sizeBytes: file.size,
-          isPrimary,
-          sortOrder: existingCount,
+          isPrimary: isPrimary && i === 0,
+          sortOrder: existingLinks.length,
           uploadedAt: new Date().toISOString(),
         };
-        all.push(newItem);
-        created.push(newItem);
+        links.push(link);
+        createdLinks.push(link);
       }
 
-      writeCollection('productMedia', all);
-      res.status(201).json(created.map(toPublic));
+      writeCollection('mediaFiles', files);
+      writeCollection('mediaLinks', links);
+      res.status(201).json({ file: mediaFile, links: createdLinks });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
   }
 );
 
-router.patch('/:id', (req: Request, res: Response) => {
+// PATCH /media/:fileId/primary/:variantId — set primary
+router.patch('/:fileId/primary/:variantId', (req: Request, res: Response) => {
   try {
-    const id = param(req, 'id');
-    const all = readCollection<RawProductMedia>('productMedia');
-    const idx = all.findIndex((m) => m.id === id);
+    const fileId = param(req, 'fileId');
+    const variantId = param(req, 'variantId');
+    const links = readCollection<MediaLink>('mediaLinks');
+    const idx = links.findIndex((l) => l.fileId === fileId && l.variantId === variantId);
     if (idx === -1) {
-      res.status(404).json({ error: 'Media not found' });
+      res.status(404).json({ error: 'Media link not found' });
       return;
     }
-    const patch = (req.body || {}) as Partial<RawProductMedia>;
-    const updated: RawProductMedia = {
-      ...all[idx],
-      isPrimary:
-        typeof patch.isPrimary === 'boolean' ? patch.isPrimary : all[idx].isPrimary,
-      sortOrder:
-        typeof patch.sortOrder === 'number' ? patch.sortOrder : all[idx].sortOrder,
-    };
-    const next = [...all];
-    if (updated.isPrimary) {
-      for (let i = 0; i < next.length; i++) {
-        if (i !== idx && next[i].variantId === updated.variantId) {
-          next[i] = { ...next[i], isPrimary: false };
-        }
-      }
+    const next = [...links];
+    for (const l of next) {
+      if (l.variantId === variantId) l.isPrimary = false;
     }
-    next[idx] = updated;
-    writeCollection('productMedia', next);
-    res.json(toPublic(updated));
+    next[idx].isPrimary = true;
+    writeCollection('mediaLinks', next);
+    res.json(next[idx]);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.delete('/:id', (req: Request, res: Response) => {
+// DELETE /media/:fileId — удалить файл + все связи
+router.delete('/:fileId', (req: Request, res: Response) => {
   try {
-    const id = param(req, 'id');
-    const all = readCollection<RawProductMedia>('productMedia');
-    const item = all.find((m) => m.id === id);
+    const fileId = param(req, 'fileId');
+    const files = readCollection<MediaFile>('mediaFiles');
+    const item = files.find((m) => m.id === fileId);
     if (!item) {
       res.status(404).json({ error: 'Media not found' });
       return;
     }
 
-    const otherRefs = all.filter((m) => m.url === item.url && m.id !== id);
-    if (item.url.startsWith('/uploads/') && otherRefs.length === 0) {
+    const links = readCollection<MediaLink>('mediaLinks');
+    const otherRefs = links.filter((l) => l.fileId === fileId);
+
+    if (item.url.startsWith('/uploads/')) {
       const filePath = resolve(UPLOADS_DIR, item.url.replace(/^\/uploads\//, ''));
       if (existsSync(filePath)) {
         try { unlinkSync(filePath); } catch { /* ignore */ }
       }
     }
 
-    const next = all.filter((m) => m.id !== id);
-    writeCollection('productMedia', next);
-    res.json({ ok: true, id });
+    const nextFiles = files.filter((m) => m.id !== fileId);
+    const nextLinks = links.filter((l) => l.fileId !== fileId);
+    writeCollection('mediaFiles', nextFiles);
+    writeCollection('mediaLinks', nextLinks);
+    res.json({ ok: true, id: fileId, removedLinks: otherRefs.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /media/link/:fileId/:variantId — удалить только связь
+router.delete('/link/:fileId/:variantId', (req: Request, res: Response) => {
+  try {
+    const fileId = param(req, 'fileId');
+    const variantId = param(req, 'variantId');
+    const links = readCollection<MediaLink>('mediaLinks');
+    const idx = links.findIndex((l) => l.fileId === fileId && l.variantId === variantId);
+    if (idx === -1) {
+      res.status(404).json({ error: 'Media link not found' });
+      return;
+    }
+    const next = [...links];
+    next.splice(idx, 1);
+    writeCollection('mediaLinks', next);
+    res.json({ ok: true, fileId, variantId });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

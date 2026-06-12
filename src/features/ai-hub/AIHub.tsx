@@ -314,7 +314,7 @@ This SKU represents a 2-meter black ZS-standard cable.`,
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || isTyping}
-              className="h-11 w-11 sm:h-10 sm:w-10 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer border border-accent/40 flex items-center justify-center"
+              className="h-11 w-11 sm:h-10 sm:w-10 p-0 rounded-lg bg-accent/25 text-white hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-[colors,opacity,transform,box-shadow] cursor-pointer border border-accent/40 flex items-center justify-center"
               aria-label={t('ai.send')}
             >
               <Send className="w-4 h-4" />

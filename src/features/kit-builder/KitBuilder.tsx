@@ -1,5 +1,13 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Reorder, useDragControls } from 'framer-motion';
+import { useState, useMemo, useCallback, useEffect, useRef, type CSSProperties } from 'react';
+import {
+  DndContext,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Package,
   Plus,
@@ -29,7 +37,7 @@ import Modal from '@components/ui/Modal';
 import type { ProductWithRelations } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable,
@@ -138,20 +146,31 @@ function ComponentItem({
   onRemove: (id: string) => void;
 }) {
   const { t } = useLanguage();
-  const controls = useDragControls();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: comp.product.id });
+
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.3)' : undefined,
+  };
 
   return (
-    <Reorder.Item
-      value={comp}
-      dragListener={false}
-      dragControls={controls}
-      whileDrag={{ boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 50 }}
-      className="flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle select-none"
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 sm:gap-3 min-h-[44px] sm:min-h-0 p-2 sm:p-3 rounded-lg bg-bg-tertiary/50 border border-border-subtle select-none ${isDragging ? 'opacity-50' : ''}`}
     >
       <div
-        onPointerDown={(e) => {
-          controls.start(e);
-        }}
+        {...attributes}
+        {...listeners}
         className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-grab active:cursor-grabbing touch-none select-none"
       >
         <div className="text-text-muted flex-shrink-0 p-1 -ml-1">
@@ -199,16 +218,17 @@ function ComponentItem({
       >
         <X className="w-3.5 h-3.5" />
       </button>
-    </Reorder.Item>
+    </div>
   );
 }
 
 export default function KitBuilder() {
   const { t } = useLanguage();
-  const { products: productsApi, dictionaries, notifications } = useDataSource();
-  const products = productsApi.list;
-  const categories = dictionaries.categories;
-  const colors = dictionaries.colors;
+  const { ds, version } = useDataSourceVersion('products');
+  const products = useMemo(() => ds.products.list, [ds, version]);
+  const categories = useMemo(() => ds.dictionaries.categories, [ds, version]);
+  const colors = useMemo(() => ds.dictionaries.colors, [ds, version]);
+  const notifications = ds.notifications;
   const colorsRef = useRef(colors);
   colorsRef.current = colors;
   const [kitSku, setKitSku] = useState('');
@@ -283,9 +303,28 @@ export default function KitBuilder() {
     );
   };
 
-  const handleReorder = (newComponents: KitComponent[]) => {
-    setComponents(newComponents);
-  };
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setComponents((prev) => {
+        const oldIndex = prev.findIndex((c) => c.product.id === active.id);
+        const newIndex = prev.findIndex((c) => c.product.id === over.id);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(oldIndex, 1);
+        next.splice(newIndex, 0, moved);
+        return next;
+      });
+    }
+  }, []);
 
   const handleCreateKit = async () => {
     if (components.length < 2 || !kitName || !kitSku || skuExists) return;
@@ -304,10 +343,10 @@ export default function KitBuilder() {
     };
 
     try {
-      const created = await productsApi.create(draft);
+      const created = await ds.products.create(draft);
       // Save kit components
       for (const comp of components) {
-        await productsApi.addKitComponent(created.id, comp.product.id, comp.quantity);
+        await ds.products.addKitComponent(created.id, comp.product.id, comp.quantity);
       }
       setAddSuccess(true);
       showToast(t('kit.toast_created'));
@@ -416,14 +455,14 @@ export default function KitBuilder() {
                 {components.length > 0 && (
                   <button
                     onClick={() => setComponents([])}
-                    className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg text-xs transition-all cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
+                    className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg text-xs transition-[colors,opacity,transform,box-shadow] cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
                   >
                     <X className="w-3 h-3" /> {t('kit.clear')}
                   </button>
                 )}
                 <button
                   onClick={openPicker}
-                  className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg bg-accent/25 text-white text-xs hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40"
+                  className="flex items-center gap-1.5 h-11 sm:h-9 px-3 rounded-lg bg-accent/25 text-white text-xs hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40"
                 >
                   <Plus className="w-3 h-3" /> {t('kit.add')}
                 </button>
@@ -442,38 +481,36 @@ export default function KitBuilder() {
                   <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                   {t('kit.one_more_needed')}
                 </div>
-                <Reorder.Group
-                  axis="y"
-                  values={components}
-                  onReorder={handleReorder}
-                  className="space-y-2"
-                >
-                  {components.map((comp) => (
-                    <ComponentItem
-                      key={comp.product.id}
-                      comp={comp}
-                      onUpdateQty={updateQuantity}
-                      onRemove={removeComponent}
-                    />
-                  ))}
-                </Reorder.Group>
+                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                  <SortableContext items={components.map((c) => c.product.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2">
+                      {components.map((comp) => (
+                        <ComponentItem
+                          key={comp.product.id}
+                          comp={comp}
+                          onUpdateQty={updateQuantity}
+                          onRemove={removeComponent}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </>
             ) : (
-              <Reorder.Group
-                axis="y"
-                values={components}
-                onReorder={handleReorder}
-                className="space-y-2"
-              >
-                {components.map((comp) => (
-                  <ComponentItem
-                    key={comp.product.id}
-                    comp={comp}
-                    onUpdateQty={updateQuantity}
-                    onRemove={removeComponent}
-                  />
-                ))}
-              </Reorder.Group>
+              <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                <SortableContext items={components.map((c) => c.product.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {components.map((comp) => (
+                      <ComponentItem
+                        key={comp.product.id}
+                        comp={comp}
+                        onUpdateQty={updateQuantity}
+                        onRemove={removeComponent}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </div>
@@ -527,7 +564,7 @@ export default function KitBuilder() {
               <button
                 onClick={handleCreateKit}
                 disabled={components.length < 2 || !kitName || !kitSku || skuExists || addSuccess}
-                className="w-full min-h-[44px] sm:min-h-0 py-2.5 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40"
+                className="w-full min-h-[44px] sm:min-h-0 py-2.5 sm:py-2.5 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 disabled:opacity-30 disabled:cursor-not-allowed transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40"
               >
                 {t('kit.create')}
               </button>
@@ -588,7 +625,7 @@ export default function KitBuilder() {
                         setPickerView('products');
                         setSearchQuery('');
                       }}
-                      className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                      className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-[colors,opacity,transform,box-shadow] border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                     >
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                         {(() => {
@@ -626,7 +663,7 @@ export default function KitBuilder() {
                   <button
                     key={product.id}
                     onClick={() => addComponent(product)}
-                    className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-all border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
+                    className="w-full flex items-center gap-3 min-h-[44px] sm:min-h-0 p-3 rounded-lg text-left transition-[colors,opacity,transform,box-shadow] border border-transparent hover:bg-bg-hover hover:border-border-subtle hover:text-text-primary cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-bg-tertiary hover:bg-bg-elevated transition-colors">
                       <Hash
@@ -645,7 +682,7 @@ export default function KitBuilder() {
                         )}
                       </p>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-white transition-all text-accent flex-shrink-0 cursor-pointer">
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-white transition-[colors,opacity,transform,box-shadow] text-accent flex-shrink-0 cursor-pointer">
                       <Plus className="w-4 h-4" />
                     </div>
                   </button>

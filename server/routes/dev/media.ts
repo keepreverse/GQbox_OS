@@ -1,20 +1,22 @@
 import { Router, Request, Response } from 'express';
 import {
   isDbAvailable,
-  getAllProductMedia,
-  getProductMediaForVariant,
-  getProductMediaById,
-  insertProductMediaRow,
-  updateProductMedia,
-  updateProductMediaTx,
-  deleteProductMedia,
+  getMediaFilesWithLinks,
+  getAllMediaLinks,
+  getMediaFileById,
+  getMediaLinksForVariant,
+  insertMediaFile,
+  insertMediaLink,
+  updateMediaLink,
+  deleteMediaFile,
+  deleteMediaLink,
   getProductById,
 } from '../../utils/dbStore';
 import { withTransaction } from '../../utils/db';
 import { upload, UPLOADS_DIR, detectMediaType } from '../../middleware/upload';
 import { unlinkSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import type { RawProductMedia } from '../../types';
+import type { MediaFile, MediaLink } from '../../types';
 
 const router = Router();
 
@@ -64,14 +66,17 @@ async function validateProductIds(ids: string[]): Promise<{ valid: string[]; inv
   return { valid, invalid };
 }
 
+// GET /media — все файлы с привязанными SKU
 router.get('/', async (req: Request, res: Response) => {
   if (!(await ensureDb(req, res))) return;
   try {
     const variantId = typeof req.query.variantId === 'string' ? req.query.variantId : null;
     if (variantId) {
-      res.json(await getProductMediaForVariant(variantId));
+      const links = await getMediaLinksForVariant(variantId);
+      res.json(links);
     } else {
-      res.json(await getAllProductMedia());
+      const files = await getMediaFilesWithLinks();
+      res.json(files);
     }
   } catch (err: any) {
     console.error('Media list failed:', err);
@@ -79,11 +84,39 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+// GET /media/links — все связи (для кэширования на фронтенде)
+// ВАЖНО: должен быть ДО /:fileId, иначе Express матчит "links" как fileId.
+router.get('/links', async (req: Request, res: Response) => {
   if (!(await ensureDb(req, res))) return;
   try {
-    const id = param(req, 'id');
-    const item = await getProductMediaById(id);
+    const links = await getAllMediaLinks();
+    res.json(links);
+  } catch (err: any) {
+    console.error('Media links failed:', err);
+    res.status(500).json({ error: 'Failed to load media links' });
+  }
+});
+
+// GET /media/variant/:variantId — все связи для SKU
+// ВАЖНО: должен быть ДО /:fileId.
+router.get('/variant/:variantId', async (req: Request, res: Response) => {
+  if (!(await ensureDb(req, res))) return;
+  try {
+    const variantId = param(req, 'variantId');
+    const links = await getMediaLinksForVariant(variantId);
+    res.json(links);
+  } catch (err: any) {
+    console.error('Media links failed:', err);
+    res.status(500).json({ error: 'Failed to load media links' });
+  }
+});
+
+// GET /media/:fileId — один файл
+router.get('/:fileId', async (req: Request, res: Response) => {
+  if (!(await ensureDb(req, res))) return;
+  try {
+    const id = param(req, 'fileId');
+    const item = await getMediaFileById(id);
     if (!item) {
       res.status(404).json({ error: 'Media not found' });
       return;
@@ -95,6 +128,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
+// POST /media — загрузка файла
 router.post(
   '/',
   upload.single('file'),
@@ -142,36 +176,38 @@ router.post(
       }
 
       const created = await withTransaction(async ({ query: txQuery }) => {
-        const out: RawProductMedia[] = [];
+        const mediaFile: MediaFile = {
+          id: '',
+          filename: file.filename,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          sizeBytes: file.size,
+          url: buildUrl(file.filename),
+          createdAt: new Date().toISOString(),
+        };
+        const savedFile = await insertMediaFile(mediaFile, txQuery);
 
-        if (isPrimary) {
-          for (const vid of valid) {
-            const existingForVariant = await getProductMediaForVariant(vid);
-            for (const m of existingForVariant) {
-              if (m.isPrimary) await updateProductMediaTx(txQuery, m.id, { isPrimary: false });
-            }
-          }
-        }
-
-        for (const vid of valid) {
-          const existingForVariant = await getProductMediaForVariant(vid);
-          const newItem: RawProductMedia = {
-            id: '',
+        const out: MediaLink[] = [];
+        for (let i = 0; i < valid.length; i++) {
+          const vid = valid[i];
+          const links = await getMediaLinksForVariant(vid);
+          const link: MediaLink = {
+            fileId: savedFile.id,
             variantId: vid,
-            mediaType: type,
-            url: buildUrl(file.filename),
-            fileName: file.originalname,
-            mimeType: file.mimetype,
-            sizeBytes: file.size,
-            isPrimary,
-            sortOrder: existingForVariant.length,
+            isPrimary: isPrimary && i === 0,
+            sortOrder: links.length,
             uploadedAt: new Date().toISOString(),
           };
-          const createdItem = await insertProductMediaRow(newItem, txQuery);
-          out.push(createdItem);
+          if (link.isPrimary) {
+            await txQuery(
+              'UPDATE product_media_links SET is_primary = FALSE WHERE variant_id = $1',
+              [vid]
+            );
+          }
+          await insertMediaLink(link, txQuery);
+          out.push(link);
         }
-
-        return out;
+        return { file: savedFile, links: out };
       });
 
       res.status(201).json(created);
@@ -182,50 +218,69 @@ router.post(
   }
 );
 
-router.patch('/:id', async (req: Request, res: Response) => {
+// PATCH /media/:fileId/primary/:variantId — set primary
+router.patch('/:fileId/primary/:variantId', async (req: Request, res: Response) => {
   if (!(await ensureDb(req, res))) return;
   try {
-    const id = param(req, 'id');
-    const updated = await updateProductMedia(id, (req.body || {}) as Partial<RawProductMedia>);
+    const fileId = param(req, 'fileId');
+    const variantId = param(req, 'variantId');
+    const updated = await updateMediaLink(fileId, variantId, { isPrimary: true });
     if (!updated) {
-      res.status(404).json({ error: 'Media not found' });
+      res.status(404).json({ error: 'Media link not found' });
       return;
     }
     res.json(updated);
   } catch (err: any) {
-    console.error('Media update failed:', err);
+    console.error('Media primary failed:', err);
     res.status(500).json({ error: 'Update failed', detail: err?.message ?? String(err) });
   }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /media/:fileId — удалить файл + все связи
+router.delete('/:fileId', async (req: Request, res: Response) => {
   if (!(await ensureDb(req, res))) return;
   try {
-    const id = param(req, 'id');
-    if (!id) {
-      res.status(400).json({ error: 'Missing media id' });
+    const fileId = param(req, 'fileId');
+    if (!fileId) {
+      res.status(400).json({ error: 'Missing file id' });
       return;
     }
-    const item = await getProductMediaById(id);
+    const item = await getMediaFileById(fileId);
     if (!item) {
       res.status(404).json({ error: 'Media not found' });
       return;
     }
 
-    const all = await getAllProductMedia();
-    const otherRefs = all.filter((m) => m.url === item.url && m.id !== id);
+    await deleteMediaFile(fileId);
 
-    if (item.url.startsWith('/uploads/') && otherRefs.length === 0) {
+    if (item.url.startsWith('/uploads/')) {
       const filePath = resolve(UPLOADS_DIR, item.url.replace(/^\/uploads\//, ''));
       if (existsSync(filePath)) {
         try { unlinkSync(filePath); } catch { /* ignore */ }
       }
     }
 
-    await deleteProductMedia(id);
-    res.json({ ok: true, id });
+    res.json({ ok: true, id: fileId });
   } catch (err: any) {
     console.error('Media delete failed:', err);
+    res.status(500).json({ error: 'Delete failed', detail: err?.message ?? String(err) });
+  }
+});
+
+// DELETE /media/link/:fileId/:variantId — удалить только связь
+router.delete('/link/:fileId/:variantId', async (req: Request, res: Response) => {
+  if (!(await ensureDb(req, res))) return;
+  try {
+    const fileId = param(req, 'fileId');
+    const variantId = param(req, 'variantId');
+    const deleted = await deleteMediaLink(fileId, variantId);
+    if (!deleted) {
+      res.status(404).json({ error: 'Media link not found' });
+      return;
+    }
+    res.json({ ok: true, fileId, variantId });
+  } catch (err: any) {
+    console.error('Media link delete failed:', err);
     res.status(500).json({ error: 'Delete failed', detail: err?.message ?? String(err) });
   }
 });

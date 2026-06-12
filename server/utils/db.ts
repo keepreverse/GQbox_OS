@@ -14,7 +14,7 @@ function getPool(): pg.Pool {
   return pool;
 }
 
-export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function query<T = unknown>(text: string, params?: unknown[]): Promise<T[]> {
   const client = await getPool().connect();
   try {
     const result = await client.query(text, params);
@@ -24,7 +24,7 @@ export async function query<T = any>(text: string, params?: any[]): Promise<T[]>
   }
 }
 
-export async function queryOne<T = any>(text: string, params?: any[]): Promise<T | null> {
+export async function queryOne<T = unknown>(text: string, params?: unknown[]): Promise<T | null> {
   const rows = await query<T>(text, params);
   return rows[0] ?? null;
 }
@@ -35,11 +35,11 @@ export async function withTransaction<T>(
   const client = await getPool().connect();
   try {
     await client.query('BEGIN');
-    const txQuery: typeof query = async <U = any>(text: string, params?: any[]) => {
+    const txQuery: typeof query = async <U = unknown>(text: string, params?: unknown[]) => {
       const result = await client.query(text, params);
       return result.rows as U[];
     };
-    const txQueryOne: typeof queryOne = async <U = any>(text: string, params?: any[]) => {
+    const txQueryOne: typeof queryOne = async <U = unknown>(text: string, params?: unknown[]) => {
       const rows = await txQuery<U>(text, params);
       return rows[0] ?? null;
     };
@@ -156,33 +156,73 @@ export async function initSchema(): Promise<void> {
     )
   `);
 
-  // ─── product_media: фото/видео вариантов товаров ─────────────────────
+  // ─── media_files: уникальные медиафайлы (хранилище) ───────────────────
   await query(`
-    CREATE TABLE IF NOT EXISTS product_media (
+    CREATE TABLE IF NOT EXISTS media_files (
       id VARCHAR(40) PRIMARY KEY,
-      variant_id VARCHAR(40) NOT NULL,
-      media_type VARCHAR(10) NOT NULL,
-      url TEXT NOT NULL,
-      file_name VARCHAR(255) NOT NULL,
+      filename VARCHAR(255) NOT NULL,
+      original_name VARCHAR(255) NOT NULL,
       mime_type VARCHAR(80) NOT NULL,
       size_bytes BIGINT NOT NULL DEFAULT 0,
+      url TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // ─── product_media_links: связи файл ↔ товар (M:N) ───────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS product_media_links (
+      file_id VARCHAR(40) NOT NULL,
+      variant_id VARCHAR(40) NOT NULL,
       is_primary BOOLEAN NOT NULL DEFAULT FALSE,
       sort_order INTEGER NOT NULL DEFAULT 0,
       uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (file_id, variant_id),
+      FOREIGN KEY (file_id) REFERENCES media_files(id) ON DELETE CASCADE,
       FOREIGN KEY (variant_id) REFERENCES products(id) ON DELETE CASCADE
     )
   `);
-  await query(`CREATE INDEX IF NOT EXISTS idx_product_media_variant ON product_media(variant_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_media_links_variant ON product_media_links(variant_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_media_links_file ON product_media_links(file_id)`);
+
+  // Migration: переход от старой product_media → новые media_files + links
+  await query(`
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='product_media') THEN
+        INSERT INTO media_files (id, filename, original_name, mime_type, size_bytes, url, created_at)
+        SELECT DISTINCT ON (url)
+          id,
+          substring(url from '^/uploads/(.+)$') as filename,
+          file_name as original_name,
+          mime_type,
+          size_bytes,
+          url,
+          uploaded_at
+        FROM product_media
+        ON CONFLICT (id) DO NOTHING;
+
+        INSERT INTO product_media_links (file_id, variant_id, is_primary, sort_order, uploaded_at)
+        SELECT id, variant_id, is_primary, sort_order, uploaded_at
+        FROM product_media
+        ON CONFLICT (file_id, variant_id) DO NOTHING;
+
+        DROP TABLE product_media CASCADE;
+      END IF;
+    END $$;
+  `);
 
   // Migration: widen id columns to fit UUIDs (36 chars) on existing DBs
   await query(`ALTER TABLE products ALTER COLUMN id TYPE VARCHAR(40)`);
-  await query(`ALTER TABLE product_media ALTER COLUMN id TYPE VARCHAR(40)`);
-  await query(`ALTER TABLE product_media ALTER COLUMN variant_id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE media_files ALTER COLUMN id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE product_media_links ALTER COLUMN file_id TYPE VARCHAR(40)`);
+  await query(`ALTER TABLE product_media_links ALTER COLUMN variant_id TYPE VARCHAR(40)`);
   await query(`ALTER TABLE kit_components ALTER COLUMN kit_id TYPE VARCHAR(40)`);
   await query(`ALTER TABLE kit_components ALTER COLUMN component_id TYPE VARCHAR(40)`);
 
   // Migration: clean up any records with empty id from prior bug
-  await query(`DELETE FROM product_media WHERE id IS NULL OR id = ''`);
+  await query(`DELETE FROM media_files WHERE id IS NULL OR id = ''`);
+  await query(`DELETE FROM product_media_links WHERE file_id IS NULL OR file_id = ''`);
   await query(`DELETE FROM products WHERE id IS NULL OR id = ''`);
 }
 

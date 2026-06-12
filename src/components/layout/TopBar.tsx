@@ -1,7 +1,7 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useState, useMemo, type RefObject, memo } from 'react';
 import { Menu, Bell, Settings, X, BellOff } from 'lucide-react';
 import { useLanguage } from '@context/LanguageContext';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import type { ViewType } from '@app-types';
 import DevModeBadge from './DevModeBadge';
 
@@ -18,18 +18,6 @@ interface TopBarProps {
   onNavigate?: (view: ViewType) => void;
 }
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'только что';
-  if (mins < 60) return `${mins} мин. назад`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} ч. назад`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} д. назад`;
-  return new Date(iso).toLocaleDateString();
-}
-
 const TYPE_STYLES: Record<string, string> = {
   success: 'border-l-2 border-l-success',
   warning: 'border-l-2 border-l-warning',
@@ -37,7 +25,7 @@ const TYPE_STYLES: Record<string, string> = {
   info: 'border-l-2 border-l-accent',
 };
 
-export function TopBar({
+function TopBarComponent({
   isMobile,
   sidebarOpen,
   developerMode,
@@ -49,18 +37,36 @@ export function TopBar({
   onOpenSettings,
   onNavigate,
 }: TopBarProps) {
-  const { language, setLanguage, t } = useLanguage();
-  const { notifications } = useDataSource();
-  const notifList = notifications.list;
+  const { language, setLanguage, t, formatShortDate } = useLanguage();
+  const { ds, version } = useDataSourceVersion('notifications');
+  const notifications = useMemo(() => ds.notifications, [ds, version]);
+  const notifList = useMemo(() => ds.notifications.list, [ds, version]);
+  const unreadCount = useMemo(() => ds.notifications.unreadCount, [ds, version]);
   const [sessionUnreadIds, setSessionUnreadIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (notificationsOpen) {
-      const ids = new Set(notifList.filter((n) => n.unread).map((n) => n.id));
-      setSessionUnreadIds(ids);
+    if (!notificationsOpen) return;
+    const ids = new Set(notifList.filter((n) => n.unread).map((n) => n.id));
+    setSessionUnreadIds(ids);
+    // Откладываем markAllRead на следующий фрейм, чтобы dropdown отрисовался
+    // и не было визуального подёргивания из-за двойного рендера.
+    const raf = requestAnimationFrame(() => {
       notifications.markAllRead();
-    }
-  }, [notificationsOpen]);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [notificationsOpen, notifications, notifList]);
+
+  const timeAgo = (iso: string): string => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t('topbar.time_ago.just_now');
+    if (mins < 60) return t('topbar.time_ago.mins', { n: mins });
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return t('topbar.time_ago.hours', { n: hours });
+    const days = Math.floor(hours / 24);
+    if (days < 7) return t('topbar.time_ago.days', { n: days });
+    return formatShortDate(iso);
+  };
 
   const handleNotificationClick = (n: typeof notifList[number]) => {
     if (n.actionView && onNavigate) onNavigate(n.actionView as ViewType);
@@ -133,15 +139,17 @@ export function TopBar({
             }`}
             title={t('header.notifications')}
             aria-expanded={notificationsOpen}
+            aria-controls="notifications-dropdown"
             aria-label={t('header.notifications')}
           >
             <Bell className="w-4 h-4" />
-            {notifications.unreadCount > 0 && !notificationsOpen && (
+            {unreadCount > 0 && !notificationsOpen && (
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-danger rounded-full" />
             )}
           </button>
 
           <div
+            id="notifications-dropdown"
             className={`t-dropdown absolute right-0 mt-2 w-80 max-w-[90vw] glass-strong rounded-xl shadow-xl border border-border-strong overflow-hidden ${
               notificationsOpen ? 'is-open' : ''
             }`}
@@ -173,7 +181,8 @@ export function TopBar({
                         </div>
                         <button
                           onClick={(e) => handleRemove(e, n.id)}
-                          className="h-5 w-5 rounded hover:bg-bg-hover text-text-tertiary hover:text-text-primary flex items-center justify-center flex-shrink-0 cursor-pointer"
+                          className="min-h-[44px] min-w-[44px] -m-[10px] rounded hover:bg-bg-hover text-text-tertiary hover:text-text-primary flex items-center justify-center flex-shrink-0 cursor-pointer"
+                          aria-label={t('common.cancel')}
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -217,3 +226,5 @@ export function TopBar({
     </header>
   );
 }
+
+export const TopBar = memo(TopBarComponent);

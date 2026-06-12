@@ -16,11 +16,12 @@ import {
   Trash2,
   Download,
   Check,
-  Star,
   Loader2,
   X as XIcon,
   AlertCircle,
   ImagePlus,
+  Unlink,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
@@ -29,12 +30,15 @@ import { useLayout } from '@context/LayoutContext';
 import Modal from '@components/ui/Modal';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import ProductSelector from '@components/ui/ProductSelector';
-import { useDataSource } from '@api/dataSourceContext';
+import Lightbox from '@components/ui/Lightbox';
+import ConfirmModal from '@components/ui/ConfirmModal';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import type { Column } from '@app-types/table';
-import type { ProductMedia, ProductWithRelations } from '@app-types';
-import { formatBytes, getMediaUrl, hasPlayableUrl } from '@utils/media';
+import type { MediaFile, ProductWithRelations } from '@app-types';
+import { formatBytes, getMediaUrl } from '@utils/media';
+import { uploadDiagnostics } from '@utils/uploadDiagnostics';
 
-// --- ИМПОРТЫ ДЛЯ ИДЕАЛЬНОГО DRAG & DROP ---
+// --- DRAG & DROP ---
 import {
   DndContext,
   closestCenter,
@@ -53,28 +57,22 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-type MediaItem = ProductMedia & {
-  _localUrl?: string;
-};
+type MediaFileWithLinks = MediaFile & { linkedSkus?: string[] };
 
 interface UploadDraft {
   id: string;
   file: File;
   previewUrl: string;
-  isPrimary: boolean;
   error?: string;
   uploading?: boolean;
 }
 
-// Компонент перетаскиваемой карточки
 interface SortableDraftProps {
   draft: UploadDraft;
-  onTogglePrimary: (id: string) => void;
   onRemove: (id: string) => void;
-  t: any;
 }
 
-function SortableDraft({ draft, onTogglePrimary, onRemove, t }: SortableDraftProps) {
+function SortableDraft({ draft, onRemove }: SortableDraftProps) {
   const {
     attributes,
     listeners,
@@ -88,7 +86,6 @@ function SortableDraft({ draft, onTogglePrimary, onRemove, t }: SortableDraftPro
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 10 : 1,
-    // Легкий скейл и тень дают ощущение "поднятой" карточки
     boxShadow: isDragging ? '0 10px 25px -5px rgba(0, 0, 0, 0.3)' : 'none',
   };
 
@@ -99,11 +96,7 @@ function SortableDraft({ draft, onTogglePrimary, onRemove, t }: SortableDraftPro
       {...attributes}
       {...listeners}
       className={`relative rounded-lg overflow-hidden border bg-bg-tertiary select-none cursor-grab touch-none transition-shadow ${
-        draft.error
-          ? 'border-danger/40'
-          : draft.isPrimary
-            ? 'border-warning/50'
-            : 'border-border-subtle'
+        draft.error ? 'border-danger/40' : 'border-border-subtle'
       } ${isDragging ? 'opacity-90 scale-[1.03]' : 'opacity-100'}`}
     >
       <div className="aspect-square bg-bg-tertiary flex items-center justify-center overflow-hidden">
@@ -122,31 +115,14 @@ function SortableDraft({ draft, onTogglePrimary, onRemove, t }: SortableDraftPro
           />
         )}
       </div>
-      
+
       {draft.uploading && (
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <Loader2 className="w-6 h-6 text-white animate-spin" />
         </div>
       )}
 
-      {/* Кнопки действий: останавливаем Pointer Events, чтобы они нажимались, а не тащили карточку */}
       <div className="absolute top-1 left-1 right-1 flex items-start justify-between gap-1">
-        <button
-          type="button"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePrimary(draft.id);
-          }}
-          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-            draft.isPrimary
-              ? 'bg-warning text-white'
-              : 'bg-bg-tertiary/80 text-text-tertiary hover:text-warning'
-          }`}
-          title={t('media.set_primary')}
-        >
-          <Star className="w-3 h-3" fill={draft.isPrimary ? 'currentColor' : 'none'} />
-        </button>
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
@@ -181,7 +157,7 @@ function SortableDraft({ draft, onTogglePrimary, onRemove, t }: SortableDraftPro
 export default function MediaManager() {
   const { t } = useLanguage();
   const { isMobile } = useLayout();
-  const ds = useDataSource();
+  const { ds, version } = useDataSourceVersion('products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
@@ -195,23 +171,17 @@ export default function MediaManager() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmUnlink, setConfirmUnlink] = useState<{ fileId: string; variantId: string } | null>(null);
 
-  const allMedia: MediaItem[] = ds.products.getAllMedia();
-  const products: ProductWithRelations[] = ds.products.list;
+  const allMedia = useMemo(() => ds.products.getAllMedia() as MediaFileWithLinks[], [ds, version]);
+  const allLinks = useMemo(() => ds.products.getAllMediaLinks ? ds.products.getAllMediaLinks() : [], [ds, version]);
+  const products = useMemo(() => ds.products.list, [ds, version]);
 
-  const productById = useMemo(() => {
-    const m = new Map<string, ProductWithRelations>();
-    for (const p of products) m.set(p.id, p);
-    return m;
-  }, [products]);
-
-  // Настройка сенсоров Dnd-Kit (позволяет кликать по кнопкам без срабатывания драга)
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, // Нужно сдвинуть мышь на 5px, чтобы начать перетаскивание
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -256,37 +226,28 @@ export default function MediaManager() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!previewMedia) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPreviewMedia(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [previewMedia]);
-
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return allMedia.filter((m) => {
       if (!m.id) return false;
-      const product = productById.get(m.variantId);
-      const sku = product?.sku ?? '';
-      const productName = product?.productName ?? '';
       const matchesSearch =
         !q ||
-        m.fileName.toLowerCase().includes(q) ||
-        sku.toLowerCase().includes(q) ||
-        productName.toLowerCase().includes(q);
-      const matchesType = filterType === 'all' || m.mediaType === filterType;
+        m.filename.toLowerCase().includes(q) ||
+        m.originalName.toLowerCase().includes(q) ||
+        (m.linkedSkus ?? []).some((s) => s.toLowerCase().includes(q));
+      const matchesType =
+        filterType === 'all' ||
+        (filterType === 'image' && m.mimeType.startsWith('image/')) ||
+        (filterType === 'video' && m.mimeType.startsWith('video/'));
       return matchesSearch && matchesType;
     });
-  }, [allMedia, searchQuery, filterType, productById]);
+  }, [allMedia, searchQuery, filterType]);
 
   const counts = useMemo(
     () => ({
       total: allMedia.filter((m) => m.id).length,
-      images: allMedia.filter((m) => m.id && m.mediaType === 'image').length,
-      videos: allMedia.filter((m) => m.id && m.mediaType === 'video').length,
+      images: allMedia.filter((m) => m.id && m.mimeType.startsWith('image/')).length,
+      videos: allMedia.filter((m) => m.id && m.mimeType.startsWith('video/')).length,
     }),
     [allMedia]
   );
@@ -310,11 +271,13 @@ export default function MediaManager() {
           showToast(`${f.name}: ${t('media.toast.unsupported_type')}`, 'error');
           continue;
         }
+        uploadDiagnostics.record('file-selected', { name: f.name, size: f.size });
+        const previewUrl = URL.createObjectURL(f);
+        uploadDiagnostics.record('preview-generated', { name: f.name });
         newDrafts.push({
           id: crypto.randomUUID(),
           file: f,
-          previewUrl: URL.createObjectURL(f),
-          isPrimary: false,
+          previewUrl,
         });
       }
       if (newDrafts.length > 0) {
@@ -357,7 +320,7 @@ export default function MediaManager() {
   const removeDraft = useCallback((id: string) => {
     setUploadDrafts((prev) => {
       const next = [...prev];
-      const idx = next.findIndex(d => d.id === id);
+      const idx = next.findIndex((d) => d.id === id);
       if (idx !== -1) {
         const [removed] = next.splice(idx, 1);
         if (removed) {
@@ -366,15 +329,6 @@ export default function MediaManager() {
       }
       return next;
     });
-  }, []);
-
-  const toggleDraftPrimary = useCallback((id: string) => {
-    setUploadDrafts((prev) =>
-      prev.map((d) => {
-        if (d.id === id) return { ...d, isPrimary: !d.isPrimary };
-        return { ...d, isPrimary: false };
-      })
-    );
   }, []);
 
   const submitUpload = useCallback(async () => {
@@ -388,8 +342,6 @@ export default function MediaManager() {
       return;
     }
     setIsUploading(true);
-    const primaryIdx = uploadDrafts.findIndex((d) => d.isPrimary);
-    const effectivePrimary = primaryIdx >= 0 ? primaryIdx : 0;
     ds.beginBatch();
     let okCount = 0;
     let failCount = 0;
@@ -399,18 +351,22 @@ export default function MediaManager() {
         setUploadDrafts((prev) =>
           prev.map((x, idx) => (idx === i ? { ...x, uploading: true, error: undefined } : x))
         );
+        uploadDiagnostics.record('upload-started', { name: d.file.name });
         try {
           const result = await ds.products.uploadMedia(d.file, {
             variantIds,
-            isPrimary: i === effectivePrimary,
+            isPrimary: i === 0,
           });
-          okCount += result.mediaItems.length;
+          uploadDiagnostics.record('upload-completed', { name: d.file.name, fileId: result.file.id });
+          uploadDiagnostics.record('server-response', { fileId: result.file.id, links: result.links.length });
+          okCount += result.links.length;
           setUploadDrafts((prev) =>
             prev.map((x, idx) => (idx === i ? { ...x, uploading: false } : x))
           );
         } catch (err) {
           failCount++;
           const msg = err instanceof Error ? err.message : String(err);
+          uploadDiagnostics.record('upload-completed', { name: d.file.name }, msg);
           setUploadDrafts((prev) =>
             prev.map((x, idx) => (idx === i ? { ...x, uploading: false, error: msg } : x))
           );
@@ -425,6 +381,7 @@ export default function MediaManager() {
     }
     if (failCount > 0) {
       showToast(t('media.toast.upload_failed'), 'error');
+      uploadDiagnostics.dump();
     }
     if (failCount === 0) {
       closeUpload();
@@ -455,14 +412,14 @@ export default function MediaManager() {
     if (selectedItems.length === 0) return;
     const items = selectedItems
       .map((id) => allMedia.find((m) => m.id === id))
-      .filter(Boolean) as MediaItem[];
+      .filter(Boolean) as MediaFileWithLinks[];
     let downloaded = 0;
     for (const m of items) {
       const url = getMediaUrl(m.url);
       if (!url) continue;
       const a = document.createElement('a');
       a.href = url;
-      a.download = m.fileName || `${m.id}`;
+      a.download = m.originalName || `${m.id}`;
       a.target = '_blank';
       a.rel = 'noreferrer';
       document.body.appendChild(a);
@@ -473,23 +430,10 @@ export default function MediaManager() {
     showToast(t('media.toast.downloading') + ` ${downloaded}`);
   }, [selectedItems, allMedia, showToast, t]);
 
-  const handleSetPrimary = useCallback(
-    async (id: string) => {
-      try {
-        await ds.products.setMediaPrimary(id);
-        showToast(t('media.toast.primary_set'));
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        showToast(msg, 'error');
-      }
-    },
-    [ds.products, showToast, t]
-  );
-
   const handleDeleteOne = useCallback(
-    async (m: MediaItem) => {
+    async (fileId: string) => {
       try {
-        await ds.products.deleteMedia(m.id);
+        await ds.products.deleteMedia(fileId);
         showToast(t('media.toast.deleted') + ' 1');
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -499,8 +443,25 @@ export default function MediaManager() {
     [ds.products, showToast, t]
   );
 
+  const handleUnlinkOne = useCallback(
+    async (fileId: string, variantId: string) => {
+      try {
+        if (ds.products.deleteMediaLink) {
+          await ds.products.deleteMediaLink(fileId, variantId);
+        } else {
+          throw new Error('deleteMediaLink not supported');
+        }
+        showToast(t('media.toast.unlinked') + ' 1');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        showToast(msg, 'error');
+      }
+    },
+    [ds.products, showToast, t]
+  );
+
   const handleDownloadOne = useCallback(
-    (m: MediaItem) => {
+    (m: MediaFileWithLinks) => {
       const url = getMediaUrl(m.url);
       if (!url) {
         showToast(t('media.toast.no_url'), 'error');
@@ -508,7 +469,7 @@ export default function MediaManager() {
       }
       const a = document.createElement('a');
       a.href = url;
-      a.download = m.fileName || `${m.id}`;
+      a.download = m.originalName || `${m.id}`;
       a.target = '_blank';
       a.rel = 'noreferrer';
       document.body.appendChild(a);
@@ -518,35 +479,28 @@ export default function MediaManager() {
     [showToast, t]
   );
 
-  const mediaColumns: Column<MediaItem>[] = [
+  const mediaColumns: Column<MediaFileWithLinks>[] = [
     {
       key: 'file',
       header: t('media.col.file'),
       width: 30,
       cell: (m) => {
-        const product = productById.get(m.variantId);
-        const productName = product?.productName ?? m.variantId;
         return (
           <div
             className="flex items-center gap-1.5 sm:gap-2 min-w-0 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              setPreviewMedia(m);
+              const idx = filtered.findIndex((f) => f.id === m.id);
+              if (idx !== -1) setLightboxIndex(idx);
             }}
           >
-            {m.mediaType === 'image' ? (
+            {m.mimeType.startsWith('image/') ? (
               <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />
             ) : (
               <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />
             )}
-            <span className="truncate text-[11px] sm:text-sm" title={m.fileName}>
-              {m.fileName}
-            </span>
-            {m.isPrimary && (
-              <Star className="w-3 h-3 text-warning flex-shrink-0" fill="currentColor" />
-            )}
-            <span className="hidden lg:inline text-[10px] text-text-tertiary truncate">
-              · {productName}
+            <span className="truncate text-[11px] sm:text-sm" title={m.originalName}>
+              {m.originalName}
             </span>
           </div>
         );
@@ -560,25 +514,34 @@ export default function MediaManager() {
       cell: (m) => (
         <span
           className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded inline-block truncate max-w-full ${
-            m.mediaType === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
+            m.mimeType.startsWith('image/') ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
           }`}
         >
-          {m.mediaType === 'image' ? t('media.image_label') : t('media.video_label')}
+          {m.mimeType.startsWith('image/') ? t('media.image_label') : t('media.video_label')}
         </span>
       ),
     },
     {
-      key: 'sku',
-      header: t('media.col.sku'),
-      width: 18,
-      cell: (m) => {
-        const product = productById.get(m.variantId);
-        return (
-          <span className="truncate block text-[11px] sm:text-xs text-accent" title={product?.sku}>
-            {product?.sku ?? m.variantId}
-          </span>
-        );
-      },
+      key: 'links',
+      header: t('media.col.links'),
+      width: 24,
+      cell: (m) => (
+        <div className="flex flex-wrap gap-1">
+          {(m.linkedSkus ?? []).length === 0 && (
+            <span className="text-[11px] text-text-tertiary">{t('media.no_links')}</span>
+          )}
+          {(m.linkedSkus ?? []).map((sku) => (
+            <span
+              key={sku}
+              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
+              title={sku}
+            >
+              <LinkIcon className="w-2.5 h-2.5" />
+              {sku}
+            </span>
+          ))}
+        </div>
+      ),
     },
     {
       key: 'size',
@@ -599,7 +562,7 @@ export default function MediaManager() {
       nowrap: true,
       cell: (m) => (
         <span className="text-[11px] sm:text-xs text-text-tertiary truncate block">
-          {m.uploadedAt?.slice(0, 10)}
+          {m.createdAt?.slice(0, 10)}
         </span>
       ),
     },
@@ -610,19 +573,6 @@ export default function MediaManager() {
       align: 'right',
       cell: (m) => (
         <div className="flex items-center justify-end gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity">
-          {!m.isPrimary && (
-            <button
-              className="p-1 rounded hover:bg-warning/10 hover:text-warning text-text-tertiary transition-colors cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSetPrimary(m.id);
-              }}
-              title={t('media.set_primary')}
-              aria-label={t('media.set_primary')}
-            >
-              <Star className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-            </button>
-          )}
           <button
             className="p-1 rounded hover:bg-bg-hover hover:text-text-primary text-text-tertiary transition-colors cursor-pointer"
             onClick={(e) => {
@@ -638,7 +588,7 @@ export default function MediaManager() {
             className="p-1 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              handleDeleteOne(m);
+              setConfirmDelete(m.id);
             }}
             title={t('media.toast.deleting_item')}
             aria-label={t('media.toast.deleting_item')}
@@ -654,8 +604,6 @@ export default function MediaManager() {
     <div className="space-y-2">
       {filtered.map((item) => {
         const isSelected = selectedItems.includes(item.id);
-        const product = productById.get(item.variantId);
-        const productName = product?.productName ?? item.variantId;
         const playableUrl = getMediaUrl(item.url);
         return (
           <div
@@ -669,19 +617,20 @@ export default function MediaManager() {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setPreviewMedia(item);
+                const idx = filtered.findIndex((f) => f.id === item.id);
+                if (idx !== -1) setLightboxIndex(idx);
               }}
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-bg-tertiary border border-border-subtle flex-shrink-0 flex items-center justify-center hover:border-border-default transition-colors"
               aria-label="Preview"
             >
-              {playableUrl && item.mediaType === 'image' ? (
+              {playableUrl && item.mimeType.startsWith('image/') ? (
                 <img
                   src={playableUrl}
-                  alt={item.fileName}
+                  alt={item.originalName}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              ) : playableUrl && item.mediaType === 'video' ? (
+              ) : playableUrl && item.mimeType.startsWith('video/') ? (
                 <video
                   src={playableUrl}
                   className="w-full h-full object-cover"
@@ -689,7 +638,7 @@ export default function MediaManager() {
                   playsInline
                   preload="metadata"
                 />
-              ) : item.mediaType === 'image' ? (
+              ) : item.mimeType.startsWith('image/') ? (
                 <FileImage className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
               ) : (
                 <FileVideo className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
@@ -697,42 +646,52 @@ export default function MediaManager() {
             </button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 mb-1">
-                {item.isPrimary && (
-                  <Star className="w-3 h-3 text-warning flex-shrink-0" fill="currentColor" />
-                )}
-                <p className="text-sm font-medium truncate" title={item.fileName}>
-                  {item.fileName}
+                <p className="text-sm font-medium truncate" title={item.originalName}>
+                  {item.originalName}
                 </p>
               </div>
-              <p className="text-[11px] text-accent truncate" title={product?.sku}>
-                {product?.sku ?? item.variantId} · {productName}
-              </p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded inline-block ${
-                    item.mediaType === 'image' ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
+                    item.mimeType.startsWith('image/') ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
                   }`}
                 >
-                  {item.mediaType === 'image' ? t('media.image_label') : t('media.video_label')}
+                  {item.mimeType.startsWith('image/') ? t('media.image_label') : t('media.video_label')}
                 </span>
                 <span className="text-[10px] text-text-tertiary">{formatBytes(item.sizeBytes)}</span>
-                <span className="text-[10px] text-text-muted">{item.uploadedAt?.slice(0, 10)}</span>
+                <span className="text-[10px] text-text-muted">{item.createdAt?.slice(0, 10)}</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {(item.linkedSkus ?? []).length === 0 && (
+                  <span className="text-[10px] text-text-tertiary">{t('media.no_links')}</span>
+                )}
+                {(item.linkedSkus ?? []).map((sku) => {
+                  const product = products.find((p) => p.sku === sku);
+                  const variantId = product?.id ?? sku;
+                  return (
+                    <span
+                      key={sku}
+                      className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
+                      title={sku}
+                    >
+                      <LinkIcon className="w-2.5 h-2.5" />
+                      {sku}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmUnlink({ fileId: item.id, variantId });
+                        }}
+                        className="ml-0.5 p-0.5 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer"
+                        title={t('media.unlink')}
+                      >
+                        <Unlink className="w-2.5 h-2.5" />
+                      </button>
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <div className="flex items-center gap-0.5 flex-shrink-0">
-              {!item.isPrimary && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSetPrimary(item.id);
-                  }}
-                  className="p-1.5 rounded hover:bg-warning/10 hover:text-warning text-text-tertiary transition-colors cursor-pointer"
-                  aria-label={t('media.set_primary')}
-                  title={t('media.set_primary')}
-                >
-                  <Star className="w-3.5 h-3.5" />
-                </button>
-              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -746,7 +705,7 @@ export default function MediaManager() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteOne(item);
+                  setConfirmDelete(item.id);
                 }}
                 className="p-1.5 rounded hover:bg-danger/10 hover:text-danger text-text-tertiary transition-colors cursor-pointer"
                 aria-label="Delete"
@@ -782,7 +741,7 @@ export default function MediaManager() {
         </div>
         <button
           onClick={openUpload}
-          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-all cursor-pointer font-medium border border-accent/40 flex-shrink-0"
+          className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40 flex-shrink-0"
         >
           <Upload className="w-4 h-4" /> {t('media.upload')}
         </button>
@@ -846,7 +805,7 @@ export default function MediaManager() {
 
       {/* Selection Bar */}
       <div
-        className="grid transition-all duration-150"
+        className="grid transition-[grid-template-rows] duration-150"
         style={{ gridTemplateRows: selectedItems.length > 0 ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden min-h-0">
@@ -892,12 +851,11 @@ export default function MediaManager() {
       {viewMode === 'grid' && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
           {filtered.map((item) => {
-            const product = productById.get(item.variantId);
             const playableUrl = getMediaUrl(item.url);
             return (
               <div
                 key={item.id}
-                className={`glass group relative rounded-xl overflow-hidden border transition-all duration-150 cursor-pointer hover:-translate-y-0.5 hover:border-border-default`}
+                className={`glass group relative rounded-xl overflow-hidden border transition-[colors,opacity,transform,box-shadow] duration-150 cursor-pointer hover:-translate-y-0.5 hover:border-border-default`}
                 onClick={() => toggleSelect(item.id)}
               >
                 <button
@@ -905,7 +863,8 @@ export default function MediaManager() {
                   className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-bg-tertiary/80 backdrop-blur-sm border border-border-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-bg-hover"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setPreviewMedia(item);
+                    const idx = filtered.findIndex((f) => f.id === item.id);
+                    if (idx !== -1) setLightboxIndex(idx);
                   }}
                   aria-label="Preview"
                   title="Preview"
@@ -913,14 +872,14 @@ export default function MediaManager() {
                   <ImagePlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-secondary" />
                 </button>
                 <div className="aspect-square bg-bg-tertiary flex items-center justify-center overflow-hidden">
-                  {playableUrl && item.mediaType === 'image' ? (
+                  {playableUrl && item.mimeType.startsWith('image/') ? (
                     <img
                       src={playableUrl}
-                      alt={item.fileName}
+                      alt={item.originalName}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                  ) : playableUrl && item.mediaType === 'video' ? (
+                  ) : playableUrl && item.mimeType.startsWith('video/') ? (
                     <video
                       src={playableUrl}
                       className="w-full h-full object-cover"
@@ -928,12 +887,12 @@ export default function MediaManager() {
                       playsInline
                       preload="metadata"
                     />
-                  ) : item.mediaType === 'image' ? (
+                  ) : item.mimeType.startsWith('image/') ? (
                     <FileImage className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                   ) : (
                     <FileVideo className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                   )}
-                  {item.mediaType === 'video' && playableUrl && (
+                  {item.mimeType.startsWith('video/') && playableUrl && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -949,18 +908,27 @@ export default function MediaManager() {
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    {item.isPrimary && (
-                      <Star className="w-3 h-3 text-warning flex-shrink-0" fill="currentColor" />
-                    )}
-                    <p className="text-[11px] sm:text-xs font-medium truncate" title={item.fileName}>
-                      {item.fileName}
+                    <p className="text-[11px] sm:text-xs font-medium truncate" title={item.originalName}>
+                      {item.originalName}
                     </p>
                   </div>
                   <div className="flex items-center justify-between mt-1 gap-1">
                     <span className="text-[10px] text-text-tertiary">{formatBytes(item.sizeBytes)}</span>
-                    <span className="text-[10px] text-text-muted truncate max-w-[80px]" title={product?.sku}>
-                      {product?.sku ?? item.variantId}
+                    <span className="text-[10px] text-text-muted truncate max-w-[80px]" title={(item.linkedSkus ?? []).join(', ')}>
+                      {(item.linkedSkus ?? []).length} {t('media.links')}
                     </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(item.linkedSkus ?? []).map((sku) => (
+                      <span
+                        key={sku}
+                        className="inline-flex items-center gap-1 text-[9px] px-1 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
+                        title={sku}
+                      >
+                        <LinkIcon className="w-2 h-2" />
+                        {sku}
+                      </span>
+                    ))}
                   </div>
                 </div>
                 {selectedItems.includes(item.id) && (
@@ -1028,7 +996,7 @@ export default function MediaManager() {
               uploadDrafts.length === 0 ||
               selectedProducts.length === 0
             }
-            className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-2"
+            className="w-full min-h-[44px] py-2.5 rounded-lg bg-accent/25 text-white text-sm hover:bg-accent/35 disabled:opacity-50 disabled:cursor-not-allowed transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40 flex items-center justify-center gap-2"
           >
             {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
             {isUploading
@@ -1093,97 +1061,64 @@ export default function MediaManager() {
               <p className="text-[10px] sm:text-xs text-text-tertiary">
                 {t('media.drafts_count').replace('{count}', String(uploadDrafts.length))}
               </p>
-              
-              {/* МАГИЯ DND-KIT ДЛЯ СЕТКИ */}
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={uploadDrafts.map((d) => d.id)} strategy={rectSortingStrategy}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     {uploadDrafts.map((d) => (
-                      <SortableDraft 
-                        key={d.id} 
-                        draft={d} 
-                        onTogglePrimary={toggleDraftPrimary} 
-                        onRemove={removeDraft} 
-                        t={t} 
+                      <SortableDraft
+                        key={d.id}
+                        draft={d}
+                        onRemove={removeDraft}
                       />
                     ))}
                   </div>
                 </SortableContext>
               </DndContext>
-
             </div>
           )}
         </div>
       </Modal>
 
       {/* Lightbox */}
-      {previewMedia && (
-        <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-card-in"
-          onClick={() => setPreviewMedia(null)}
-        >
-          <button
-            type="button"
-            onClick={() => setPreviewMedia(null)}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 w-10 h-10 rounded-full bg-bg-tertiary/80 backdrop-blur-sm border border-border-subtle text-text-primary hover:bg-bg-hover flex items-center justify-center transition-colors z-10"
-            aria-label="Close"
-          >
-            <XIcon className="w-4 h-4" />
-          </button>
-          {hasPlayableUrl(previewMedia) ? (
-            previewMedia.mediaType === 'image' ? (
-              <img
-                src={getMediaUrl(previewMedia.url)}
-                alt={previewMedia.fileName}
-                className="max-w-full max-h-full object-contain rounded-lg"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <video
-                src={getMediaUrl(previewMedia.url)}
-                controls
-                autoPlay
-                className="max-w-full max-h-full rounded-lg"
-                onClick={(e) => e.stopPropagation()}
-              />
-            )
-          ) : (
-            <div className="text-center text-text-muted">
-              {previewMedia.mediaType === 'image' ? (
-                <FileImage className="w-16 h-16 mx-auto mb-2" />
-              ) : (
-                <FileVideo className="w-16 h-16 mx-auto mb-2" />
-              )}
-              <p className="text-sm">{t('media.toast.no_url')}</p>
-            </div>
-          )}
-          <div className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 px-3 py-2 rounded-lg bg-bg-tertiary/85 backdrop-blur-sm border border-border-subtle text-text-primary text-xs flex items-center gap-2 sm:gap-3 max-w-2xl mx-auto">
-            {previewMedia.isPrimary && (
-              <Star className="w-3.5 h-3.5 text-warning flex-shrink-0" fill="currentColor" />
-            )}
-            <span className="truncate flex-1" title={previewMedia.fileName}>
-              {previewMedia.fileName}
-            </span>
-            <span className="text-text-tertiary text-[10px] sm:text-xs flex-shrink-0">
-              {formatBytes(previewMedia.sizeBytes)}
-            </span>
-            <span className="text-text-tertiary text-[10px] sm:text-xs flex-shrink-0 hidden sm:inline">
-              {previewMedia.uploadedAt?.slice(0, 10)}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDownloadOne(previewMedia);
-              }}
-              className="p-1.5 rounded hover:bg-bg-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer flex-shrink-0"
-              aria-label="Download"
-            >
-              <Download className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
+      <Lightbox
+        open={lightboxIndex >= 0}
+        files={filtered}
+        links={allLinks}
+        currentIndex={lightboxIndex >= 0 ? lightboxIndex : 0}
+        onClose={() => setLightboxIndex(-1)}
+        onChangeIndex={setLightboxIndex}
+        onDelete={(fileId) => setConfirmDelete(fileId)}
+      />
+
+      {/* Confirm Delete */}
+      <ConfirmModal
+        open={!!confirmDelete}
+        title={t('media.confirm_delete_title')}
+        description={t('media.confirm_delete_desc')}
+        variant="danger"
+        onConfirm={() => {
+          if (confirmDelete) {
+            handleDeleteOne(confirmDelete);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
+
+      {/* Confirm Unlink */}
+      <ConfirmModal
+        open={!!confirmUnlink}
+        title={t('media.confirm_unlink_title')}
+        description={t('media.confirm_unlink_desc')}
+        variant="warning"
+        onConfirm={() => {
+          if (confirmUnlink) {
+            handleUnlinkOne(confirmUnlink.fileId, confirmUnlink.variantId);
+            setConfirmUnlink(null);
+          }
+        }}
+        onCancel={() => setConfirmUnlink(null)}
+      />
     </div>
   );
 }

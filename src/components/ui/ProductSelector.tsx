@@ -23,7 +23,7 @@ import {
   Monitor,
 } from 'lucide-react';
 import type { ProductWithRelations } from '@app-types';
-import { useDataSource } from '@api/dataSourceContext';
+import { useDataSourceVersion } from '@api/dataSourceContext';
 import { getCategoryColorVar } from '@utils/display';
 
 const categoryIcons: Record<string, React.ElementType> = {
@@ -53,8 +53,8 @@ export default function ProductSelector({
   placeholder = 'Search product by SKU or name...',
   excludeIds = [],
 }: ProductSelectorProps) {
-  const { products: productsApi } = useDataSource();
-  const allProducts = productsApi.list;
+  const { ds, version } = useDataSourceVersion('products');
+  const allProducts = useMemo(() => ds.products.list, [ds, version]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -178,7 +178,7 @@ export default function ProductSelector({
     <>
       <div
         ref={containerRef}
-        className="relative flex flex-wrap items-center gap-1.5 sm:gap-2 min-h-[44px] w-full px-3 py-1.5 rounded-xl bg-bg-secondary border border-border-subtle focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all cursor-text"
+        className="relative flex flex-wrap items-center gap-1.5 sm:gap-2 min-h-[44px] w-full px-3 py-1.5 rounded-xl bg-bg-secondary border border-border-subtle focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-[colors,opacity,transform,box-shadow] cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {selected.map((p) => {
