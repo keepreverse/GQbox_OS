@@ -3,63 +3,60 @@
  *
  * Features:
  * - Counter (1 / 5)
- * - Primary toggle
  * - Delete
  * - Download
  * - Keyboard navigation (Left / Right arrows)
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import Modal from './Modal';
 import { useLanguage } from '@context/LanguageContext';
-import { MediaFile, MediaLink } from '@app-types';
+import { MediaFile } from '@app-types';
 import {
   ChevronLeft,
   ChevronRight,
-  Star,
   Trash2,
   Download,
-  Image as ImageIcon,
 } from 'lucide-react';
 
 interface LightboxProps {
   open: boolean;
   files: MediaFile[];
-  links: MediaLink[];
   currentIndex: number;
   onClose: () => void;
   onChangeIndex: (index: number) => void;
-  onTogglePrimary?: (fileId: string, variantId: string) => void;
   onDelete?: (fileId: string) => void;
-  /** Optional variantId to determine which link is primary */
-  variantId?: string;
 }
 
 export default function Lightbox({
   open,
   files,
-  links,
   currentIndex,
   onClose,
   onChangeIndex,
-  onTogglePrimary,
   onDelete,
-  variantId,
 }: LightboxProps) {
   const { t } = useLanguage();
-  const file = files[currentIndex];
+
+  // Keep last valid index so we don't flash back to 0 while closing
+  const lastValidIndexRef = useRef(currentIndex);
+  if (currentIndex >= 0 && currentIndex < files.length) {
+    lastValidIndexRef.current = currentIndex;
+  }
+  const displayIndex =
+    currentIndex >= 0 && currentIndex < files.length
+      ? currentIndex
+      : lastValidIndexRef.current;
+  const file = files[displayIndex];
 
   const total = files.length;
-  const isFirst = currentIndex === 0;
-  const isLast = currentIndex === total - 1;
-
   const goPrev = useCallback(() => {
-    if (!isFirst) onChangeIndex(currentIndex - 1);
-  }, [isFirst, currentIndex, onChangeIndex]);
+    onChangeIndex(displayIndex === 0 ? total - 1 : displayIndex - 1);
+  }, [displayIndex, onChangeIndex, total]);
 
   const goNext = useCallback(() => {
-    if (!isLast) onChangeIndex(currentIndex + 1);
-  }, [isLast, currentIndex, onChangeIndex]);
+    onChangeIndex(displayIndex === total - 1 ? 0 : displayIndex + 1);
+  }, [displayIndex, onChangeIndex, total]);
 
   useEffect(() => {
     if (!open) return;
@@ -72,11 +69,36 @@ export default function Lightbox({
     return () => window.removeEventListener('keydown', handler);
   }, [open, goPrev, goNext, onClose]);
 
-  if (!file) return null;
+  // Snappy fade-in on navigation: old image disappears instantly,
+  // new one fades in over 120ms (no visible background flash)
+  const [imgIndex, setImgIndex] = useState(displayIndex);
+  const [imgVisible, setImgVisible] = useState(true);
+  const isFirstRender = useRef(true);
 
-  const isPrimary =
-    variantId &&
-    links.some((l) => l.fileId === file.id && l.variantId === variantId && l.isPrimary);
+  // Clamp imgIndex when files array shrinks (e.g., after deletion)
+  const safeImgIndex =
+    imgIndex >= 0 && imgIndex < files.length ? imgIndex : displayIndex;
+  const imgFile = files[safeImgIndex] ?? file;
+
+  // Sync imgIndex with displayIndex immediately (no delay)
+  useEffect(() => {
+    if (displayIndex !== imgIndex) {
+      setImgIndex(displayIndex);
+    }
+  }, [displayIndex]);
+
+  // Trigger fade-in after imgIndex changes (skip on first render)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setImgVisible(false);
+    const raf = requestAnimationFrame(() => setImgVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, [imgIndex]);
+
+  if (!file) return null;
 
   return (
     <Modal
@@ -94,46 +116,36 @@ export default function Lightbox({
       <div className="relative flex flex-col items-center justify-center min-h-[50vh] max-h-[85vh]">
         {/* Image */}
         <img
-          src={file.url}
-          alt={file.originalName}
-          className="max-w-full max-h-[70vh] object-contain rounded-md"
+          src={imgFile.url}
+          alt={imgFile.originalName}
+          className="max-w-full max-h-[70vh] object-contain rounded-md transition-opacity duration-150 ease-out"
+          style={{ opacity: imgVisible ? 1 : 0 }}
           loading="eager"
         />
 
-        {/* Top bar: counter + actions */}
+        {/* Top bar: counter + actions (no fade, always visible) */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           <span className="px-2.5 py-1 rounded-md bg-black/60 text-white text-xs font-medium pointer-events-auto">
-            {currentIndex + 1} / {total}
+            {displayIndex + 1} / {total}
           </span>
           <div className="flex items-center gap-2 pointer-events-auto">
-            {onTogglePrimary && variantId && (
-              <button
-                onClick={() => onTogglePrimary(file.id, variantId)}
-                className={`p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 ${
-                  isPrimary ? 'text-yellow-400' : ''
-                }`}
-                title={t('media.primary')}
-              >
-                <Star className="w-4 h-4" fill={isPrimary ? 'currentColor' : 'none'} />
-              </button>
-            )}
+            <a
+              href={imgFile.url}
+              download={imgFile.originalName}
+              className="p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 cursor-pointer"
+              title={t('media.download')}
+            >
+              <Download className="w-4 h-4" />
+            </a>
             {onDelete && (
               <button
-                onClick={() => onDelete(file.id)}
-                className="p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-danger/80"
+                onClick={() => onDelete(imgFile.id)}
+                className="p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-danger/80 cursor-pointer"
                 title={t('media.delete')}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
-            <a
-              href={file.url}
-              download={file.originalName}
-              className="p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
-              title={t('media.download')}
-            >
-              <Download className="w-4 h-4" />
-            </a>
           </div>
         </div>
 
@@ -142,16 +154,14 @@ export default function Lightbox({
           <>
             <button
               onClick={goPrev}
-              disabled={isFirst}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white transition-all duration-150 ease-out hover:bg-black/80 cursor-pointer"
               aria-label={t('media.prev')}
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={goNext}
-              disabled={isLast}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white transition-all duration-150 ease-out hover:bg-black/80 cursor-pointer"
               aria-label={t('media.next')}
             >
               <ChevronRight className="w-6 h-6" />
@@ -159,19 +169,9 @@ export default function Lightbox({
           </>
         )}
 
-        {/* Filename */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 text-white/80 text-xs">
-          <ImageIcon className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="truncate">{file.originalName}</span>
-          <span className="flex-shrink-0 ml-auto">{formatSize(file.sizeBytes)}</span>
-        </div>
       </div>
     </Modal>
   );
 }
 
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+

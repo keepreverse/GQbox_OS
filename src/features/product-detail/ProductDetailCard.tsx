@@ -19,7 +19,7 @@ import type { ProductWithRelations, MediaFile, MediaLink } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displaySource, displayName, getCategoryColorVar } from '@utils/display';
 import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
-import { getMediaUrl, hasPlayableUrl, formatBytes } from '@utils/media';
+import { getMediaUrl, hasPlayableUrl } from '@utils/media';
 import { useDataSourceAPI } from '@api/dataSourceContext';
 import { useToast } from '@hooks/useToast';
 import Modal from '@components/ui/Modal';
@@ -42,8 +42,10 @@ export default function ProductDetailCard({
   const { showToast } = useToast();
   const [open, setOpen] = useState(true);
   const [nestedProduct, setNestedProduct] = useState<ProductWithRelations | null>(null);
+  const [imageIndex, setImageIndex] = useState<number>(0);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
   const [confirmDeleteLink, setConfirmDeleteLink] = useState<MediaLink | null>(null);
+  const [removedFileIds, setRemovedFileIds] = useState<Set<string>>(new Set());
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -109,23 +111,15 @@ export default function ProductDetailCard({
       }),
     [mediaFiles, mediaLinks]
   );
-  const currentFile = sortedFiles[lightboxIndex >= 0 ? lightboxIndex : 0] ?? null;
+  const visibleFiles = useMemo(
+    () => sortedFiles.filter((f) => !removedFileIds.has(f.id)),
+    [sortedFiles, removedFileIds]
+  );
+  const clampedImageIndex = imageIndex >= visibleFiles.length ? Math.max(0, visibleFiles.length - 1) : imageIndex;
+  const currentFile = visibleFiles[clampedImageIndex] ?? null;
 
   const singleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'single');
   const bundleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'bundle');
-
-  const handleTogglePrimary = useCallback(
-    async (fileId: string) => {
-      try {
-        await ds.products.setMediaPrimary(fileId, product.id);
-        showToast(t('media.toast.primary_set'));
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        showToast(msg, 'error');
-      }
-    },
-    [ds.products, product.id, showToast, t]
-  );
 
   const handleDeleteLink = useCallback(
     async (fileId: string, variantId: string) => {
@@ -175,7 +169,7 @@ export default function ProductDetailCard({
     }
 
     if (file.mimeType.startsWith('image/')) {
-      return <img src={url} alt={file.originalName} className="w-full h-full object-cover" loading="lazy" />;
+      return <img src={url} alt={file.originalName} className="w-full h-full object-contain" loading="lazy" />;
     }
 
     return <video src={url} className="w-full h-full object-cover" muted playsInline preload="metadata" />;
@@ -236,17 +230,14 @@ export default function ProductDetailCard({
                 {t('detail.media')}
                 {currentFile && (
                   <span className="text-[9px] text-text-muted ml-auto">
-                    {lightboxIndex >= 0 ? lightboxIndex + 1 : 1}/{sortedFiles.length}
+                    {imageIndex + 1}/{visibleFiles.length}
                   </span>
                 )}
               </h3>
               {currentFile ? (
                 <div
                   className="rounded-xl bg-bg-tertiary border border-border-subtle flex items-center justify-center overflow-hidden cursor-pointer"
-                  onClick={() => {
-                    const idx = sortedFiles.findIndex((f) => f.id === currentFile.id);
-                    if (idx !== -1) setLightboxIndex(idx);
-                  }}
+                  onClick={() => setLightboxIndex(imageIndex)}
                 >
                   <div className="aspect-video w-full flex items-center justify-center bg-bg-tertiary">
                     {renderMediaPreview(currentFile, 'lg')}
@@ -260,16 +251,16 @@ export default function ProductDetailCard({
                   </div>
                 </div>
               )}
-              {sortedFiles.length > 1 && (
+              {visibleFiles.length > 1 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {sortedFiles.map((f, i) => {
+                  {visibleFiles.map((f, i) => {
                     const url = getMediaUrl(f.url);
-                    const isActive = i === (lightboxIndex >= 0 ? lightboxIndex : 0);
+                    const isActive = i === imageIndex;
                     const link = mediaLinks.find((l) => l.fileId === f.id);
                     return (
                       <button
                         key={f.id}
-                        onClick={() => setLightboxIndex(i)}
+                        onClick={() => setImageIndex(i)}
                         className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center transition-[colors,opacity,transform,box-shadow] duration-150 ${
                           isActive ? 'border-accent ring-1 ring-accent/30' : 'border-border-subtle hover:border-border-default'
                         }`}
@@ -291,11 +282,6 @@ export default function ProductDetailCard({
                     );
                   })}
                 </div>
-              )}
-              {currentFile && (
-                <p className="text-[9px] text-text-muted text-right">
-                  {currentFile.originalName} · {formatBytes(currentFile.sizeBytes)}
-                </p>
               )}
             </div>
 
@@ -507,13 +493,10 @@ export default function ProductDetailCard({
       {/* Lightbox */}
       <Lightbox
         open={lightboxIndex >= 0}
-        files={sortedFiles}
-        links={mediaLinks}
-        currentIndex={lightboxIndex >= 0 ? lightboxIndex : 0}
+        files={visibleFiles}
+        currentIndex={lightboxIndex}
         onClose={() => setLightboxIndex(-1)}
         onChangeIndex={setLightboxIndex}
-        variantId={product.id}
-        onTogglePrimary={handleTogglePrimary}
         onDelete={(fileId) => {
           const link = mediaLinks.find((l) => l.fileId === fileId);
           if (link) setConfirmDeleteLink(link);
@@ -529,6 +512,8 @@ export default function ProductDetailCard({
         onConfirm={() => {
           if (confirmDeleteLink) {
             handleDeleteLink(confirmDeleteLink.fileId, confirmDeleteLink.variantId);
+            setRemovedFileIds((prev) => new Set(prev).add(confirmDeleteLink.fileId));
+            setLightboxIndex(-1);
             setConfirmDeleteLink(null);
           }
         }}

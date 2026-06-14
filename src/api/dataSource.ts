@@ -144,6 +144,9 @@ export interface ProductsAPI {
   /** Удалить медиафайл (метаданные + физический файл на бэке) + все связи. */
   deleteMedia(fileId: string): Promise<void>;
 
+  /** Удалить все медиафайлы и их связи. */
+  deleteAllMedia(): Promise<void>;
+
   /** Удалить только связь файла с вариантом. */
   deleteMediaLink(fileId: string, variantId: string): Promise<void>;
 

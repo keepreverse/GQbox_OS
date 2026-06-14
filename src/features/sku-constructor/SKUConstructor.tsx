@@ -25,7 +25,6 @@ interface SKUFormData {
   variantCode: string;
   colorId: string;
   lengthM: string;
-  lengthVariant: string;
   supplierId: string;
   isKit: boolean;
   powerW: string;
@@ -45,7 +44,6 @@ const initialForm: SKUFormData = {
   variantCode: '',
   colorId: '',
   lengthM: '',
-  lengthVariant: '',
   supplierId: '',
   isKit: false,
   powerW: '',
@@ -98,7 +96,6 @@ export default function SKUConstructor() {
   const generateSKU = () => {
     let sku = 'S' + (form.baseNumber || 'XXXXX');
     if (form.variantCode) sku += '-' + form.variantCode;
-    if (form.lengthVariant && !form.variantCode) sku += '-' + form.lengthVariant;
     if (selectedColor) sku += '/' + selectedColor.code;
     if (selectedSupplier && selectedSupplier.code !== '-') sku += '-' + selectedSupplier.code;
     if (form.isKit) sku += '-K';
@@ -116,7 +113,13 @@ export default function SKUConstructor() {
     }
     if (form.connectorMaleId) {
       const conn = connectors.find((c) => c.id === form.connectorMaleId);
-      if (conn) parts.push('-' + conn.code);
+      if (conn) {
+        if (form.connectorFemaleId) {
+          parts[parts.length - 1] += '-' + conn.code;
+        } else {
+          parts.push(conn.code);
+        }
+      }
     }
     if (selectedModel) parts.push(displayName(selectedModel));
     if (form.lengthM) parts.push(form.lengthM + 'м');
@@ -141,7 +144,6 @@ export default function SKUConstructor() {
         const altNum = String(baseNum + offset).padStart(5, '0');
         let altSku = 'S' + altNum;
         if (form.variantCode) altSku += '-' + form.variantCode;
-        if (form.lengthVariant && !form.variantCode) altSku += '-' + form.lengthVariant;
         if (selectedColor) altSku += '/' + selectedColor.code;
         if (selectedSupplier && selectedSupplier.code !== '-')
           altSku += '-' + selectedSupplier.code;
@@ -191,7 +193,6 @@ export default function SKUConstructor() {
       connectorFemaleId: form.connectorFemaleId || undefined,
       connectorMaleId: form.connectorMaleId || undefined,
       variantCode: form.variantCode || undefined,
-      lengthVariant: form.lengthVariant || undefined,
       isKit: form.isKit || undefined,
     };
     const name = generatedName || generatedSKU;
@@ -419,22 +420,6 @@ export default function SKUConstructor() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-xs sm:text-sm text-text-secondary mb-1 block">
-                    {t('sku.length_variant_label')}
-                  </label>
-                  <input
-                    type="text"
-                    value={form.lengthVariant}
-                    onChange={(e) => updateForm('lengthVariant', e.target.value)}
-                    placeholder="2, 3, 025"
-                    className="w-full text-text-primary h-11 sm:h-10"
-                  />
-                  <p className="text-[10px] text-text-tertiary mt-1">
-                    {t('sku.length_variant_hint')}
-                  </p>
-                </div>
-
                 <div className="sm:col-span-2 pt-2">
                   <label
                     className="flex items-center gap-3 min-h-[44px] sm:min-h-0 text-xs sm:text-sm text-text-secondary cursor-pointer"
@@ -459,7 +444,6 @@ export default function SKUConstructor() {
                 <code className="text-lg sm:text-xl text-accent">
                   S{form.baseNumber || 'XXXXX'}
                   {form.variantCode ? '-' + form.variantCode : ''}
-                  {form.lengthVariant && !form.variantCode ? '-' + form.lengthVariant : ''}
                 </code>
               </div>
             </div>

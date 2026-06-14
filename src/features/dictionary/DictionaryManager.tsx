@@ -419,10 +419,11 @@ export default function DictionaryManager() {
   const editCodeRef = useRef<HTMLInputElement>(null);
   const editCategoryIdRef = useRef<HTMLSelectElement>(null);
 
-  useEffect(() => {
+  const handleTabClick = useCallback((id: DictType) => {
+    setActiveDict(id);
     setEditingId(null);
     editingColorRef.current = '';
-  }, [activeDict]);
+  }, []);
 
   const handleAddFormClose = useCallback(() => setShowAddForm(false), []);
   const handleEditFormClose = useCallback(() => setEditingId(null), []);
@@ -1004,7 +1005,7 @@ export default function DictionaryManager() {
     [categories, models, colors, suppliers, connectors, chargingProtocols, materials]
   );
 
-  const renderTable = () => {
+  const activeTable = useMemo(() => {
     const cols = dictColumns[activeDict];
     const rows = dictRows[activeDict];
     return (
@@ -1016,7 +1017,7 @@ export default function DictionaryManager() {
         rowClassName={() => 'table-row-hover'}
       />
     );
-  };
+  }, [activeDict, dictColumns, dictRows]);
 
   const renderCards = useMemo(() => {
     const editLabel = t('dict.edit_title');
@@ -1118,7 +1119,7 @@ export default function DictionaryManager() {
         {dictConfig.map((dict) => (
           <button
             key={dict.id}
-            onClick={() => setActiveDict(dict.id)}
+            onClick={() => handleTabClick(dict.id)}
             className={`flex h-11 sm:h-10 min-w-0 sm:min-w-[120px] items-center justify-center gap-1.5 sm:gap-2 px-3 rounded-lg text-xs sm:text-sm transition-[colors,opacity,transform,box-shadow] cursor-pointer ${
               activeDict === dict.id
                 ? 'bg-accent/25 text-white border border-accent/40 font-medium'
@@ -1204,7 +1205,7 @@ export default function DictionaryManager() {
       )}
 
       <div className="hidden sm:block">
-        <div className="glass rounded-xl overflow-hidden">{renderTable()}</div>
+        <div className="glass rounded-xl overflow-hidden">{activeTable}</div>
       </div>
       <div className="sm:hidden">{renderCards}</div>
     </div>

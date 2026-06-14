@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import {
   isDbAvailable,
+  getAllMediaFiles,
   getMediaFilesWithLinks,
   getAllMediaLinks,
   getMediaFileById,
@@ -190,17 +191,18 @@ router.post(
         const out: MediaLink[] = [];
         for (let i = 0; i < valid.length; i++) {
           const vid = valid[i];
-          const links = await getMediaLinksForVariant(vid);
+          const existingLinks = await getMediaLinksForVariant(vid);
+          const isPrimaryLink = isPrimary && i === 0;
           const link: MediaLink = {
             fileId: savedFile.id,
             variantId: vid,
-            isPrimary: isPrimary && i === 0,
-            sortOrder: links.length,
+            isPrimary: isPrimaryLink,
+            sortOrder: isPrimaryLink ? 0 : existingLinks.length,
             uploadedAt: new Date().toISOString(),
           };
           if (link.isPrimary) {
             await txQuery(
-              'UPDATE product_media_links SET is_primary = FALSE WHERE variant_id = $1',
+              'UPDATE product_media_links SET is_primary = FALSE, sort_order = sort_order + 1 WHERE variant_id = $1',
               [vid]
             );
           }
@@ -233,6 +235,33 @@ router.patch('/:fileId/primary/:variantId', async (req: Request, res: Response) 
   } catch (err: any) {
     console.error('Media primary failed:', err);
     res.status(500).json({ error: 'Update failed', detail: err?.message ?? String(err) });
+  }
+});
+
+// DELETE /media — удалить все медиафайлы и связи
+router.delete('/', async (req: Request, res: Response) => {
+  if (!(await ensureDb(req, res))) return;
+  try {
+    const files = await getAllMediaFiles();
+
+    for (const item of files) {
+      if (item.url.startsWith('/uploads/')) {
+        const filePath = resolve(UPLOADS_DIR, item.url.replace(/^\/uploads\//, ''));
+        if (existsSync(filePath)) {
+          try { unlinkSync(filePath); } catch { /* ignore */ }
+        }
+      }
+    }
+
+    await withTransaction(async ({ query: txQuery }) => {
+      await txQuery('DELETE FROM product_media_links', []);
+      await txQuery('DELETE FROM media_files', []);
+    });
+
+    res.json({ ok: true, removedCount: files.length });
+  } catch (err: any) {
+    console.error('Media delete all failed:', err);
+    res.status(500).json({ error: 'Delete all failed', detail: err?.message ?? String(err) });
   }
 });
 

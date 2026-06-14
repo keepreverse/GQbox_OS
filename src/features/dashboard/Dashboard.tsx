@@ -339,6 +339,243 @@ const SupplierAreaChart = memo(function SupplierAreaChart({
   );
 });
 
+interface StatsWithDelta {
+  active: { value: number; delta: number; trend: 'neutral' | 'up' | 'down' };
+  kits: { value: number; delta: number; trend: 'neutral' | 'up' | 'down' };
+  categories: { value: number; delta: number; trend: 'neutral' | 'up' | 'down' };
+}
+
+const DashboardStatsCards = memo(function DashboardStatsCards({
+  statsWithDelta,
+  onViewChange,
+  t,
+}: {
+  statsWithDelta: StatsWithDelta;
+  onViewChange?: (view: ViewType) => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+      {[
+        { key: 'active', label: t('dash.active'), icon: Hash, accent: 'var(--color-success)' },
+        { key: 'kits', label: t('dash.kits'), icon: Package, accent: 'var(--color-warning)' },
+        { key: 'categories', label: t('dash.categories'), icon: FileText, accent: 'var(--color-info)' },
+      ].map((stat) => {
+        const data = statsWithDelta[stat.key as 'active' | 'kits' | 'categories'];
+        return (
+          <div key={stat.label} className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200">
+            <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-35 transition-opacity duration-500" style={{ background: stat.accent }} />
+            <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: stat.accent }}>
+              <stat.icon className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
+            </div>
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center justify-between min-h-[18px]">
+                <p className="text-[11px] sm:text-xs text-text-tertiary font-medium tracking-wide">{stat.label}</p>
+                {data.delta !== 0 && (
+                  <span className={`flex items-center gap-0.5 text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-full ${data.trend === 'up' ? 'text-success bg-success/10' : 'text-danger bg-danger/10'}`}>
+                    {data.trend === 'up' ? <TrendingUp className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : <TrendingDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />}
+                    {data.trend === 'up' ? `+${data.delta}` : data.delta}
+                  </span>
+                )}
+              </div>
+              <p className="text-3xl sm:text-4xl font-semibold mt-3 sm:mt-4 text-text-primary tracking-tight">{data.value}</p>
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200 flex flex-col">
+        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-accent/20 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+        <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: 'var(--color-accent)' }}>
+          <Zap className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
+        </div>
+        <div className="relative z-10 flex flex-col h-full">
+          <p className="text-[11px] sm:text-xs text-text-tertiary font-medium tracking-wide mb-3 sm:mb-4">{t('dash.quickActions')}</p>
+          <div className="flex flex-col gap-1.5 flex-1 justify-center">
+            <button onClick={() => onViewChange && onViewChange('sku-constructor')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
+              <Wrench className="w-3.5 h-3.5 text-accent flex-shrink-0" />
+              <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickAddProduct')}</span>
+            </button>
+            <button onClick={() => onViewChange && onViewChange('dictionary')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
+              <Layers className="w-3.5 h-3.5 text-warning flex-shrink-0" />
+              <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickManageDict')}</span>
+            </button>
+            <button onClick={() => onViewChange && onViewChange('media')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
+              <Upload className="w-3.5 h-3.5 text-info flex-shrink-0" />
+              <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickUploadMedia')}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const DashboardBottomSection = memo(function DashboardBottomSection({
+  recentProducts,
+  onViewChange,
+  setSelectedProduct,
+  supplierStats,
+  onNavigate,
+  itemsLabel,
+  dataGapsByCategory,
+  expandedCategories,
+  toggleCategoryExpanded,
+  t,
+}: {
+  recentProducts: ProductWithRelations[];
+  onViewChange?: (view: ViewType) => void;
+  setSelectedProduct: (p: ProductWithRelations | null) => void;
+  supplierStats: Array<{ name: string; code: string; count: number; color: string; maxCount: number }>;
+  onNavigate: (filters: MatrixFilters) => void;
+  itemsLabel: string;
+  dataGapsByCategory: Array<{
+    categoryCode: string; categoryName: string; color: string;
+    productCount: number; gaps: Array<{ categoryCode: string; field: string; fieldLabel: string; count: number }>;
+  }>;
+  expandedCategories: Set<string>;
+  toggleCategoryExpanded: (code: string) => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="flex flex-col lg:flex-row gap-4">
+      <div className="glass rounded-xl p-3 sm:p-5 lg:flex-1">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-medium">{t('dash.recent')}</h3>
+          <button onClick={() => onViewChange && onViewChange('matrix')} className="h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer">
+            {t('dash.viewAll')} <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          {recentProducts.map((product) => {
+            const Icon = categoryIcons[product.category.code] || Package;
+            return (
+              <div key={product.id} onClick={() => setSelectedProduct(product)} className="flex items-center gap-3 min-h-[44px] sm:min-h-0 p-2.5 rounded-lg hover:bg-bg-hover active:bg-bg-hover transition-colors group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `color-mix(in srgb, ${product.category.color} 8%, transparent)` }}>
+                  <Icon className="w-4 h-4" style={{ color: getCategoryColorVar(product.category) }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{displayProductName(product)}</p>
+                  <p className="text-[11px] text-text-tertiary truncate">{product.sku} · {displaySource(product.model)}</p>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4 lg:flex-1">
+        <div className="glass rounded-xl p-3 sm:p-5">
+          <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.supplierDist')}</h3>
+          <div className="pt-1 sm:pt-2">
+            <ChartContainer height={120}>
+              {(width) => (
+                <SupplierAreaChart
+                  width={width}
+                  height={120}
+                  data={supplierStats}
+                  onNavigate={onNavigate}
+                  itemsLabel={itemsLabel}
+                />
+              )}
+            </ChartContainer>
+          </div>
+        </div>
+
+        <div className="glass rounded-xl p-3 sm:p-5 flex-1 min-h-0 flex flex-col">
+          <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 flex-shrink-0">
+            {t('dash.data_gaps')}
+          </h3>
+          {dataGapsByCategory.length > 0 ? (
+            <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+              <div className="divide-y divide-border-subtle/40">
+                {dataGapsByCategory.map((cat) => {
+                  const isExpanded = expandedCategories.has(cat.categoryCode);
+                  const Icon = categoryIcons[cat.categoryCode];
+                  return (
+                    <div key={cat.categoryCode} className="py-2 first:pt-0 last:pb-0">
+                      <button
+                        onClick={() => toggleCategoryExpanded(cat.categoryCode)}
+                        className="w-full flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-bg-tertiary/10 active:bg-transparent transition-colors cursor-pointer"
+                      >
+                        {Icon && (
+                          <Icon
+                            className="w-3.5 h-3.5 flex-shrink-0"
+                            style={{ color: cat.color }}
+                          />
+                        )}
+                        <p
+                          className="text-xs font-semibold flex-1 text-left"
+                          style={{ color: cat.color }}
+                        >
+                          {cat.categoryName}
+                        </p>
+                        <span className="text-[10px] tabular-nums text-text-tertiary px-1.5 py-0.5 rounded-full bg-bg-tertiary/60 flex-shrink-0">
+                          {cat.productCount}
+                        </span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-text-tertiary transition-transform duration-200 flex-shrink-0 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      <div
+                        className="overflow-hidden"
+                        style={{
+                          display: 'grid',
+                          gridTemplateRows: isExpanded ? '1fr' : '0fr',
+                          transition: 'grid-template-rows 0.2s ease-out, opacity 0.2s ease-out',
+                          opacity: isExpanded ? 1 : 0,
+                        }}
+                      >
+                        <div className="min-h-0">
+                          <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
+                          {cat.gaps.map((gap) => (
+                            <div
+                              key={gap.field}
+                              onClick={() =>
+                                onNavigate?.({
+                                  categories: [gap.categoryCode],
+                                  missingFields: [gap.field],
+                                })
+                              }
+                              className="group flex items-center gap-2 py-1.5 cursor-pointer"
+                            >
+                              <span className="text-xs text-text-secondary flex-1 group-hover:text-text-primary transition-colors">
+                                {gap.fieldLabel}
+                              </span>
+                              <span
+                                className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full tabular-nums flex-shrink-0 ${
+                                  gap.count >= 6
+                                    ? 'bg-danger/15 text-danger'
+                                    : gap.count >= 3
+                                      ? 'bg-warning/15 text-warning'
+                                      : 'bg-success/15 text-success/80'
+                                }`}
+                              >
+                                {gap.count}
+                              </span>
+                              <ChevronRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          ))}
+                         </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-text-tertiary">{t('dash.no_gaps')}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 interface DashboardProps {
   onViewChange?: (view: ViewType) => void;
   onNavigateToMatrix?: (filters: MatrixFilters) => void;
@@ -668,59 +905,7 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-        {[
-          { key: 'active', label: t('dash.active'), icon: Hash, accent: 'var(--color-success)' },
-          { key: 'kits', label: t('dash.kits'), icon: Package, accent: 'var(--color-warning)' },
-          { key: 'categories', label: t('dash.categories'), icon: FileText, accent: 'var(--color-info)' },
-        ].map((stat) => {
-          const data = statsWithDelta[stat.key as 'active' | 'kits' | 'categories'];
-          return (
-            <div key={stat.label} className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200">
-              <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-35 transition-opacity duration-500" style={{ background: stat.accent }} />
-              <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: stat.accent }}>
-                <stat.icon className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
-              </div>
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center justify-between min-h-[18px]">
-                  <p className="text-[11px] sm:text-xs text-text-tertiary font-medium tracking-wide">{stat.label}</p>
-                  {data.delta !== 0 && (
-                    <span className={`flex items-center gap-0.5 text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-full ${data.trend === 'up' ? 'text-success bg-success/10' : 'text-danger bg-danger/10'}`}>
-                      {data.trend === 'up' ? <TrendingUp className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> : <TrendingDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />}
-                      {data.trend === 'up' ? `+${data.delta}` : data.delta}
-                    </span>
-                  )}
-                </div>
-                <p className="text-3xl sm:text-4xl font-semibold mt-3 sm:mt-4 text-text-primary tracking-tight">{data.value}</p>
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="glass rounded-xl p-4 sm:p-5 relative overflow-hidden group hover:border-border-strong transition-[colors,opacity,transform,box-shadow] duration-200 flex flex-col">
-          <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-accent/20 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-          <div className="absolute -bottom-4 -right-4 opacity-[0.09] group-hover:opacity-[0.16] transition-opacity duration-500" style={{ color: 'var(--color-accent)' }}>
-            <Zap className="w-24 sm:w-28 h-24 sm:h-28" strokeWidth={1.2} />
-          </div>
-          <div className="relative z-10 flex flex-col h-full">
-            <p className="text-[11px] sm:text-xs text-text-tertiary font-medium tracking-wide mb-3 sm:mb-4">{t('dash.quickActions')}</p>
-            <div className="flex flex-col gap-1.5 flex-1 justify-center">
-              <button onClick={() => onViewChange && onViewChange('sku-constructor')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
-                <Wrench className="w-3.5 h-3.5 text-accent flex-shrink-0" />
-                <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickAddProduct')}</span>
-              </button>
-              <button onClick={() => onViewChange && onViewChange('dictionary')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
-                <Layers className="w-3.5 h-3.5 text-warning flex-shrink-0" />
-                <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickManageDict')}</span>
-              </button>
-              <button onClick={() => onViewChange && onViewChange('media')} className="flex items-center gap-2 p-2 rounded-lg bg-bg-tertiary/50 hover:bg-bg-hover transition-colors text-left cursor-pointer">
-                <Upload className="w-3.5 h-3.5 text-info flex-shrink-0" />
-                <span className="text-[11px] sm:text-xs text-text-primary truncate">{t('dash.quickUploadMedia')}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardStatsCards statsWithDelta={statsWithDelta} onViewChange={onViewChange} t={t} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="glass rounded-xl p-3 sm:p-5 lg:col-span-2 overflow-hidden">
@@ -791,141 +976,18 @@ export default function Dashboard({ onViewChange, onNavigateToMatrix }: Dashboar
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="glass rounded-xl p-3 sm:p-5 lg:flex-1">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-xs sm:text-sm font-medium">{t('dash.recent')}</h3>
-            <button onClick={() => onViewChange && onViewChange('matrix')} className="h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-border-subtle text-text-secondary hover:bg-bg-hover hover:text-text-primary hover:border-border-default cursor-pointer">
-              {t('dash.viewAll')} <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {stats.recentProducts.map((product) => {
-              const Icon = categoryIcons[product.category.code] || Package;
-              return (
-                <div key={product.id} onClick={() => setSelectedProduct(product)} className="flex items-center gap-3 min-h-[44px] sm:min-h-0 p-2.5 rounded-lg hover:bg-bg-hover active:bg-bg-hover transition-colors group cursor-pointer">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `color-mix(in srgb, ${product.category.color} 8%, transparent)` }}>
-                    <Icon className="w-4 h-4" style={{ color: getCategoryColorVar(product.category) }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{displayProductName(product)}</p>
-                    <p className="text-[11px] text-text-tertiary truncate">{product.sku} · {displaySource(product.model)}</p>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-1">
-          <div className="glass rounded-xl p-3 sm:p-5">
-            <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">{t('dash.supplierDist')}</h3>
-            <div className="pt-1 sm:pt-2">
-              <ChartContainer height={120}>
-                {(width) => (
-                  <SupplierAreaChart
-                    width={width}
-                    height={120}
-                    data={stats.supplierStats}
-                    onNavigate={handleSupplierNavigate}
-                    itemsLabel={itemsLabel}
-                  />
-                )}
-              </ChartContainer>
-            </div>
-          </div>
-
-          <div className="glass rounded-xl p-3 sm:p-5 flex-1 min-h-0 flex flex-col">
-            <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 flex-shrink-0">
-              {t('dash.data_gaps')}
-            </h3>
-            {dataGapsByCategory.length > 0 ? (
-              <div className="flex-1 min-h-0 overflow-y-auto pr-2">
-                <div className="divide-y divide-border-subtle/40">
-                  {dataGapsByCategory.map((cat) => {
-                    const isExpanded = expandedCategories.has(cat.categoryCode);
-                    const Icon = categoryIcons[cat.categoryCode];
-                    return (
-                      <div key={cat.categoryCode} className="py-2 first:pt-0 last:pb-0">
-                        <button
-                          onClick={() => toggleCategoryExpanded(cat.categoryCode)}
-                          className="w-full flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-bg-tertiary/10 active:bg-transparent transition-colors cursor-pointer"
-                        >
-                          {Icon && (
-                            <Icon
-                              className="w-3.5 h-3.5 flex-shrink-0"
-                              style={{ color: cat.color }}
-                            />
-                          )}
-                          <p
-                            className="text-xs font-semibold flex-1 text-left"
-                            style={{ color: cat.color }}
-                          >
-                            {cat.categoryName}
-                          </p>
-                          <span className="text-[10px] tabular-nums text-text-tertiary px-1.5 py-0.5 rounded-full bg-bg-tertiary/60 flex-shrink-0">
-                            {cat.productCount}
-                          </span>
-                          <ChevronDown
-                            className={`w-3.5 h-3.5 text-text-tertiary transition-transform duration-200 flex-shrink-0 ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
-                        <div
-                          className="overflow-hidden"
-                          style={{
-                            display: 'grid',
-                            gridTemplateRows: isExpanded ? '1fr' : '0fr',
-                            transition: 'grid-template-rows 0.2s ease-out, opacity 0.2s ease-out',
-                            opacity: isExpanded ? 1 : 0,
-                          }}
-                        >
-                          <div className="min-h-0">
-                            <div className="px-2 pt-1 pb-1 divide-y divide-border-subtle/30">
-                            {cat.gaps.map((gap) => (
-                              <div
-                                key={gap.field}
-                                onClick={() =>
-                                  onNavigateToMatrix?.({
-                                    categories: [gap.categoryCode],
-                                    missingFields: [gap.field],
-                                  })
-                                }
-                                className="group flex items-center gap-2 py-1.5 cursor-pointer"
-                              >
-                                <span className="text-xs text-text-secondary flex-1 group-hover:text-text-primary transition-colors">
-                                  {gap.fieldLabel}
-                                </span>
-                                <span
-                                  className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full tabular-nums flex-shrink-0 ${
-                                    gap.count >= 6
-                                      ? 'bg-danger/15 text-danger'
-                                      : gap.count >= 3
-                                        ? 'bg-warning/15 text-warning'
-                                        : 'bg-success/15 text-success/80'
-                                  }`}
-                                >
-                                  {gap.count}
-                                </span>
-                                <ChevronRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            ))}
-                           </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-text-tertiary">{t('dash.no_gaps')}</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <DashboardBottomSection
+        recentProducts={stats.recentProducts}
+        onViewChange={onViewChange}
+        setSelectedProduct={setSelectedProduct}
+        supplierStats={stats.supplierStats}
+        onNavigate={handleSupplierNavigate}
+        itemsLabel={itemsLabel}
+        dataGapsByCategory={dataGapsByCategory}
+        expandedCategories={expandedCategories}
+        toggleCategoryExpanded={toggleCategoryExpanded}
+        t={t}
+      />
 
       {selectedProduct && (
         <div className="animate-fade-in-fast">

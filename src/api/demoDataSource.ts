@@ -304,7 +304,8 @@ export function createDemoDataSource(): DataSource {
         }
         const { file: mediaFile, links }: { file: MediaFile; links: MediaLink[] } = await res.json();
         rawMediaFiles = [...rawMediaFiles, mediaFile];
-        rawMediaLinks = [...rawMediaLinks, ...links];
+        // Re-fetch all links to pick up updated sortOrders from server
+        rawMediaLinks = await request<MediaLink[]>(`${API_PREFIX}/media/links`);
         notify('products');
         return { file: mediaFile, links, localPreviewUrl };
       } catch (err) {
@@ -318,9 +319,20 @@ export function createDemoDataSource(): DataSource {
       rawMediaLinks = rawMediaLinks.filter((l) => l.fileId !== fileId);
       notify('products');
     },
+    async deleteAllMedia() {
+      await request<unknown>(`${API_PREFIX}/media`, { method: 'DELETE' });
+      rawMediaFiles = [];
+      rawMediaLinks = [];
+      notify('products');
+    },
     async deleteMediaLink(fileId, variantId) {
       await request<unknown>(`${API_PREFIX}/media/link/${fileId}/${variantId}`, { method: 'DELETE' });
       rawMediaLinks = rawMediaLinks.filter((l) => !(l.fileId === fileId && l.variantId === variantId));
+      // Auto-delete orphaned files (no remaining links to any product)
+      if (!rawMediaLinks.some((l) => l.fileId === fileId)) {
+        await request<unknown>(`${API_PREFIX}/media/${fileId}`, { method: 'DELETE' }).catch(() => {});
+        rawMediaFiles = rawMediaFiles.filter((f) => f.id !== fileId);
+      }
       notify('products');
     },
     async setMediaPrimary(fileId, variantId) {

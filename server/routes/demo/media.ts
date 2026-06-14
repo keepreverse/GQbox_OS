@@ -179,16 +179,20 @@ router.post(
       for (let i = 0; i < validIds.length; i++) {
         const vid = validIds[i];
         const existingLinks = links.filter((l) => l.variantId === vid);
-        if (isPrimary && i === 0) {
+        const isPrimaryLink = isPrimary && i === 0;
+        if (isPrimaryLink) {
           for (const l of links) {
-            if (l.variantId === vid) l.isPrimary = false;
+            if (l.variantId === vid) {
+              l.isPrimary = false;
+              l.sortOrder += 1;
+            }
           }
         }
         const link: MediaLink = {
           fileId: mediaFile.id,
           variantId: vid,
-          isPrimary: isPrimary && i === 0,
-          sortOrder: existingLinks.length,
+          isPrimary: isPrimaryLink,
+          sortOrder: isPrimaryLink ? 0 : existingLinks.length,
           uploadedAt: new Date().toISOString(),
         };
         links.push(link);
@@ -222,6 +226,28 @@ router.patch('/:fileId/primary/:variantId', (req: Request, res: Response) => {
     next[idx].isPrimary = true;
     writeCollection('mediaLinks', next);
     res.json(next[idx]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /media — удалить все медиафайлы и связи
+router.delete('/', (_req: Request, res: Response) => {
+  try {
+    const files = readCollection<MediaFile>('mediaFiles');
+
+    for (const item of files) {
+      if (item.url.startsWith('/uploads/')) {
+        const filePath = resolve(UPLOADS_DIR, item.url.replace(/^\/uploads\//, ''));
+        if (existsSync(filePath)) {
+          try { unlinkSync(filePath); } catch { /* ignore */ }
+        }
+      }
+    }
+
+    writeCollection('mediaFiles', []);
+    writeCollection('mediaLinks', []);
+    res.json({ ok: true, removedCount: files.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

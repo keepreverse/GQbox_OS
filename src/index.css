@@ -254,6 +254,10 @@ select {
   outline: none !important;
 }
 
+/* Remove all browser default focus outlines */
+*:focus { outline: none !important; }
+*:focus-visible { outline: none !important; }
+
 /* iOS auto-zoom prevention: 16px minimum when input is focused on Safari */
 @supports (-webkit-touch-callout: none) {
   input, select, textarea { font-size: 16px; }

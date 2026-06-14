@@ -12,7 +12,6 @@ import {
   Grid,
   List,
   FileImage,
-  FileVideo,
   Trash2,
   Download,
   Check,
@@ -22,6 +21,7 @@ import {
   ImagePlus,
   Unlink,
   Link as LinkIcon,
+  Star,
 } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
@@ -32,6 +32,7 @@ import { ResponsiveTable } from '@components/ui/ResponsiveTable';
 import ProductSelector from '@components/ui/ProductSelector';
 import Lightbox from '@components/ui/Lightbox';
 import ConfirmModal from '@components/ui/ConfirmModal';
+import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import { useDataSourceVersion } from '@api/dataSourceContext';
 import type { Column } from '@app-types/table';
 import type { MediaFile, ProductWithRelations } from '@app-types';
@@ -48,6 +49,8 @@ import {
   useSensors,
   DragEndEvent,
 } from '@dnd-kit/core';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
+
 import {
   arrayMove,
   SortableContext,
@@ -65,14 +68,16 @@ interface UploadDraft {
   previewUrl: string;
   error?: string;
   uploading?: boolean;
+  isPrimary?: boolean;
 }
 
 interface SortableDraftProps {
   draft: UploadDraft;
   onRemove: (id: string) => void;
+  onTogglePrimary: (id: string) => void;
 }
 
-function SortableDraft({ draft, onRemove }: SortableDraftProps) {
+function SortableDraft({ draft, onRemove, onTogglePrimary }: SortableDraftProps) {
   const {
     attributes,
     listeners,
@@ -100,20 +105,11 @@ function SortableDraft({ draft, onRemove }: SortableDraftProps) {
       } ${isDragging ? 'opacity-90 scale-[1.03]' : 'opacity-100'}`}
     >
       <div className="aspect-square bg-bg-tertiary flex items-center justify-center overflow-hidden">
-        {draft.file.type.startsWith('image/') ? (
-          <img
-            src={draft.previewUrl}
-            alt={draft.file.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <video
-            src={draft.previewUrl}
-            className="w-full h-full object-cover"
-            muted
-            playsInline
-          />
-        )}
+        <img
+          src={draft.previewUrl}
+          alt={draft.file.name}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {draft.uploading && (
@@ -123,6 +119,22 @@ function SortableDraft({ draft, onRemove }: SortableDraftProps) {
       )}
 
       <div className="absolute top-1 left-1 right-1 flex items-start justify-between gap-1">
+        <button
+          type="button"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePrimary(draft.id);
+          }}
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+            draft.isPrimary
+              ? 'bg-black/60 text-yellow-400'
+              : 'bg-black/40 text-white/60 hover:text-yellow-400 hover:bg-black/60'
+          }`}
+          title={draft.isPrimary ? 'Primary' : 'Set as primary'}
+        >
+          <Star className="w-3 h-3" fill={draft.isPrimary ? 'currentColor' : 'none'} />
+        </button>
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
@@ -160,7 +172,6 @@ export default function MediaManager() {
   const { ds, version } = useDataSourceVersion('products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'image' | 'video'>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showUpload, setShowUpload] = useState(false);
   const { toast, showToast, hideToast } = useToast();
@@ -174,9 +185,10 @@ export default function MediaManager() {
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [confirmUnlink, setConfirmUnlink] = useState<{ fileId: string; variantId: string } | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
 
   const allMedia = useMemo(() => ds.products.getAllMedia() as MediaFileWithLinks[], [ds, version]);
-  const allLinks = useMemo(() => ds.products.getAllMediaLinks ? ds.products.getAllMediaLinks() : [], [ds, version]);
   const products = useMemo(() => ds.products.list, [ds, version]);
 
   const sensors = useSensors(
@@ -228,26 +240,24 @@ export default function MediaManager() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
+    if (!q) return allMedia.filter((m) => m.id);
     return allMedia.filter((m) => {
       if (!m.id) return false;
-      const matchesSearch =
-        !q ||
+      return (
         m.filename.toLowerCase().includes(q) ||
         m.originalName.toLowerCase().includes(q) ||
-        (m.linkedSkus ?? []).some((s) => s.toLowerCase().includes(q));
-      const matchesType =
-        filterType === 'all' ||
-        (filterType === 'image' && m.mimeType.startsWith('image/')) ||
-        (filterType === 'video' && m.mimeType.startsWith('video/'));
-      return matchesSearch && matchesType;
+        (m.linkedSkus ?? []).some((variantId) => {
+          const p = products.find((p) => p.id === variantId);
+          return (p?.sku ?? variantId).toLowerCase().includes(q);
+        })
+      );
     });
-  }, [allMedia, searchQuery, filterType]);
+  }, [allMedia, searchQuery, products]);
 
   const counts = useMemo(
     () => ({
       total: allMedia.filter((m) => m.id).length,
       images: allMedia.filter((m) => m.id && m.mimeType.startsWith('image/')).length,
-      videos: allMedia.filter((m) => m.id && m.mimeType.startsWith('video/')).length,
     }),
     [allMedia]
   );
@@ -267,7 +277,7 @@ export default function MediaManager() {
       if (arr.length === 0) return;
       const newDrafts: UploadDraft[] = [];
       for (const f of arr) {
-        if (!/^image\/|^video\//.test(f.type)) {
+        if (!/^image\//.test(f.type)) {
           showToast(`${f.name}: ${t('media.toast.unsupported_type')}`, 'error');
           continue;
         }
@@ -355,7 +365,7 @@ export default function MediaManager() {
         try {
           const result = await ds.products.uploadMedia(d.file, {
             variantIds,
-            isPrimary: i === 0,
+            isPrimary: !!d.isPrimary,
           });
           uploadDiagnostics.record('upload-completed', { name: d.file.name, fileId: result.file.id });
           uploadDiagnostics.record('server-response', { fileId: result.file.id, links: result.links.length });
@@ -460,6 +470,46 @@ export default function MediaManager() {
     [ds.products, showToast, t]
   );
 
+  const handleClearAll = useCallback(async () => {
+    try {
+      await ds.products.deleteAllMedia();
+      setSelectedItems([]);
+      showToast(t('media.toast.all_deleted'));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      showToast(msg, 'error');
+    }
+  }, [ds.products, showToast, t]);
+
+  const handleTogglePrimary = useCallback((id: string) => {
+    setUploadDrafts((prev) => {
+      const idx = prev.findIndex((d) => d.id === id);
+      if (idx === -1) return prev;
+      if (prev[idx].isPrimary) return prev;
+      const next = prev.map((d) => ({ ...d, isPrimary: false }));
+      next[idx].isPrimary = true;
+      return next;
+    });
+  }, []);
+
+  const handleDetailClose = useCallback(() => setSelectedProduct(null), []);
+
+  const handleSkuClick = useCallback(
+    (variantId: string) => {
+      const product = products.find((p) => p.id === variantId);
+      if (product) setSelectedProduct(product);
+    },
+    [products]
+  );
+
+  const skuLabel = useCallback(
+    (variantId: string) => {
+      const product = products.find((p) => p.id === variantId);
+      return product?.sku ?? variantId;
+    },
+    [products]
+  );
+
   const handleDownloadOne = useCallback(
     (m: MediaFileWithLinks) => {
       const url = getMediaUrl(m.url);
@@ -483,7 +533,7 @@ export default function MediaManager() {
     {
       key: 'file',
       header: t('media.col.file'),
-      width: 30,
+      width: 32,
       cell: (m) => {
         return (
           <div
@@ -494,11 +544,7 @@ export default function MediaManager() {
               if (idx !== -1) setLightboxIndex(idx);
             }}
           >
-            {m.mimeType.startsWith('image/') ? (
-              <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />
-            ) : (
-              <FileVideo className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />
-            )}
+            <FileImage className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-text-muted flex-shrink-0" />
             <span className="truncate text-[11px] sm:text-sm" title={m.originalName}>
               {m.originalName}
             </span>
@@ -507,38 +553,24 @@ export default function MediaManager() {
       },
     },
     {
-      key: 'type',
-      header: t('media.col.type'),
-      width: 16,
-      nowrap: true,
-      cell: (m) => (
-        <span
-          className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded inline-block truncate max-w-full ${
-            m.mimeType.startsWith('image/') ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
-          }`}
-        >
-          {m.mimeType.startsWith('image/') ? t('media.image_label') : t('media.video_label')}
-        </span>
-      ),
-    },
-    {
       key: 'links',
       header: t('media.col.links'),
-      width: 24,
+      width: 26,
       cell: (m) => (
         <div className="flex flex-wrap gap-1">
           {(m.linkedSkus ?? []).length === 0 && (
             <span className="text-[11px] text-text-tertiary">{t('media.no_links')}</span>
           )}
-          {(m.linkedSkus ?? []).map((sku) => (
-            <span
-              key={sku}
-              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
-              title={sku}
+          {(m.linkedSkus ?? []).map((variantId) => (
+            <button
+              key={variantId}
+              onClick={(e) => { e.stopPropagation(); handleSkuClick(variantId); }}
+              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary hover:bg-accent/10 hover:text-accent hover:border-accent/30 transition-colors cursor-pointer"
+              title={variantId}
             >
               <LinkIcon className="w-2.5 h-2.5" />
-              {sku}
-            </span>
+              {skuLabel(variantId)}
+            </button>
           ))}
         </div>
       ),
@@ -546,7 +578,7 @@ export default function MediaManager() {
     {
       key: 'size',
       header: t('media.col.size'),
-      width: 11,
+      width: 12,
       nowrap: true,
       hideBelow: 'md',
       cell: (m) => (
@@ -558,7 +590,7 @@ export default function MediaManager() {
     {
       key: 'date',
       header: t('media.col.date'),
-      width: 11,
+      width: 12,
       nowrap: true,
       cell: (m) => (
         <span className="text-[11px] sm:text-xs text-text-tertiary truncate block">
@@ -569,7 +601,7 @@ export default function MediaManager() {
     {
       key: 'actions',
       header: t('media.col.actions'),
-      width: 14,
+      width: 18,
       align: 'right',
       cell: (m) => (
         <div className="flex items-center justify-end gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity">
@@ -620,28 +652,18 @@ export default function MediaManager() {
                 const idx = filtered.findIndex((f) => f.id === item.id);
                 if (idx !== -1) setLightboxIndex(idx);
               }}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-bg-tertiary border border-border-subtle flex-shrink-0 flex items-center justify-center hover:border-border-default transition-colors"
-              aria-label="Preview"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-bg-tertiary border border-border-subtle flex-shrink-0 flex items-center justify-center hover:border-border-default transition-colors cursor-pointer"
+              aria-label={t('media.preview')}
             >
-              {playableUrl && item.mimeType.startsWith('image/') ? (
+              {playableUrl ? (
                 <img
                   src={playableUrl}
                   alt={item.originalName}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              ) : playableUrl && item.mimeType.startsWith('video/') ? (
-                <video
-                  src={playableUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                  playsInline
-                  preload="metadata"
-                />
-              ) : item.mimeType.startsWith('image/') ? (
-                <FileImage className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
               ) : (
-                <FileVideo className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
+                <FileImage className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
               )}
             </button>
             <div className="min-w-0 flex-1">
@@ -651,13 +673,6 @@ export default function MediaManager() {
                 </p>
               </div>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded inline-block ${
-                    item.mimeType.startsWith('image/') ? 'bg-accent/10 text-accent' : 'bg-info/10 text-info'
-                  }`}
-                >
-                  {item.mimeType.startsWith('image/') ? t('media.image_label') : t('media.video_label')}
-                </span>
                 <span className="text-[10px] text-text-tertiary">{formatBytes(item.sizeBytes)}</span>
                 <span className="text-[10px] text-text-muted">{item.createdAt?.slice(0, 10)}</span>
               </div>
@@ -665,17 +680,19 @@ export default function MediaManager() {
                 {(item.linkedSkus ?? []).length === 0 && (
                   <span className="text-[10px] text-text-tertiary">{t('media.no_links')}</span>
                 )}
-                {(item.linkedSkus ?? []).map((sku) => {
-                  const product = products.find((p) => p.sku === sku);
-                  const variantId = product?.id ?? sku;
-                  return (
+                {(item.linkedSkus ?? []).map((variantId) => (
                     <span
-                      key={sku}
+                      key={variantId}
                       className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
-                      title={sku}
+                      title={variantId}
                     >
-                      <LinkIcon className="w-2.5 h-2.5" />
-                      {sku}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleSkuClick(variantId); }}
+                        className="flex items-center gap-1 hover:text-accent transition-colors cursor-pointer"
+                      >
+                        <LinkIcon className="w-2.5 h-2.5" />
+                        {skuLabel(variantId)}
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -687,8 +704,7 @@ export default function MediaManager() {
                         <Unlink className="w-2.5 h-2.5" />
                       </button>
                     </span>
-                  );
-                })}
+                  ))}
               </div>
             </div>
             <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -735,10 +751,17 @@ export default function MediaManager() {
             {t('media.title')}
           </h2>
           <p className="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1">
-            {counts.total} {t('media.subtitle')} · {counts.images} {t('media.images')} ·{' '}
-            {counts.videos} {t('media.videos')}
+            {counts.total} {t('media.subtitle')} · {counts.images} {t('media.images')}
           </p>
         </div>
+        {allMedia.length > 0 && (
+          <button
+            onClick={() => setConfirmClearAll(true)}
+            className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-danger/10 text-danger text-xs sm:text-sm hover:bg-danger/20 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-danger/20 flex-shrink-0"
+          >
+            <Trash2 className="w-4 h-4" /> {t('media.clear_all')}
+          </button>
+        )}
         <button
           onClick={openUpload}
           className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-11 sm:h-10 rounded-lg bg-accent/25 text-white text-xs sm:text-sm hover:bg-accent/35 transition-[colors,opacity,transform,box-shadow] cursor-pointer font-medium border border-accent/40 flex-shrink-0"
@@ -759,30 +782,13 @@ export default function MediaManager() {
           />
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto order-1 sm:order-2 pb-1 sm:pb-0">
-          {(['all', 'image', 'video'] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => setFilterType(type)}
-              className={`h-11 sm:h-9 px-3 rounded-lg text-xs transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer whitespace-nowrap ${
-                filterType === type
-                  ? 'bg-accent/25 text-white border border-accent/40'
-                  : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary border border-border-subtle'
-              }`}
-            >
-              {type === 'all'
-                ? t('media.all')
-                : type === 'image'
-                  ? t('media.photos')
-                  : t('media.videos_label')}
-            </button>
-          ))}
           <div className="flex rounded-lg bg-bg-secondary border border-border-subtle p-0.5 flex-shrink-0">
             <button
               onClick={() => setViewMode('grid')}
-              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors cursor-pointer outline-none focus:outline-none focus-visible:outline-none ${
                 viewMode === 'grid'
                   ? 'bg-accent/25 text-white border border-accent/40'
-                  : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
+                  : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary border border-transparent'
               }`}
               aria-label="Grid view"
             >
@@ -790,10 +796,10 @@ export default function MediaManager() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0 cursor-pointer ${
+              className={`h-11 w-11 sm:h-9 sm:w-9 p-0 rounded-md flex items-center justify-center transition-colors cursor-pointer outline-none focus:outline-none focus-visible:outline-none ${
                 viewMode === 'list'
                   ? 'bg-accent/25 text-white border border-accent/40'
-                  : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary'
+                  : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary border border-transparent'
               }`}
               aria-label="List view"
             >
@@ -858,48 +864,34 @@ export default function MediaManager() {
                 className={`glass group relative rounded-xl overflow-hidden border transition-[colors,opacity,transform,box-shadow] duration-150 cursor-pointer hover:-translate-y-0.5 hover:border-border-default`}
                 onClick={() => toggleSelect(item.id)}
               >
+                {selectedItems.includes(item.id) && (
+                  <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center shadow-sm z-10">
+                    <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white" />
+                  </div>
+                )}
                 <button
                   type="button"
-                  className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-bg-tertiary/80 backdrop-blur-sm border border-border-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-bg-hover"
+                  className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-bg-tertiary/80 backdrop-blur-sm border border-border-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-bg-hover cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     const idx = filtered.findIndex((f) => f.id === item.id);
                     if (idx !== -1) setLightboxIndex(idx);
                   }}
-                  aria-label="Preview"
-                  title="Preview"
+                  aria-label={t('media.preview')}
+                  title={t('media.preview')}
                 >
                   <ImagePlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-text-secondary" />
                 </button>
                 <div className="aspect-square bg-bg-tertiary flex items-center justify-center overflow-hidden">
-                  {playableUrl && item.mimeType.startsWith('image/') ? (
+                  {playableUrl ? (
                     <img
                       src={playableUrl}
                       alt={item.originalName}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                  ) : playableUrl && item.mimeType.startsWith('video/') ? (
-                    <video
-                      src={playableUrl}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : item.mimeType.startsWith('image/') ? (
-                    <FileImage className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                   ) : (
-                    <FileVideo className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
-                  )}
-                  {item.mimeType.startsWith('video/') && playableUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
+                    <FileImage className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 text-text-muted group-hover:scale-110 transition-transform duration-300" />
                   )}
                 </div>
                 <div
@@ -912,30 +904,23 @@ export default function MediaManager() {
                       {item.originalName}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between mt-1 gap-1">
+                  <div className="flex items-center mt-1">
                     <span className="text-[10px] text-text-tertiary">{formatBytes(item.sizeBytes)}</span>
-                    <span className="text-[10px] text-text-muted truncate max-w-[80px]" title={(item.linkedSkus ?? []).join(', ')}>
-                      {(item.linkedSkus ?? []).length} {t('media.links')}
-                    </span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {(item.linkedSkus ?? []).map((sku) => (
-                      <span
-                        key={sku}
-                        className="inline-flex items-center gap-1 text-[9px] px-1 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary"
-                        title={sku}
+                    {(item.linkedSkus ?? []).map((variantId) => (
+                      <button
+                        key={variantId}
+                        onClick={(e) => { e.stopPropagation(); handleSkuClick(variantId); }}
+                        className="inline-flex items-center gap-1 text-[9px] px-1 py-0.5 rounded bg-bg-secondary border border-border-subtle text-text-secondary hover:bg-accent/10 hover:text-accent hover:border-accent/30 transition-colors cursor-pointer"
+                        title={variantId}
                       >
                         <LinkIcon className="w-2 h-2" />
-                        {sku}
-                      </span>
+                        {skuLabel(variantId)}
+                      </button>
                     ))}
                   </div>
                 </div>
-                {selectedItems.includes(item.id) && (
-                  <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-4 sm:w-5 h-4 sm:h-5 rounded-full bg-accent flex items-center justify-center shadow-sm z-10">
-                    <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white" />
-                  </div>
-                )}
               </div>
             );
           })}
@@ -1039,7 +1024,7 @@ export default function MediaManager() {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,video/*"
+              accept="image/*"
               className="hidden"
               onChange={onPickFiles}
             />
@@ -1061,7 +1046,7 @@ export default function MediaManager() {
               <p className="text-[10px] sm:text-xs text-text-tertiary">
                 {t('media.drafts_count').replace('{count}', String(uploadDrafts.length))}
               </p>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToParentElement]}>
                 <SortableContext items={uploadDrafts.map((d) => d.id)} strategy={rectSortingStrategy}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     {uploadDrafts.map((d) => (
@@ -1069,6 +1054,7 @@ export default function MediaManager() {
                         key={d.id}
                         draft={d}
                         onRemove={removeDraft}
+                        onTogglePrimary={handleTogglePrimary}
                       />
                     ))}
                   </div>
@@ -1083,8 +1069,7 @@ export default function MediaManager() {
       <Lightbox
         open={lightboxIndex >= 0}
         files={filtered}
-        links={allLinks}
-        currentIndex={lightboxIndex >= 0 ? lightboxIndex : 0}
+        currentIndex={lightboxIndex}
         onClose={() => setLightboxIndex(-1)}
         onChangeIndex={setLightboxIndex}
         onDelete={(fileId) => setConfirmDelete(fileId)}
@@ -1119,6 +1104,26 @@ export default function MediaManager() {
         }}
         onCancel={() => setConfirmUnlink(null)}
       />
+
+      {/* Confirm Clear All */}
+      <ConfirmModal
+        open={confirmClearAll}
+        title={t('media.confirm_clear_all_title')}
+        description={t('media.confirm_clear_all_desc')}
+        variant="danger"
+        onConfirm={() => {
+          setConfirmClearAll(false);
+          handleClearAll();
+        }}
+        onCancel={() => setConfirmClearAll(false)}
+      />
+
+      {/* Product Detail Card */}
+      {selectedProduct && (
+        <div className="animate-fade-in-fast">
+          <ProductDetailCard product={selectedProduct} onClose={handleDetailClose} />
+        </div>
+      )}
     </div>
   );
 }

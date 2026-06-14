@@ -30,9 +30,8 @@ if (!existsSync(UPLOADS_DIR)) {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
-export function detectMediaType(mime: string): 'image' | 'video' | null {
+export function detectMediaType(mime: string): 'image' | null {
   if (/^image\//.test(mime)) return 'image';
-  if (/^video\//.test(mime)) return 'video';
   return null;
 }
 
@@ -62,7 +61,7 @@ function fileFilter(
 ): void {
   const type = detectMediaType(file.mimetype);
   if (!type) {
-    cb(new Error(`Unsupported mime type: ${file.mimetype}. Only images and videos are allowed.`));
+    cb(new Error(`Unsupported mime type: ${file.mimetype}. Only images are allowed.`));
     return;
   }
   cb(null, true);
