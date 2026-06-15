@@ -49,7 +49,6 @@ import {
   useSensors,
   DragEndEvent,
 } from '@dnd-kit/core';
-import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 import {
   arrayMove,
@@ -174,7 +173,7 @@ export default function MediaManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showUpload, setShowUpload] = useState(false);
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
 
   const [uploadDrafts, setUploadDrafts] = useState<UploadDraft[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<ProductWithRelations[]>([]);
@@ -743,7 +742,7 @@ export default function MediaManager() {
 
   return (
     <div className="space-y-6">
-      <Toast data={toast} onClose={hideToast} />
+      <Toast toasts={toasts} onDismiss={dismiss} />
 
       <div className="flex items-start sm:items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -1046,7 +1045,7 @@ export default function MediaManager() {
               <p className="text-[10px] sm:text-xs text-text-tertiary">
                 {t('media.drafts_count').replace('{count}', String(uploadDrafts.length))}
               </p>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToParentElement]}>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={uploadDrafts.map((d) => d.id)} strategy={rectSortingStrategy}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     {uploadDrafts.map((d) => (

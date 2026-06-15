@@ -38,7 +38,7 @@ export default function DBInspector() {
   const { t } = useLanguage();
   const ds = useDataSourceAPI();
   const { devMode } = useDevMode();
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
   const [tab, setTab] = useState<Tab>('tables');
   const [tables, setTables] = useState<InspectorTableInfo[] | null>(null);
   const [loadingTables, setLoadingTables] = useState(false);
@@ -176,7 +176,7 @@ export default function DBInspector() {
   if (!devMode || !ds.inspector.available) {
     return (
       <div className="space-y-6">
-        <Toast data={toast} onClose={hideToast} />
+        <Toast toasts={toasts} onDismiss={dismiss} />
         <div className="flex items-start sm:items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl sm:text-2xl font-semibold text-gradient">
@@ -197,7 +197,7 @@ export default function DBInspector() {
 
   return (
     <div className="space-y-4">
-      <Toast data={toast} onClose={hideToast} />
+      <Toast toasts={toasts} onDismiss={dismiss} />
 
       {/* Header */}
       <div className="flex items-start sm:items-end justify-between gap-3">

@@ -410,7 +410,7 @@ export default function DictionaryManager() {
     setFormMounted(true);
   }, []);
 
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const editingColorRef = useRef('');
@@ -1095,7 +1095,7 @@ export default function DictionaryManager() {
 
   return (
     <div className="space-y-6">
-      <Toast data={toast} onClose={hideToast} />
+      <Toast toasts={toasts} onDismiss={dismiss} />
 
       <div className="flex items-start sm:items-end justify-between gap-3">
         <div className="min-w-0 flex-1">

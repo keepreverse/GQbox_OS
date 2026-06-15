@@ -24,6 +24,7 @@ import {
   type SettingsAPI,
   type UploadMediaMeta,
   type UploadMediaResult,
+  type UsersAPI,
 } from './dataSource';
 import type {
   AppNotification,
@@ -33,6 +34,7 @@ import type {
   MediaLink,
   ProductWithRelations,
   RawProduct,
+  User,
 } from '@app-types';
 
 const API_PREFIX = '/api/dev';
@@ -351,6 +353,38 @@ export function createDevDataSource(): DataSource {
   // ─── Notifications API ────────────────────────────────────────────────
   let notificationsCache: AppNotification[] = [];
 
+  // ─── Users API ─────────────────────────────────────────────────────────
+  let usersCache: User[] = [];
+
+  const users: UsersAPI = {
+    get list() {
+      return usersCache;
+    },
+    async create(data) {
+      const created = await request<User>(`${API_PREFIX}/users`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      usersCache = [...usersCache, created];
+      notify('users');
+      return created;
+    },
+    async update(id, patch) {
+      const updated = await request<User>(`${API_PREFIX}/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(patch),
+      });
+      usersCache = usersCache.map((u) => (u.id === id ? updated : u));
+      notify('users');
+      return updated;
+    },
+    async remove(id) {
+      await request<unknown>(`${API_PREFIX}/users/${id}`, { method: 'DELETE' });
+      usersCache = usersCache.filter((u) => u.id !== id);
+      notify('users');
+    },
+  };
+
   const notifications: NotificationsAPI = {
     get list() {
       return notificationsCache;
@@ -420,13 +454,14 @@ export function createDevDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks, users] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
         request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
         request<MediaFile[]>(`${API_PREFIX}/media`).catch(() => [] as MediaFile[]),
         request<MediaLink[]>(`${API_PREFIX}/media/links`).catch(() => [] as MediaLink[]),
+        request<User[]>(`${API_PREFIX}/users`).catch(() => [] as User[]),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
@@ -436,6 +471,7 @@ export function createDevDataSource(): DataSource {
         dicts[name] = dictsNew[name] ?? [];
       }
       notificationsCache = notifs;
+      usersCache = users;
       isReady = true;
       error = null;
     } catch (e) {
@@ -456,6 +492,7 @@ export function createDevDataSource(): DataSource {
     products,
     dictionaries,
     notifications,
+    users,
     inspector: {
       available: true,
       async listTables(): Promise<InspectorTableInfo[]> {

@@ -76,7 +76,7 @@ export default function SKUConstructor() {
   const [skuDuplicate, setSkuDuplicate] = useState(false);
   const [skuSuggestion, setSkuSuggestion] = useState('');
   const [addSuccess, setAddSuccess] = useState(false);
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
 
   useEffect(() => {
     if (step === 5) {
@@ -847,7 +847,7 @@ export default function SKUConstructor() {
           </div>
         )}
       </div>
-      <Toast data={toast} onClose={hideToast} />
+      <Toast toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }

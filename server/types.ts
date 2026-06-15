@@ -134,6 +134,18 @@ export type DataBundle = {
   mediaLinks: MediaLink[];
 };
 
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+  id: string;
+  displayName: string;
+  login: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
 export interface NotificationRow {
   id: string;
   title: string;

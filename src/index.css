@@ -55,9 +55,9 @@ html, body {
 }
 @font-face {
   font-family: 'Geist';
-  src: url('/fonts/Geist-Variable.woff2') format('woff2-variations');
+  src: url('/fonts/Geist-Variable.woff2') format('woff2');
   font-weight: 100 900;
-  font-display: swap;
+  font-display: optional;
 }
 
 html, body, #root {
@@ -176,6 +176,33 @@ button, a, [role="button"], input, select, textarea {
   to { opacity: 1; }
 }
 
+.animate-auth-fade-out {
+  animation: authFadeOut 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes authFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.animate-overlay-in {
+  animation: overlayIn 0.3s ease-in-out forwards;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-overlay-out {
+  animation: overlayOut 0.3s ease-in-out forwards;
+}
+
+@keyframes overlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .table-fade-in {
   animation: tableFadeIn 0.15s ease-out;
 }
@@ -211,6 +238,24 @@ button, a, [role="button"], input, select, textarea {
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-12px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-toast-in {
+  animation: toastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.animate-toast-out {
+  animation: toastOut 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(20px) scale(0.95); }
 }
 
 .grid-pattern {
@@ -428,6 +473,31 @@ html {
   transition:
     transform var(--dropdown-close-dur) var(--dropdown-ease),
     opacity   var(--dropdown-close-dur) var(--dropdown-ease);
+}
+
+.t-icon-swap {
+  position: relative;
+  display: inline-grid;
+}
+.t-icon-swap .t-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity   var(--icon-swap-dur) var(--icon-swap-ease),
+    filter    var(--icon-swap-dur) var(--icon-swap-ease),
+    transform var(--icon-swap-dur) var(--icon-swap-ease);
+  will-change: opacity, filter, transform;
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="a"] {
+  opacity: 0;
+  filter: blur(var(--icon-swap-blur));
+  transform: scale(var(--icon-swap-start-scale));
 }
 
 .t-success-check {

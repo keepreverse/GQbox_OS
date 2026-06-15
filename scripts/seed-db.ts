@@ -9,6 +9,7 @@ import {
   kitComponentInsertSql,
   kitComponentToDbParams,
 } from '../server/utils/mappers';
+import { ensureDefaultAdmin } from '../server/utils/dbStore';
 import { generateProductName, buildDictMaps } from '../server/utils/productNaming';
 import { DICT_TYPES } from '../server/types';
 import type { RawProduct, DictionaryItem, RawKitComponent, RawProductMedia } from '../server/types';
@@ -98,6 +99,10 @@ async function main() {
   console.log(`Seeded ${productMedia.length} product media`);
 
   console.log('Database seeded successfully!');
+
+  const admin = await ensureDefaultAdmin('admin');
+  console.log(`Default admin user ensured: ${admin.login} (${admin.role})`);
+
   await closePool();
 }
 

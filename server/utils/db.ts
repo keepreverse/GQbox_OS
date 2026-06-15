@@ -224,6 +224,20 @@ export async function initSchema(): Promise<void> {
   await query(`DELETE FROM media_files WHERE id IS NULL OR id = ''`);
   await query(`DELETE FROM product_media_links WHERE file_id IS NULL OR file_id = ''`);
   await query(`DELETE FROM products WHERE id IS NULL OR id = ''`);
+
+  // ─── users ──────────────────────────────────────────────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(40) PRIMARY KEY,
+      display_name VARCHAR(255) NOT NULL,
+      login VARCHAR(100) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'user',
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
 }
 
 export async function closePool(): Promise<void> {

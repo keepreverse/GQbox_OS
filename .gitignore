@@ -7,6 +7,8 @@ dist/
 .vscode/
 .idea/
 server/uploads/
+server/data/users.json
+server/data/sessions.json
 *.rar
 project-as-text/
 project-files.txt

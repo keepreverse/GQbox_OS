@@ -295,6 +295,18 @@ export interface NamingLogicDefinition {
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+  id: string;
+  displayName: string;
+  login: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface AppNotification {
   id: string;
   title: string;
@@ -324,7 +336,8 @@ export type ViewType =
   | 'kit-builder'
   | 'media'
   | 'ai-hub'
-  | 'db-inspector';
+  | 'db-inspector'
+  | 'administration';
 
 export interface MatrixFilters {
   categories?: string[];

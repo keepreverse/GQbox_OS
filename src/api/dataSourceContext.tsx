@@ -15,6 +15,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { DataSource } from './dataSource';
 import { createDemoDataSource } from './demoDataSource';
 import { createDevDataSource } from './devDataSource';
+import { useAuth } from '@context/AuthContext';
 import { useDevMode } from '@context/DevModeContext';
 
 const DataSourceContext = createContext<DataSource | null>(null);
@@ -37,6 +38,7 @@ const DataSourceStatusContext = createContext<DataSourceStatus>({
  */
 export function DataSourceProvider({ children }: { children: ReactNode }) {
   const { devMode } = useDevMode();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Создаём DataSource мемоизированно, пересоздаём только при смене mode.
   const dataSource = useMemo<DataSource>(() => {
@@ -67,10 +69,14 @@ export function DataSourceProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, [dataSource]);
 
-  // При смене mode дёргаем refresh() — на новый DataSource нет данных.
+  // Загружаем данные только после успешной авторизации или при смене источника
+  // для уже авторизованного пользователя. До входа не отправляем запросы, чтобы
+  // не получать 401 и не показывать бесконечный лоадер.
   useEffect(() => {
-    dataSource.refresh();
-  }, [dataSource]);
+    if (isAuthenticated && !authLoading) {
+      dataSource.refresh();
+    }
+  }, [dataSource, isAuthenticated, authLoading]);
 
   return (
     <DataSourceContext.Provider value={dataSource}>

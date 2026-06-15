@@ -4,6 +4,7 @@
 // Низкоуровневые query/queryOne лежат в db.ts.
 
 import { randomUUID } from 'node:crypto';
+import bcrypt from 'bcrypt';
 import { query, queryOne, initSchema } from './db';
 import {
   COLLECTIONS,
@@ -12,6 +13,8 @@ import {
   type DictionaryItem,
   type RawProduct,
   type RawProductMedia,
+  type User,
+  type UserRole,
 } from '../types';
 import {
   buildDictUpdateSql,
@@ -526,6 +529,126 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
     imported.push(name);
   }
   return imported;
+}
+
+// ─── Users & sessions ────────────────────────────────────────────────────
+
+const BCRYPT_ROUNDS = 12;
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, BCRYPT_ROUNDS);
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+function mapUserRow(row: any): User {
+  return {
+    id: row.id,
+    displayName: row.display_name,
+    login: row.login,
+    role: row.role,
+    isActive: !!row.is_active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  const row = await queryOne<any>('SELECT * FROM users WHERE id = $1', [id]);
+  return row ? mapUserRow(row) : null;
+}
+
+export async function getUserByLogin(login: string): Promise<User | null> {
+  const row = await queryOne<any>('SELECT * FROM users WHERE login = $1', [login]);
+  return row ? mapUserRow(row) : null;
+}
+
+export async function getUserWithPasswordByLogin(
+  login: string
+): Promise<(User & { passwordHash: string }) | null> {
+  const row = await queryOne<any>('SELECT * FROM users WHERE login = $1', [login]);
+  if (!row) return null;
+  return { ...mapUserRow(row), passwordHash: row.password_hash };
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const rows = await query<any>('SELECT * FROM users ORDER BY created_at DESC');
+  return rows.map(mapUserRow);
+}
+
+export async function createUser(
+  displayName: string,
+  login: string,
+  password: string,
+  role: UserRole = 'user'
+): Promise<User> {
+  const id = randomUUID();
+  const passwordHash = await hashPassword(password);
+  await query(
+    `INSERT INTO users (id, display_name, login, password_hash, role, is_active, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, TRUE, NOW(), NOW())`,
+    [id, displayName, login, passwordHash, role]
+  );
+  const created = await getUserById(id);
+  if (!created) throw new Error('Failed to create user');
+  return created;
+}
+
+export async function updateUser(
+  id: string,
+  patch: Partial<Pick<User, 'displayName' | 'login' | 'role' | 'isActive'>> & { password?: string }
+): Promise<User | null> {
+  const existing = await getUserById(id);
+  if (!existing) return null;
+
+  const updates: string[] = [];
+  const values: unknown[] = [];
+  let idx = 1;
+
+  if (patch.displayName !== undefined) {
+    updates.push(`display_name = $${idx++}`);
+    values.push(patch.displayName);
+  }
+  if (patch.login !== undefined) {
+    updates.push(`login = $${idx++}`);
+    values.push(patch.login);
+  }
+  if (patch.password !== undefined) {
+    updates.push(`password_hash = $${idx++}`);
+    values.push(await hashPassword(patch.password));
+  }
+  if (patch.role !== undefined) {
+    updates.push(`role = $${idx++}`);
+    values.push(patch.role);
+  }
+  if (patch.isActive !== undefined) {
+    updates.push(`is_active = $${idx++}`);
+    values.push(patch.isActive);
+  }
+  if (updates.length === 0) return existing;
+
+  updates.push(`updated_at = NOW()`);
+  values.push(id);
+  await query(
+    `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}`,
+    values
+  );
+  return getUserById(id);
+}
+
+export async function deleteUser(id: string): Promise<User | null> {
+  const existing = await getUserById(id);
+  if (!existing) return null;
+  await query('DELETE FROM users WHERE id = $1', [id]);
+  return existing;
+}
+
+export async function ensureDefaultAdmin(password: string = 'admin'): Promise<User> {
+  const existing = await getUserByLogin('admin');
+  if (existing) return existing;
+  return createUser('Administrator', 'admin', password, 'admin');
 }
 
 /**

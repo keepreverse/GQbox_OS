@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
 import type { InspectorQueryResult } from '@api/dataSource';
 
 function formatCell(v: unknown): string {
@@ -42,15 +41,12 @@ export default function DataTable({ result, searchPlaceholder, rowCountLabel }: 
             : `${result.rowCount} rows`}
           {result.truncated && ' (truncated)'}
         </p>
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary pointer-events-none" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="w-full h-8 pl-8 pr-3 text-xs bg-bg-tertiary border border-border-subtle rounded-lg focus:border-accent/50 focus:ring-1 focus:ring-accent/20"
-          />
-        </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={searchPlaceholder}
+          className="w-full sm:w-64 h-8 px-3 text-xs bg-bg-tertiary border border-border-subtle rounded-lg focus:border-accent/50 focus:ring-1 focus:ring-accent/20"
+        />
       </div>
 
       {result.rows.length === 0 ? (

@@ -17,9 +17,13 @@ import devSettings from './routes/dev/settings';
 import devNotifications from './routes/dev/notifications';
 import devKitComponents from './routes/dev/kitComponents';
 import devMedia from './routes/dev/media';
-import devInspect from './routes/dev/inspect';
+import devInspector from './routes/dev/inspect';
+
+import auth from './routes/auth';
+import devUsers from './routes/dev/users';
 
 import { errorHandler } from './middleware/errorHandler';
+import { requireAuth, requireAdmin } from './middleware/auth';
 import { closePool } from './utils/db';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
@@ -28,6 +32,7 @@ const app = express();
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: false,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-GQbox-Mode'],
 }));
 
 // Multer (multipart/form-data) для /api/*/media не использует JSON-парсер,
@@ -61,6 +66,9 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// ─── Auth (mode-aware: demo JSON / dev PostgreSQL) ────────────────────────
+app.use('/api/auth', auth);
+
 // ─── Demo (JSON-files) ───────────────────────────────────────────────────
 app.use('/api/demo/products', demoProducts);
 app.use('/api/demo/dictionaries', demoDictionaries);
@@ -70,13 +78,16 @@ app.use('/api/demo/kit-components', demoKitComponents);
 app.use('/api/demo/media', demoMedia);
 
 // ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
+// Everything under /api/dev requires admin authentication.
+app.use('/api/dev', requireAuth, requireAdmin);
 app.use('/api/dev/products', devProducts);
 app.use('/api/dev/dictionaries', devDictionaries);
 app.use('/api/dev', devSettings);
 app.use('/api/dev/notifications', devNotifications);
 app.use('/api/dev/kit-components', devKitComponents);
 app.use('/api/dev/media', devMedia);
-app.use('/api/dev/inspect', devInspect);
+app.use('/api/dev/inspector', devInspector);
+app.use('/api/dev/users', devUsers);
 
 app.use(errorHandler);
 

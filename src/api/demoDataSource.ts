@@ -22,6 +22,7 @@ import {
   type SettingsAPI,
   type UploadMediaMeta,
   type UploadMediaResult,
+  type UsersAPI,
 } from './dataSource';
 import type {
   AppNotification,
@@ -353,6 +354,23 @@ export function createDemoDataSource(): DataSource {
   // ─── Notifications API ────────────────────────────────────────────────
   let notificationsCache: AppNotification[] = [];
 
+  // ─── Users API ─────────────────────────────────────────────────────────
+  // User management is only available in dev mode; demo returns empty data.
+  const users: UsersAPI = {
+    get list() {
+      return [];
+    },
+    async create() {
+      throw new Error('User management is only available in Developer Mode');
+    },
+    async update() {
+      throw new Error('User management is only available in Developer Mode');
+    },
+    async remove() {
+      throw new Error('User management is only available in Developer Mode');
+    },
+  };
+
   const notifications: NotificationsAPI = {
     get list() {
       return notificationsCache;
@@ -465,6 +483,7 @@ export function createDemoDataSource(): DataSource {
     dictionaries,
     notifications,
     settings,
+    users,
     inspector,
     refresh,
     subscribe(listener) {

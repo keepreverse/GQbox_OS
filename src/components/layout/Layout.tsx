@@ -29,18 +29,26 @@ const ViewContent = memo(function ViewContent({
   children: React.ReactNode;
 }) {
   return (
-    <div key={currentView} className="p-3 sm:p-6 max-w-[1600px] mx-auto flex flex-col min-h-0 animate-fade-in">
+    <div key={currentView} className="p-3 sm:p-6 max-w-[1600px] mx-auto flex flex-col min-h-0 animate-fade-in-fast">
       {children}
     </div>
   );
 });
 
 function LayoutComponent({ currentView, onViewChange, children }: LayoutProps) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Initialize isMobile synchronously so the sidebar renders in the correct
+  // state on the first paint — otherwise the expanded (desktop) sidebar
+  // flashes for a frame on narrow viewports before snapping to collapsed.
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`).matches;
+  });
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [overlayMounted, setOverlayMounted] = useState(false);
+  const [overlayExiting, setOverlayExiting] = useState(false);
   const { devMode } = useDevMode();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -68,6 +76,22 @@ function LayoutComponent({ currentView, onViewChange, children }: LayoutProps) {
 
   const isMobileMedia = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
 
+  // Mobile sidebar overlay: fades in when the sidebar opens and starts fading
+  // out immediately when the sidebar closes, matching the sidebar's 300ms
+  // transition. The element stays mounted for the duration of the fade-out so
+  // it does not unmount mid-animation.
+  const showOverlay = isMobile && sidebarOpen;
+  useEffect(() => {
+    if (showOverlay) {
+      setOverlayMounted(true);
+      setOverlayExiting(false);
+    } else {
+      setOverlayExiting(true);
+      const timer = setTimeout(() => setOverlayMounted(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showOverlay]);
+
   useEffect(() => {
     setIsMobile(isMobileMedia);
     if (isMobileMedia) {
@@ -81,7 +105,9 @@ function LayoutComponent({ currentView, onViewChange, children }: LayoutProps) {
   const handleNavigate = useCallback(
     (view: ViewType) => {
       onViewChange(view);
-      if (isMobile) setSidebarOpen(false);
+      if (isMobile) {
+        setSidebarOpen(false);
+      }
     },
     [onViewChange, isMobile]
   );
@@ -127,10 +153,12 @@ function LayoutComponent({ currentView, onViewChange, children }: LayoutProps) {
   return (
     <LayoutProvider value={layoutCtx}>
       <div className="flex h-[100dvh] overflow-hidden bg-bg-primary text-text-primary noise-overlay">
-        {isMobile && sidebarOpen && (
+        {overlayMounted && (
           <div
             onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-black/40 z-[101] cursor-pointer animate-fade-in-fast"
+            className={`fixed inset-0 bg-black/20 z-[101] cursor-pointer ${
+              overlayExiting ? 'animate-overlay-out' : 'animate-overlay-in'
+            }`}
           />
         )}
 

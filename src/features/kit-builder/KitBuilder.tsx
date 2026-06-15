@@ -12,7 +12,6 @@ import {
   Package,
   Plus,
   X,
-  Search,
   ChevronRight,
   Zap,
   Hash,
@@ -238,7 +237,7 @@ export default function KitBuilder() {
   const [showPicker, setShowPicker] = useState(false);
   const [pickerView, setPickerView] = useState<'categories' | 'products'>('categories');
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null);
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
   const [addSuccess, setAddSuccess] = useState(false);
 
   const closePicker = useCallback(() => {
@@ -327,7 +326,7 @@ export default function KitBuilder() {
   }, []);
 
   const handleCreateKit = async () => {
-    if (components.length < 2 || !kitName || !kitSku || skuExists) return;
+    if (components.length < 2 || !kitName || !kitSku || skuExists || addSuccess) return;
 
     const powers = components.map((c) => c.product.powerW).filter((p): p is number => p != null);
     const maxPowerW = powers.length > 0 ? Math.max(...powers) : undefined;
@@ -342,24 +341,34 @@ export default function KitBuilder() {
       deviceCount: components.reduce((sum, c) => sum + c.quantity, 0),
     };
 
+    const skuBackup = kitSku;
+    const nameBackup = kitName;
+    const componentsBackup = components;
+
+    // Clear form immediately so the data-source version bump (which adds
+    // the new kit to `products`) doesn't render a red "SKU already exists"
+    // state before the success indicator shows.
+    setKitName('');
+    setKitSku('');
+    setComponents([]);
+
     try {
       const created = await ds.products.create(draft);
-      // Save kit components
-      for (const comp of components) {
+      for (const comp of componentsBackup) {
         await ds.products.addKitComponent(created.id, comp.product.id, comp.quantity);
       }
       setAddSuccess(true);
       showToast(t('kit.toast_created'));
       notifications.add({
-        title: `${t('kit.notif_created')}: ${kitSku}`,
-        description: kitName,
+        title: `${t('kit.notif_created')}: ${skuBackup}`,
+        description: nameBackup,
         type: 'success',
         actionView: 'matrix',
       });
-      setKitName('');
-      setKitSku('');
-      setComponents([]);
     } catch (err: any) {
+      setKitName(nameBackup);
+      setKitSku(skuBackup);
+      setComponents(componentsBackup);
       showToast(err?.message || t('kit.toast_duplicate'), 'error');
     }
   };
@@ -371,7 +380,7 @@ export default function KitBuilder() {
 
   return (
     <div className="space-y-6">
-      <Toast data={toast} onClose={hideToast} />
+      <Toast toasts={toasts} onDismiss={dismiss} />
 
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gradient">{t('kit.title')}</h2>
@@ -588,7 +597,7 @@ export default function KitBuilder() {
         contentClassName="p-0"
       >
         <div className="p-3 sm:p-4 border-b border-border-subtle flex items-center gap-3 bg-bg-secondary">
-          {pickerView === 'products' ? (
+          {pickerView === 'products' && (
             <button
               onClick={() => {
                 setPickerView('categories');
@@ -599,8 +608,6 @@ export default function KitBuilder() {
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-          ) : (
-            <Search className="w-4 h-4 text-text-muted ml-1" />
           )}
           <input
             type="text"

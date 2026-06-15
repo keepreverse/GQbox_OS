@@ -27,6 +27,8 @@ import type {
   CategoryAttribute,
   NamingTemplate,
   RawProduct,
+  User,
+  UserRole,
 } from '@app-types';
 import { getMarketplaceListingsBySku } from '../data/marketplaces';
 
@@ -187,6 +189,35 @@ export interface SettingsAPI {
   importFromFile(text: string): Promise<void>;
 }
 
+// ─── Users API (только admin в dev-режиме) ────────────────────────────────
+export interface UsersAPI {
+  /** Все пользователи системы. */
+  readonly list: User[];
+
+  /** Создать пользователя. */
+  create(data: {
+    displayName: string;
+    login: string;
+    password: string;
+    role?: UserRole;
+  }): Promise<User>;
+
+  /** Обновить пользователя. */
+  update(
+    id: string,
+    patch: Partial<{
+      displayName: string;
+      login: string;
+      password: string;
+      role: UserRole;
+      isActive: boolean;
+    }>
+  ): Promise<User>;
+
+  /** Удалить пользователя. */
+  remove(id: string): Promise<void>;
+}
+
 // ─── Inspector API (только dev-режим) ─────────────────────────────────────
 export interface InspectorColumnInfo {
   name: string;
@@ -238,6 +269,7 @@ export interface DataSource {
   readonly dictionaries: DictionariesAPI;
   readonly notifications: NotificationsAPI;
   readonly settings: SettingsAPI;
+  readonly users: UsersAPI;
   readonly inspector: InspectorAPI;
 
   /** Перезагрузить все данные с бэка. */

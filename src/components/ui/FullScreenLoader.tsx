@@ -73,7 +73,7 @@ export default function FullScreenLoader({ exiting, devError }: FullScreenLoader
     <div
       role="status"
       aria-label="Загрузка"
-      className={`fixed inset-0 z-[9999] isolate flex items-center justify-center bg-bg-primary transition-opacity duration-[550ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`fixed inset-0 z-[9999] isolate flex items-center justify-center bg-bg-primary grid-pattern transition-opacity duration-[550ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
         exiting ? 'opacity-0' : 'opacity-100'
       }`}
     >

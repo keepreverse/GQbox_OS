@@ -12,9 +12,13 @@ import {
   ChevronRight,
   Settings,
   Database,
+  Users,
+  Shield,
 } from 'lucide-react';
 import type { ViewType } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
+import { useAuth } from '@context/AuthContext';
+import { useDevMode } from '@context/DevModeContext';
 import { useDataSourceAPI } from '@api/dataSourceContext';
 
 interface SidebarProps {
@@ -41,6 +45,8 @@ function SidebarComponent({
   onOpenSettings,
 }: SidebarProps) {
   const { t } = useLanguage();
+  const { user, isAdmin } = useAuth();
+  const { devMode } = useDevMode();
   const { inspector } = useDataSourceAPI();
 
   // Снимаем will-change после окончания анимации width/transform,
@@ -61,7 +67,10 @@ function SidebarComponent({
     { id: 'media' as ViewType, label: t('nav.media'), icon: Image },
     { id: 'architecture' as ViewType, label: t('nav.architecture'), icon: Cpu },
     { id: 'ai-hub' as ViewType, label: t('nav.ai-hub'), icon: Sparkles, badge: t('nav.beta') },
-    ...(inspector.available
+    ...(devMode && isAdmin
+      ? [{ id: 'administration' as ViewType, label: t('nav.administration'), icon: Users }]
+      : []),
+    ...(inspector.available && isAdmin
       ? [{ id: 'db-inspector' as ViewType, label: t('nav.db-inspector'), icon: Database }]
       : []),
   ];
@@ -179,7 +188,7 @@ function SidebarComponent({
       <div className="py-2 border-t border-border-subtle">
         <div className="h-11 bg-bg-tertiary flex items-center pl-[22px] overflow-hidden w-full">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-[10px] font-bold text-white shrink-0 ring-1 ring-accent/30 select-none">
-            GQ
+            {user?.displayName?.slice(0, 2).toUpperCase() ?? 'GQ'}
           </div>
           <div
             className={`flex items-center justify-between shrink-0 w-[182px] ml-3 pr-2 transition-opacity duration-150 ${
@@ -187,8 +196,16 @@ function SidebarComponent({
             }`}
           >
             <div className="min-w-0 pr-2 select-none">
-              <p className="text-xs font-medium truncate">{t('header.team')}</p>
-              <p className="text-[10px] text-text-tertiary truncate">{t('header.admin')}</p>
+              <p className="text-xs font-medium truncate">{user?.displayName ?? 'GQbox'}</p>
+              <p className="text-[10px] text-text-tertiary truncate flex items-center gap-1">
+                {isAdmin ? (
+                  <>
+                    <Shield className="w-2.5 h-2.5 text-accent" /> {t('header.admin')}
+                  </>
+                ) : (
+                  t('header.user')
+                )}
+              </p>
             </div>
             <button
               onClick={onOpenSettings}

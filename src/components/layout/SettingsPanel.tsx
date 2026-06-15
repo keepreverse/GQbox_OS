@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw, Database } from 'lucide-react';
+import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw, Database, User as UserIcon } from 'lucide-react';
 import Modal from '@components/ui/Modal';
 import ConfirmModal from '@components/ui/ConfirmModal';
 import Toggle from '@components/ui/Toggle';
 import { useLanguage } from '@context/LanguageContext';
 import type { Language } from '@context/LanguageContext';
+import { useAuth } from '@context/AuthContext';
 import { useDevMode } from '@context/DevModeContext';
 import { useDataSourceAPI } from '@api/dataSourceContext';
 import { useToast } from '@hooks/useToast';
@@ -39,9 +40,10 @@ export default function SettingsPanel({
   onOpenChange,
 }: SettingsPanelProps) {
   const { language, setLanguage, t } = useLanguage();
+  const { user, isAdmin, logout } = useAuth();
   const ds = useDataSourceAPI();
   const { devMode, setDevMode } = useDevMode();
-  const { toast, showToast, hideToast } = useToast();
+  const { toasts, showToast, dismiss } = useToast();
   const [pendingDevMode, setPendingDevMode] = useState(devMode);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const savedLangRef = useRef<Language>(language);
@@ -114,21 +116,21 @@ export default function SettingsPanel({
     onOpenChange(false);
   }, [setLanguage, devMode, onOpenChange]);
 
+  const handleLogout = useCallback(async () => {
+    // Intentionally do NOT close the settings panel here. The panel is part of
+    // Layout, and closing it before logout causes a visible flash. During the
+    // logout transition Layout fades out as a whole (panel included), so the
+    // panel disappears smoothly together with the rest of the content.
+    await logout();
+  }, [logout]);
+
   const handleSave = useCallback(() => {
     const changed = pendingDevMode !== devMode;
     if (changed) {
-      const wasDevModeOff = !devMode;
       setDevMode(pendingDevMode);
-      if (pendingDevMode && wasDevModeOff) {
-        showToast(
-          `${t('settings.dev_mode_activated_title')}\n${t('settings.dev_mode_activated_desc')}`,
-          'info'
-        );
-      }
     }
     onOpenChange(false);
-    if (changed) window.location.reload();
-  }, [devMode, pendingDevMode, setDevMode, onOpenChange, showToast, t]);
+  }, [devMode, pendingDevMode, setDevMode, onOpenChange]);
 
   const handleDeveloperToggle = useCallback((next: boolean) => {
     setPendingDevMode(next);
@@ -151,7 +153,7 @@ export default function SettingsPanel({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={handleClose}
+              onClick={handleLogout}
               className="flex-1 h-11 rounded-lg text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20"
             >
               <LogOut className="w-3.5 h-3.5" /> {t('header.settings.logout')}
@@ -166,17 +168,20 @@ export default function SettingsPanel({
           </div>
         }
       >
-        <Toast data={toast} onClose={hideToast} />
+        <Toast toasts={toasts} onDismiss={dismiss} />
         <div className="space-y-4 sm:space-y-6">
           <div className="flex items-center gap-3 sm:gap-4 p-3 rounded-lg bg-bg-tertiary border border-border-subtle">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-sm font-bold text-white ring-1 ring-accent/30 flex-shrink-0">
-              GQ
+              {user?.displayName?.slice(0, 2).toUpperCase() ?? 'GQ'}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">{t('header.team')}</p>
-              <p className="text-xs text-text-secondary truncate">product@gqbox.com</p>
-              <span className="inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded bg-success/10 text-success">
-                <Shield className="w-2.5 h-2.5" /> {t('header.admin')}
+              <p className="text-sm font-medium text-text-primary truncate">{user?.displayName ?? 'GQbox'}</p>
+              <p className="text-xs text-text-secondary truncate">{user?.login ?? 'product@gqbox.com'}</p>
+              <span className={`inline-flex items-center gap-1 mt-1 text-[10px] px-1.5 py-0.2 rounded ${
+                isAdmin ? 'bg-success/10 text-success' : 'bg-bg-elevated text-text-tertiary'
+              }`}>
+                {isAdmin ? <Shield className="w-2.5 h-2.5" /> : <UserIcon className="w-2.5 h-2.5" />}
+                {isAdmin ? t('header.admin') : t('header.user')}
               </span>
             </div>
           </div>
@@ -233,31 +238,33 @@ export default function SettingsPanel({
             />
           </div>
 
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-text-tertiary">{t('settings.work_mode')}</h4>
+          {isAdmin && (
+            <div className="space-y-3">
+              <h4 className="text-xs font-medium text-text-tertiary">{t('settings.work_mode')}</h4>
 
-            <SettingsRow
-              label={
-                <span className="flex items-center gap-1.5">
-                  <Code2 className="w-3.5 h-3.5 text-accent" />
-                  {t('settings.developer_mode')}
-                </span>
-              }
-              value={
-                <Toggle
-                  checked={pendingDevMode}
-                  onChange={handleDeveloperToggle}
-                  ariaLabel={t('settings.developer_mode')}
-                  title={t('settings.developer_mode')}
-                />
-              }
-              description={
-                pendingDevMode
-                  ? t('settings.developer_mode_active')
-                  : t('settings.developer_mode_desc')
-              }
-            />
-          </div>
+              <SettingsRow
+                label={
+                  <span className="flex items-center gap-1.5">
+                    <Code2 className="w-3.5 h-3.5 text-accent" />
+                    {t('settings.developer_mode')}
+                  </span>
+                }
+                value={
+                  <Toggle
+                    checked={pendingDevMode}
+                    onChange={handleDeveloperToggle}
+                    ariaLabel={t('settings.developer_mode')}
+                    title={t('settings.developer_mode')}
+                  />
+                }
+                description={
+                  pendingDevMode
+                    ? t('settings.developer_mode_active')
+                    : t('settings.developer_mode_desc')
+                }
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-text-tertiary">
