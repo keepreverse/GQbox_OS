@@ -192,7 +192,7 @@ export default function ProductMatrix({
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredProducts.slice(start, start + pageSize);
-  }, [filteredProducts, currentPage]);
+  }, [filteredProducts, currentPage, pageSize]);
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
 
@@ -713,7 +713,6 @@ export default function ProductMatrix({
         {/* Table — desktop/tablet */}
         <div className="hidden sm:block">
           <ResponsiveTable
-            key={tableKey}
             columns={productColumns}
             rows={paginatedProducts}
             rowKey={rowKeyFn}

@@ -59,7 +59,11 @@ export function requireAdmin(
     return;
   }
   if (user.role !== 'admin') {
-    res.status(403).json({ error: 'Forbidden: admin role required' });
+    res.status(403).json({
+      error: 'Forbidden: admin role required',
+      login: user.login,
+      role: user.role,
+    });
     return;
   }
   next();

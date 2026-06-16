@@ -119,6 +119,21 @@ export interface DictionaryItem {
   [key: string]: unknown;
 }
 
+// ─── Marketplace listings (WB, Ozon) ──────────────────────────────────────
+export type Marketplace = 'wb' | 'ozon';
+export type ListingKind = 'single' | 'bundle';
+
+export interface MarketplaceListing {
+  id: string;
+  marketplace: Marketplace;
+  article: string;
+  title: string;
+  kind: ListingKind;
+  skus: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type DataBundle = {
   products: RawProduct[];
   categories: DictionaryItem[];
@@ -132,6 +147,7 @@ export type DataBundle = {
   productMedia: RawProductMedia[];
   mediaFiles: MediaFile[];
   mediaLinks: MediaLink[];
+  marketplaces: MarketplaceListing[];
 };
 
 export type UserRole = 'admin' | 'user';
@@ -170,6 +186,7 @@ export const COLLECTIONS = [
   'productMedia',
   'mediaFiles',
   'mediaLinks',
+  'marketplaces',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 

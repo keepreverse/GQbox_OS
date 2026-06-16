@@ -185,6 +185,23 @@ export async function initSchema(): Promise<void> {
   await query(`CREATE INDEX IF NOT EXISTS idx_media_links_variant ON product_media_links(variant_id)`);
   await query(`CREATE INDEX IF NOT EXISTS idx_media_links_file ON product_media_links(file_id)`);
 
+  // ─── Marketplace listings (WB, Ozon) ─────────────────────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS marketplace_listings (
+      id          VARCHAR(40) PRIMARY KEY,
+      marketplace VARCHAR(8)  NOT NULL CHECK (marketplace IN ('wb','ozon')),
+      article     VARCHAR(64) NOT NULL,
+      title       TEXT        NOT NULL,
+      kind        VARCHAR(8)  NOT NULL CHECK (kind IN ('single','bundle')),
+      skus        TEXT[]      NOT NULL DEFAULT '{}',
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (marketplace, article)
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_marketplace_listings_skus ON marketplace_listings USING GIN (skus)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_marketplace_listings_marketplace ON marketplace_listings (marketplace)`);
+
   // Migration: переход от старой product_media → новые media_files + links
   await query(`
     DO $$

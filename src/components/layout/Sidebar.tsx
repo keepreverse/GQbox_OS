@@ -65,8 +65,12 @@ function SidebarComponent({
     { id: 'dictionary' as ViewType, label: t('nav.dictionary'), icon: BookOpen },
     { id: 'kit-builder' as ViewType, label: t('nav.kit-builder'), icon: Package },
     { id: 'media' as ViewType, label: t('nav.media'), icon: Image },
-    { id: 'architecture' as ViewType, label: t('nav.architecture'), icon: Cpu },
     { id: 'ai-hub' as ViewType, label: t('nav.ai-hub'), icon: Sparkles, badge: t('nav.beta') },
+    // Архитектура — справочный раздел для разработки: показываем только
+    // администратору в режиме разработчика (по аналогии с DBInspector).
+    ...(devMode && isAdmin
+      ? [{ id: 'architecture' as ViewType, label: t('nav.architecture'), icon: Cpu }]
+      : []),
     ...(devMode && isAdmin
       ? [{ id: 'administration' as ViewType, label: t('nav.administration'), icon: Users }]
       : []),

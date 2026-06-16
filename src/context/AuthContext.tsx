@@ -9,6 +9,7 @@ import {
 } from 'react';
 import type { User } from '@app-types';
 import { useDevMode } from '@context/DevModeContext';
+import { onAuthFailure } from '@api/client';
 
 const TOKEN_KEY = 'gqbox_auth_token';
 
@@ -155,6 +156,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     }
   }, [authHeaders]);
+
+  // Глобальный слушатель 401/403 от request() — если бэк сообщает, что
+  // токен больше не валиден или роль не подходит (например, кто-то
+  // отредактировал пользователя в БД и понизил роль), автоматически
+  // разлогиниваем. Без этого UI продолжал бы показывать старые данные
+  // и каскад 403/401 в DevTools.
+  useEffect(() => {
+    const unsub = onAuthFailure((event) => {
+      // Чтобы не сбросить только что выданный токен (например, /api/auth/login
+      // мог бы 401'нуть прямо во время login() — но мы его зовём без токена,
+      // так что login flow не задевает), всегда делаем logout.
+      saveToken(null);
+      setUser(null);
+      if (event.reason === 'forbidden' && event.role && event.role !== 'admin') {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[auth] Server returned 403 (login="${event.login}", role="${event.role}"). Forcing logout.`
+        );
+      }
+    });
+    return unsub;
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

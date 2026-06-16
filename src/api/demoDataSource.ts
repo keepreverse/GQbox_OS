@@ -30,6 +30,7 @@ import type {
   NamingTemplate,
   MediaFile,
   MediaLink,
+  MarketplaceListing,
   ProductWithRelations,
   RawProduct,
 } from '@app-types';
@@ -56,6 +57,7 @@ export function createDemoDataSource(): DataSource {
   let rawKitComponents: import('@app-types').RawKitComponent[] = [];
   let rawMediaFiles: MediaFile[] = [];
   let rawMediaLinks: MediaLink[] = [];
+  let rawMarketplaceListings: MarketplaceListing[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -84,6 +86,14 @@ export function createDemoDataSource(): DataSource {
     const materials = dicts.materials.map(asMaterial);
     const chargingProtocols = dicts.chargingProtocols.map(asChargingProtocol);
     const total = rawProducts.length;
+    const listingsBySku = new Map<string, MarketplaceListing[]>();
+    for (const l of rawMarketplaceListings) {
+      for (const sku of l.skus) {
+        const arr = listingsBySku.get(sku) ?? [];
+        arr.push(l);
+        listingsBySku.set(sku, arr);
+      }
+    }
     const all = rawProducts.map((raw, i) =>
       hydrateProduct(
         raw,
@@ -91,7 +101,8 @@ export function createDemoDataSource(): DataSource {
         total,
         { categories, models, colors, suppliers, connectors, materials, chargingProtocols },
         rawMediaFiles,
-        rawMediaLinks
+        rawMediaLinks,
+        listingsBySku
       )
     );
     // Attach kit components to kit products
@@ -439,18 +450,20 @@ export function createDemoDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks, marketplaces] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
         request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
         request<MediaFile[]>(`${API_PREFIX}/media`).catch(() => [] as MediaFile[]),
         request<MediaLink[]>(`${API_PREFIX}/media/links`).catch(() => [] as MediaLink[]),
+        request<MarketplaceListing[]>(`${API_PREFIX}/marketplaces`).catch(() => [] as MarketplaceListing[]),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
       rawMediaFiles = mediaFiles;
       rawMediaLinks = mediaLinks;
+      rawMarketplaceListings = marketplaces;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }

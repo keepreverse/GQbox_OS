@@ -32,6 +32,7 @@ import type {
   NamingTemplate,
   MediaFile,
   MediaLink,
+  MarketplaceListing,
   ProductWithRelations,
   RawProduct,
   User,
@@ -60,6 +61,7 @@ export function createDevDataSource(): DataSource {
   let rawKitComponents: import('@app-types').RawKitComponent[] = [];
   let rawMediaFiles: MediaFile[] = [];
   let rawMediaLinks: MediaLink[] = [];
+  let rawMarketplaceListings: MarketplaceListing[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -88,6 +90,14 @@ export function createDevDataSource(): DataSource {
     const materials = dicts.materials.map(asMaterial);
     const chargingProtocols = dicts.chargingProtocols.map(asChargingProtocol);
     const total = rawProducts.length;
+    const listingsBySku = new Map<string, MarketplaceListing[]>();
+    for (const l of rawMarketplaceListings) {
+      for (const sku of l.skus) {
+        const arr = listingsBySku.get(sku) ?? [];
+        arr.push(l);
+        listingsBySku.set(sku, arr);
+      }
+    }
     const all = rawProducts.map((raw, i) =>
       hydrateProduct(
         raw,
@@ -95,7 +105,8 @@ export function createDevDataSource(): DataSource {
         total,
         { categories, models, colors, suppliers, connectors, materials, chargingProtocols },
         rawMediaFiles,
-        rawMediaLinks
+        rawMediaLinks,
+        listingsBySku
       )
     );
     // Attach kit components to kit products
@@ -293,21 +304,19 @@ export function createDevDataSource(): DataSource {
       if (meta.isPrimary) fd.append('isPrimary', 'true');
       const localPreviewUrl = URL.createObjectURL(file);
       try {
-        const res = await fetch(`${API_PREFIX}/media`, {
-          method: 'POST',
-          body: fd,
-        });
-        if (!res.ok) {
-          URL.revokeObjectURL(localPreviewUrl);
-          const text = await res.text();
-          throw new ApiError(text || `HTTP ${res.status}`, res.status);
-        }
-        const { file: createdFile, links: createdLinks } = await res.json() as { file: MediaFile; links: MediaLink[] };
-        rawMediaFiles = [...rawMediaFiles, createdFile];
+        // ВАЖНО: используем `request` из client.ts — он добавляет
+        // Authorization (Bearer token) и X-GQbox-Mode заголовки.
+        // Раньше тут был сырой `fetch` без заголовков, из-за чего
+        // /api/dev/* отвечал 401/сбрасывал соединение на multipart.
+        const created = await request<{ file: MediaFile; links: MediaLink[] }>(
+          `${API_PREFIX}/media`,
+          { method: 'POST', body: fd }
+        );
+        rawMediaFiles = [...rawMediaFiles, created.file];
         // Re-fetch all links to pick up updated sortOrders from server
         rawMediaLinks = await request<MediaLink[]>(`${API_PREFIX}/media/links`);
         notify('products');
-        return { file: createdFile, links: createdLinks, localPreviewUrl };
+        return { file: created.file, links: created.links, localPreviewUrl };
       } catch (err) {
         URL.revokeObjectURL(localPreviewUrl);
         throw err;
@@ -454,7 +463,7 @@ export function createDevDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks, users] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks, users, marketplaces] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
@@ -462,11 +471,13 @@ export function createDevDataSource(): DataSource {
         request<MediaFile[]>(`${API_PREFIX}/media`).catch(() => [] as MediaFile[]),
         request<MediaLink[]>(`${API_PREFIX}/media/links`).catch(() => [] as MediaLink[]),
         request<User[]>(`${API_PREFIX}/users`).catch(() => [] as User[]),
+        request<MarketplaceListing[]>(`${API_PREFIX}/marketplaces`).catch(() => [] as MarketplaceListing[]),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
       rawMediaFiles = mediaFiles;
       rawMediaLinks = mediaLinks;
+      rawMarketplaceListings = marketplaces;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }

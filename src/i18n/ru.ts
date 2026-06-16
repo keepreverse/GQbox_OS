@@ -302,6 +302,15 @@ export const ru: Record<string, string> = {
   'detail.missing_single': 'Не заполнено обязательное поле',
   'detail.missing_plural': 'Не заполнено {n} обязательных полей',
   'detail.missing_fields_intro': 'подсвечены жёлтым',
+  'detail.tab.info': 'Информация',
+  'detail.tab.analytics': 'Аналитика',
+  'detail.analytics.title': 'Аналитика продаж',
+  'detail.analytics.subtitle': 'Сравнение метрик между WB и Ozon',
+  'detail.analytics.compare_header.metric': 'Метрика',
+  'detail.analytics.value_placeholder': '—',
+  'detail.analytics.metric.orders_count': 'Заказали, шт',
+  'detail.analytics.metric.orders_sum': 'Заказали на сумму',
+  'detail.analytics.metric.buyouts_count': 'Выкупили, шт',
 
   // Dictionaries
   'dict.title': 'Менеджер справочников',

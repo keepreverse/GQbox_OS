@@ -303,6 +303,15 @@ export const en: Record<string, string> = {
   'detail.missing_single': '1 required field is missing',
   'detail.missing_plural': '{n} required fields are missing',
   'detail.missing_fields_intro': 'highlighted in yellow',
+  'detail.tab.info': 'Information',
+  'detail.tab.analytics': 'Analytics',
+  'detail.analytics.title': 'Sales analytics',
+  'detail.analytics.subtitle': 'Comparing metrics between WB and Ozon',
+  'detail.analytics.compare_header.metric': 'Metric',
+  'detail.analytics.value_placeholder': '—',
+  'detail.analytics.metric.orders_count': 'Orders, units',
+  'detail.analytics.metric.orders_sum': 'Orders total',
+  'detail.analytics.metric.buyouts_count': 'Buyouts, units',
 
   // Dictionaries
   'dict.title': 'Dictionary Manager',

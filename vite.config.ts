@@ -27,9 +27,33 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3001',
-      '/uploads': 'http://localhost:3001',
+      // Без явного `configure` большие multipart-загрузки (фото) рвутся
+      // с ERR_CONNECTION_RESET. http-proxy по умолчанию ставит timeout
+      // на proxyReq/proxyRes и буферизует тело — для 2-5MB картинок это
+      // становится заметно. Отключаем таймаут прокси и буферизацию,
+      // чтобы тело стримилось напрямую к Express-серверу.
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        proxyTimeout: 0,
+        timeout: 0,
+        ws: true,
+        configure(proxy) {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('connection', 'keep-alive');
+          });
+        },
+      },
+      '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        proxyTimeout: 0,
+        timeout: 0,
+      },
     },
+    // Vite dev-сервер сам по себе может рвать коннект на больших телах.
+    // Поднимаем лимит и выключаем буферизацию для стабильной загрузки.
+    hmr: { overlay: true },
     watch: {
       ignored: [
         '**/server/data/**',

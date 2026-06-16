@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Plus, Edit3, Trash2, Check, X, Eye, EyeOff, Users, Shield, User as UserIcon } from 'lucide-react';
 import { useToast } from '@hooks/useToast';
 import { Toast } from '@components/ui/Toast';
@@ -98,7 +98,6 @@ function UserForm({ initial, requirePassword = false, onSubmit, onCancel }: User
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={requirePassword ? t('users.form.password_placeholder') : t('users.password_unchanged')}
             className="w-full text-text-primary h-11 pr-12"
           />
           <button
@@ -160,6 +159,14 @@ export default function UserManager() {
     password: '',
     role: 'user',
   });
+
+  // Зеркало editValues в ref, чтобы save-хендлер всегда читал актуальные
+  // значения. Иначе замыкание может схватить устаревший снимок (особенно
+  // при множественных инпутах и memo-ячейках таблицы).
+  const editValuesRef = useRef(editValues);
+  useEffect(() => {
+    editValuesRef.current = editValues;
+  }, [editValues]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showPasswordIds, setShowPasswordIds] = useState<Set<string>>(new Set());
@@ -201,13 +208,15 @@ export default function UserManager() {
   }, []);
 
   const handleSaveEdit = useCallback(
-    async (data: UserFormData) => {
+    async () => {
       if (!editingUser) return false;
       if (isCurrentUser(editingUser)) {
         showToast(t('users.cannot_edit_self'), 'error');
         return false;
       }
-      const { displayName, login, password, role } = data;
+      // Читаем из ref, чтобы гарантированно получить последние значения
+      // полей формы (включая role после смены через <select>).
+      const { displayName, login, password, role } = editValuesRef.current;
       if (!displayName || !login) {
         showToast(t('users.fill_required'), 'error');
         return false;
@@ -279,7 +288,7 @@ export default function UserManager() {
             autoFocus
             onChange={(e) => setEditValues((v) => ({ ...v, displayName: e.target.value }))}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveEdit(editValues);
+              if (e.key === 'Enter') handleSaveEdit();
               else if (e.key === 'Escape') handleCancelEdit();
             }}
             className={EDIT_INPUT_CLS}
@@ -309,7 +318,7 @@ export default function UserManager() {
             value={editValues.login}
             onChange={(e) => setEditValues((v) => ({ ...v, login: e.target.value }))}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveEdit(editValues);
+              if (e.key === 'Enter') handleSaveEdit();
               else if (e.key === 'Escape') handleCancelEdit();
             }}
             className={`${EDIT_INPUT_CLS} font-mono`}
@@ -333,10 +342,9 @@ export default function UserManager() {
               value={editValues.password}
               onChange={(e) => setEditValues((v) => ({ ...v, password: e.target.value }))}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveEdit(editValues);
+                if (e.key === 'Enter') handleSaveEdit();
                 else if (e.key === 'Escape') handleCancelEdit();
               }}
-              placeholder={t('users.password_unchanged')}
               className={EDIT_INPUT_CLS}
             />
             <button
@@ -350,14 +358,14 @@ export default function UserManager() {
         );
       }
       return (
-        <button
-          type="button"
-          onClick={() => startEditing(row)}
-          disabled={isCurrentUser(row)}
-          className="flex items-center gap-1.5 text-text-tertiary hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+        <span
+          className={`text-xs tracking-widest text-text-tertiary ${
+            isCurrentUser(row) ? 'opacity-40' : ''
+          }`}
+          title="••••••"
         >
-          <span className="text-xs tracking-widest">••••••</span>
-        </button>
+          ••••••
+        </span>
       );
     },
     [editingId, isCurrentUser, editValues.password, showPasswordIds, startEditing, togglePasswordVisibility, handleSaveEdit, handleCancelEdit, t]
@@ -371,7 +379,7 @@ export default function UserManager() {
             value={editValues.role}
             onChange={(e) => setEditValues((v) => ({ ...v, role: e.target.value as UserRole }))}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSaveEdit(editValues);
+              if (e.key === 'Enter') handleSaveEdit();
               else if (e.key === 'Escape') handleCancelEdit();
             }}
             className={`${EDIT_INPUT_CLS} bg-bg-elevated`}
@@ -405,7 +413,7 @@ export default function UserManager() {
         return (
           <div className="flex items-center justify-end gap-1">
             <button
-              onClick={() => handleSaveEdit(editValues)}
+              onClick={() => handleSaveEdit()}
               className="p-1 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
@@ -443,7 +451,7 @@ export default function UserManager() {
         </div>
       );
     },
-    [editingId, isCurrentUser, handleSaveEdit, handleCancelEdit, startEditing, t]
+    [editingId, isCurrentUser, editValues, handleSaveEdit, handleCancelEdit, startEditing, t]
   );
 
   const columns: Column<User>[] = useMemo(
@@ -503,7 +511,6 @@ export default function UserManager() {
                       type={showPasswordIds.has(user.id) ? 'text' : 'password'}
                       value={editValues.password}
                       onChange={(e) => setEditValues((v) => ({ ...v, password: e.target.value }))}
-                      placeholder={t('users.password_unchanged')}
                       className={EDIT_INPUT_CLS}
                     />
                     <button
@@ -528,7 +535,7 @@ export default function UserManager() {
                   </select>
                   <div className="flex items-center justify-end gap-1 mt-1">
                     <button
-                      onClick={() => handleSaveEdit(editValues)}
+                      onClick={() => handleSaveEdit()}
                       className="p-2 rounded hover:bg-success/10 hover:text-success text-text-tertiary cursor-pointer"
                     >
                       <Check className="w-4 h-4" />

@@ -88,12 +88,20 @@ function TopBarComponent({
       style={{ height: 72 }}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {isMobile && !sidebarOpen && (
+        {/* Бургер: на мобилке рендерим всегда, чтобы зарезервировать место
+            и DevModeBadge не «съезжал» к левому краю при открытии сайдбара.
+            Когда сайдбар открыт — кнопка невидима и неинтерактивна
+            (закрытие выполняется через оверлей/сам сайдбар). */}
+        {isMobile && (
           <button
             onClick={onOpenMobileSidebar}
-            className="h-9 w-9 p-0 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
+            className={`h-9 w-9 p-0 rounded-lg hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors flex items-center justify-center ${
+              sidebarOpen ? 'invisible pointer-events-none' : 'cursor-pointer'
+            }`}
             title={t('layout.open_menu')}
             aria-label={t('layout.open_menu')}
+            aria-hidden={sidebarOpen}
+            tabIndex={sidebarOpen ? -1 : 0}
           >
             <Menu className="w-4 h-4" />
           </button>

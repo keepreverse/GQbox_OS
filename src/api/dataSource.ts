@@ -29,8 +29,8 @@ import type {
   RawProduct,
   User,
   UserRole,
+  MarketplaceListing,
 } from '@app-types';
-import { getMarketplaceListingsBySku } from '../data/marketplaces';
 
 // ─── Тип для сырого словарного элемента, как приходит с бэка ──────────────
 export type RawDictItem = {
@@ -337,7 +337,8 @@ export function hydrateProduct(
     chargingProtocols: ChargingProtocol[];
   },
   mediaFiles: MediaFile[] = [],
-  mediaLinks: MediaLink[] = []
+  mediaLinks: MediaLink[] = [],
+  listingsBySku: Map<string, MarketplaceListing[]> = new Map()
 ): ProductWithRelations {
   const category =
     dicts.categories.find((c) => c.id === raw.categoryId) ?? { ...FALLBACK_CATEGORY };
@@ -468,7 +469,7 @@ export function hydrateProduct(
     media: myMedia,
     mediaFiles: myFiles,
     mediaLinks: myLinks,
-    marketplaceListings: getMarketplaceListingsBySku(raw.sku),
+    marketplaceListings: listingsBySku.get(raw.sku) ?? [],
   };
 }
 

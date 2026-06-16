@@ -14,6 +14,7 @@ import {
   Globe,
   ShoppingBag,
   Package,
+  BarChart3,
 } from 'lucide-react';
 import type { ProductWithRelations, MediaFile, MediaLink } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
@@ -22,9 +23,45 @@ import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import { getMediaUrl, hasPlayableUrl } from '@utils/media';
 import { useDataSourceAPI } from '@api/dataSourceContext';
 import { useToast } from '@hooks/useToast';
+import { buildMarketplaceUrl } from '@utils/marketplace';
 import Modal from '@components/ui/Modal';
 import Lightbox from '@components/ui/Lightbox';
 import ConfirmModal from '@components/ui/ConfirmModal';
+
+// ─── Аналитика продаж ─────────────────────────────────────────────────────
+// Метрики для сравнительной таблицы WB vs Ozon. Источник — API Seller
+// кабинетов маркетплейсов (будет подключён позже). Правило сравнения по
+// умолчанию: больше = лучше. Если для конкретной метрики понадобится
+// обратное правило (например, «возвраты»), добавь поле `compareAs: 'min'`.
+const ANALYTICS_METRICS = [
+  { key: 'orders_count',  i18nKey: 'detail.analytics.metric.orders_count' },
+  { key: 'orders_sum',    i18nKey: 'detail.analytics.metric.orders_sum' },
+  { key: 'buyouts_count', i18nKey: 'detail.analytics.metric.buyouts_count' },
+] as const;
+
+type AnalyticsKey = (typeof ANALYTICS_METRICS)[number]['key'];
+type MetricValue = number | null;
+type Comparison = 'wb' | 'ozon' | 'equal' | 'unknown';
+
+/** Сравнение одной метрики между двумя маркетплейсами. */
+function compareMetric(wb: MetricValue, ozon: MetricValue): Comparison {
+  if (wb == null || ozon == null) return 'unknown';
+  if (wb > ozon) return 'wb';
+  if (ozon > wb) return 'ozon';
+  return 'equal';
+}
+
+/** Класс ячейки значения: win/lose/unknown. */
+function valueCellClass(side: 'wb' | 'ozon', cmp: Comparison): string {
+  if (cmp === side) return 'bg-success/10 text-success';
+  if (cmp === 'equal' || cmp === 'unknown') return 'text-text-muted';
+  return 'bg-danger/10 text-danger';
+}
+
+/** Локалезависимое форматирование чисел. */
+function formatNumber(n: number, language: 'ru' | 'en'): string {
+  return n.toLocaleString(language === 'ru' ? 'ru-RU' : 'en-US');
+}
 
 interface ProductDetailCardProps {
   product: ProductWithRelations;
@@ -37,7 +74,7 @@ export default function ProductDetailCard({
   onClose,
   highlightedFields = [],
 }: ProductDetailCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const ds = useDataSourceAPI();
   const { showToast } = useToast();
   const [open, setOpen] = useState(true);
@@ -46,6 +83,26 @@ export default function ProductDetailCard({
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
   const [confirmDeleteLink, setConfirmDeleteLink] = useState<MediaLink | null>(null);
   const [removedFileIds, setRemovedFileIds] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<'info' | 'analytics'>('info');
+
+  // Плейсхолдер: сюда будут приходить реальные метрики из API Seller
+  // кабинетов WB / Ozon. Ключи — AnalyticsKey, значения — число или null.
+  const wbMetrics = useMemo<Record<AnalyticsKey, MetricValue>>(
+    () => ({ orders_count: null, orders_sum: null, buyouts_count: null }),
+    []
+  );
+  const ozonMetrics = useMemo<Record<AnalyticsKey, MetricValue>>(
+    () => ({ orders_count: null, orders_sum: null, buyouts_count: null }),
+    []
+  );
+
+  const tabs = useMemo(
+    () => [
+      { id: 'info' as const, label: t('detail.tab.info'), icon: Package },
+      { id: 'analytics' as const, label: t('detail.tab.analytics'), icon: BarChart3 },
+    ],
+    [t]
+  );
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -151,6 +208,89 @@ export default function ProductDetailCard({
     </span>
   );
 
+  // ─── Аналитическая вкладка (заглушка под API Seller WB / Ozon) ───────
+  // Структура: сравнительная таблица WB vs Ozon, без отдельных карточек
+  // на маркетплейс. Цвета ячеек зависят от compareMetric:
+  //   win  → bg-success/10 text-success
+  //   lose → bg-danger/10  text-danger
+  //   equal/unknown → нейтрально.
+  // При появлении реальных данных из API Seller достаточно заполнить
+  // `wbMetrics` / `ozonMetrics` — раскраска посчитается автоматически.
+  function AnalyticsTab({
+    t: tFn,
+    language: lang,
+    wbMetrics: wb,
+    ozonMetrics: ozon,
+  }: {
+    t: (key: string, params?: Record<string, string | number>) => string;
+    language: 'ru' | 'en';
+    wbMetrics: Record<AnalyticsKey, MetricValue>;
+    ozonMetrics: Record<AnalyticsKey, MetricValue>;
+  }) {
+    const valueOrPlaceholder = (n: MetricValue) =>
+      n == null ? tFn('detail.analytics.value_placeholder') : formatNumber(n, lang);
+    return (
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+        {/* Шапка раздела */}
+        <div className="space-y-0.5">
+          <h3 className="text-xs sm:text-sm font-semibold text-text-primary">
+            {tFn('detail.analytics.title')}
+          </h3>
+          <p className="text-[10px] sm:text-xs text-text-tertiary">
+            {tFn('detail.analytics.subtitle')}
+          </p>
+        </div>
+
+        {/* Сравнительная таблица WB vs Ozon */}
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-[360px]">
+              {/* Заголовок колонок: Метрика | WB | Ozon */}
+              <div className="grid grid-cols-[1fr_auto_auto] gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-bg-tertiary/50">
+                <div className="text-[10px] sm:text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                  {tFn('detail.analytics.compare_header.metric')}
+                </div>
+                <div className="w-20 sm:w-24 flex items-center justify-center">
+                  <MarketplaceBadge marketplace="wb" />
+                </div>
+                <div className="w-20 sm:w-24 flex items-center justify-center">
+                  <MarketplaceBadge marketplace="ozon" />
+                </div>
+              </div>
+
+              {/* Строки метрик */}
+              {ANALYTICS_METRICS.map((metric) => {
+                const wbValue = wb[metric.key];
+                const ozonValue = ozon[metric.key];
+                const cmp = compareMetric(wbValue, ozonValue);
+                return (
+                  <div
+                    key={metric.key}
+                    className="grid grid-cols-[1fr_auto_auto] gap-2 sm:gap-3 px-3 sm:px-4 py-2 items-center border-t border-border-subtle/30"
+                  >
+                    <div className="text-[10px] sm:text-xs text-text-tertiary">
+                      {tFn(metric.i18nKey)}
+                    </div>
+                    <div
+                      className={`w-20 sm:w-24 text-center px-1.5 py-1 rounded font-mono tabular-nums text-[10px] sm:text-xs ${valueCellClass('wb', cmp)}`}
+                    >
+                      {valueOrPlaceholder(wbValue)}
+                    </div>
+                    <div
+                      className={`w-20 sm:w-24 text-center px-1.5 py-1 rounded font-mono tabular-nums text-[10px] sm:text-xs ${valueCellClass('ozon', cmp)}`}
+                    >
+                      {valueOrPlaceholder(ozonValue)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   function renderMediaPreview(file: MediaFile, size: 'sm' | 'md' | 'lg' = 'md') {
     const url = getMediaUrl(file.url);
     const iconSize =
@@ -221,7 +361,28 @@ export default function ProductDetailCard({
         </button>
       </div>
 
+      {/* Tabs: sticky под шапкой, переключают «Информация» / «Аналитика» */}
+      <div className="sticky top-0 z-10 bg-bg-secondary/50 backdrop-blur-sm border-b border-border-subtle px-3 sm:px-4 py-2">
+        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-bg-secondary border border-border-subtle w-fit">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`h-9 px-3 rounded-lg flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-accent/25 text-white border border-accent/40'
+                  : 'text-text-tertiary hover:bg-bg-hover hover:text-text-primary border border-transparent'
+              }`}
+            >
+              <tab.icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto min-h-0">
+        {activeTab === 'info' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
           <div className="lg:col-span-2 p-3 sm:p-4 space-y-3 sm:space-y-4 lg:border-r border-border-subtle">
             <div className="space-y-2">
@@ -330,7 +491,7 @@ export default function ProductDetailCard({
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.listed_as_product')}</p>
                       <div className="space-y-1">
                         {singleListings.map((listing, i) => (
-                          <a key={`single-${i}`} href={listing.url} target="_blank" rel="noreferrer"
+                          <a key={`single-${i}`} href={buildMarketplaceUrl(listing.marketplace, listing.article)} target="_blank" rel="noreferrer"
                             className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
@@ -347,7 +508,7 @@ export default function ProductDetailCard({
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.included_in_bundles')}</p>
                       <div className="space-y-1">
                         {bundleListings.map((listing, i) => (
-                          <a key={`bundle-${i}`} href={listing.url} target="_blank" rel="noreferrer"
+                          <a key={`bundle-${i}`} href={buildMarketplaceUrl(listing.marketplace, listing.article)} target="_blank" rel="noreferrer"
                             className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
@@ -488,6 +649,16 @@ export default function ProductDetailCard({
             )}
           </div>
         </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <AnalyticsTab
+            t={t}
+            language={language}
+            wbMetrics={wbMetrics}
+            ozonMetrics={ozonMetrics}
+          />
+        )}
       </div>
 
       {/* Lightbox */}

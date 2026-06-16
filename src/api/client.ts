@@ -3,6 +3,40 @@ const API_BASE = '';
 const AUTH_TOKEN_KEY = 'gqbox_auth_token';
 const DEV_MODE_KEY = 'gqbox_dev_mode';
 
+export type AuthFailureReason = 'unauthorized' | 'forbidden';
+
+export interface AuthFailureEvent {
+  reason: AuthFailureReason;
+  status: number;
+  message: string;
+  // Поля из тела ответа, если бэк их прислал (для 403 от requireAdmin).
+  login?: string;
+  role?: string;
+}
+
+const authFailureListeners = new Set<(e: AuthFailureEvent) => void>();
+
+/**
+ * Подписка на auth-failure события. Используется AuthContext, чтобы
+ * автоматически сделать logout + redirect на login, если бэк сообщил
+ * что токен невалиден (401) или роль не подходит (403). Без этого
+ * приложение продолжало бы показывать пустые данные и каскад ошибок.
+ */
+export function onAuthFailure(listener: (e: AuthFailureEvent) => void): () => void {
+  authFailureListeners.add(listener);
+  return () => authFailureListeners.delete(listener);
+}
+
+function emitAuthFailure(event: AuthFailureEvent): void {
+  authFailureListeners.forEach((fn) => {
+    try {
+      fn(event);
+    } catch {
+      // best-effort: слушатель не должен ломать request()
+    }
+  });
+}
+
 function readAuthToken(): string | null {
   try {
     return sessionStorage.getItem(AUTH_TOKEN_KEY) || localStorage.getItem(AUTH_TOKEN_KEY) || null;
@@ -52,13 +86,24 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!res.ok) {
     const text = await res.text();
     let msg = text;
+    let parsedBody: { error?: string; login?: string; role?: string } | null = null;
     try {
       const parsed = JSON.parse(text);
+      parsedBody = parsed;
       if (parsed.error || parsed.message) {
         msg = parsed.error || parsed.message;
       }
     } catch {
       // not JSON, keep raw text
+    }
+    if (res.status === 401 || res.status === 403) {
+      emitAuthFailure({
+        reason: res.status === 401 ? 'unauthorized' : 'forbidden',
+        status: res.status,
+        message: msg,
+        login: parsedBody?.login,
+        role: parsedBody?.role,
+      });
     }
     throw new ApiError(msg || `HTTP ${res.status}`, res.status);
   }

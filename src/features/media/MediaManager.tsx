@@ -484,10 +484,12 @@ export default function MediaManager() {
     setUploadDrafts((prev) => {
       const idx = prev.findIndex((d) => d.id === id);
       if (idx === -1) return prev;
-      if (prev[idx].isPrimary) return prev;
-      const next = prev.map((d) => ({ ...d, isPrimary: false }));
-      next[idx].isPrimary = true;
-      return next;
+      // Toggle: если уже главное — снимаем флаг (ни одна не главная).
+      // Иначе — назначаем это главным, остальные сбрасываем.
+      if (prev[idx].isPrimary) {
+        return prev.map((d) => ({ ...d, isPrimary: false }));
+      }
+      return prev.map((d) => ({ ...d, isPrimary: d.id === id }));
     });
   }, []);
 

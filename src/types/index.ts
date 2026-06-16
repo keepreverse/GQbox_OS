@@ -174,12 +174,14 @@ export interface ProductMedia {
 }
 
 export interface MarketplaceListing {
+  id: string;
   marketplace: 'wb' | 'ozon';
   article: string;
-  url: string;
   title: string;
   kind: 'single' | 'bundle';
   skus: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PackagingItem {

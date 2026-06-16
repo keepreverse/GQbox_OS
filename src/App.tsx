@@ -55,7 +55,7 @@ function getInitialView(): ViewType {
 
 function AppContent() {
   const status = useDataSourceStatus();
-  const { isLoading: authLoading, isAuthenticated, isAdmin } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, isAdmin, logout } = useAuth();
   const { devMode, setDevMode } = useDevMode();
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView);
   const [pendingMatrixFilters, setPendingMatrixFilters] = useState<MatrixFilters | null>(null);
@@ -85,12 +85,16 @@ function AppContent() {
   }, [status.error, status.mode]);
 
   // Non-admin users cannot access dev mode. If somehow dev mode is active
-  // (e.g. leftover localStorage), force it back to demo.
+  // (e.g. leftover localStorage from a previous admin session, or a stale
+  // token issued under a `user` role from the demo store), force it back
+  // to demo AND log out — the token itself is invalid for /api/dev/* and
+  // would otherwise cause 403s on every dev endpoint.
   useEffect(() => {
     if (isAuthenticated && !isAdmin && devMode) {
       setDevMode(false);
+      void logout();
     }
-  }, [isAuthenticated, isAdmin, devMode, setDevMode]);
+  }, [isAuthenticated, isAdmin, devMode, setDevMode, logout]);
 
   // Mark the initial auth check as done once fetchMe has finished. Transition
   // animations (login page fade-out / layout fade-out) should only start after
@@ -139,16 +143,28 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, [layoutExiting]);
 
-  // Redirect non-admin away from admin-only views.
+  // Redirect non-admin (or demo mode) away from admin/dev-only views.
   useEffect(() => {
-    if (isAuthenticated && !isAdmin && (currentView === 'db-inspector' || currentView === 'administration')) {
+    const isAdminOnlyView =
+      currentView === 'db-inspector' ||
+      currentView === 'administration' ||
+      currentView === 'architecture';
+    const hasAccess =
+      isAuthenticated && isAdmin && (currentView === 'architecture' ? devMode : true);
+    if (isAuthenticated && isAdminOnlyView && !hasAccess) {
+      setCurrentView('dashboard');
+    } else if (isAuthenticated && !isAdmin && isAdminOnlyView) {
       setCurrentView('dashboard');
     }
-  }, [isAuthenticated, isAdmin, currentView]);
+  }, [isAuthenticated, isAdmin, devMode, currentView]);
 
   useEffect(() => {
     try {
-      if (currentView !== 'db-inspector' && currentView !== 'administration') {
+      if (
+        currentView !== 'db-inspector' &&
+        currentView !== 'administration' &&
+        currentView !== 'architecture'
+      ) {
         localStorage.setItem('gqbox_view', currentView);
       }
     } catch {}
