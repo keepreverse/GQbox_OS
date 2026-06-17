@@ -86,6 +86,7 @@ export interface RawProduct {
   lengthVariant?: string;
   supplierSuffix?: string;
   productName?: string;
+  marketplaceSkus?: MarketplaceSku[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -173,15 +174,16 @@ export interface ProductMedia {
   uploadedAt: string;
 }
 
-export interface MarketplaceListing {
-  id: string;
-  marketplace: 'wb' | 'ozon';
+export type Marketplace = 'wb' | 'ozon';
+export type MarketplaceEntityCode = 'kua' | 'kaa' | 'dev' | 'bms';
+export type MarketplaceListingKind = 'single' | 'bundle';
+
+export interface MarketplaceSku {
+  marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
   article: string;
+  kind: MarketplaceListingKind;
   title: string;
-  kind: 'single' | 'bundle';
-  skus: string[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PackagingItem {
@@ -250,7 +252,7 @@ export interface ProductWithRelations {
   media?: ProductMedia[];
   mediaFiles?: MediaFile[];
   mediaLinks?: MediaLink[];
-  marketplaceListings?: MarketplaceListing[];
+  marketplaceSkus?: MarketplaceSku[];
   kitComponents?: { product: ProductWithRelations; quantity: number }[];
 }
 

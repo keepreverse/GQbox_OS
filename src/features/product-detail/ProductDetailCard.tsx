@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   X,
   Image as ImageIcon,
@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Package,
   BarChart3,
+  Check,
 } from 'lucide-react';
 import type { ProductWithRelations, MediaFile, MediaLink } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
@@ -23,7 +24,11 @@ import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import { getMediaUrl, hasPlayableUrl } from '@utils/media';
 import { useDataSourceAPI } from '@api/dataSourceContext';
 import { useToast } from '@hooks/useToast';
-import { buildMarketplaceUrl } from '@utils/marketplace';
+import {
+  buildMarketplaceUrl,
+  ENTITY_LABELS,
+  groupMarketplaceSkusByMarketplace,
+} from '@utils/marketplace';
 import Modal from '@components/ui/Modal';
 import Lightbox from '@components/ui/Lightbox';
 import ConfirmModal from '@components/ui/ConfirmModal';
@@ -175,8 +180,19 @@ export default function ProductDetailCard({
   const clampedImageIndex = imageIndex >= visibleFiles.length ? Math.max(0, visibleFiles.length - 1) : imageIndex;
   const currentFile = visibleFiles[clampedImageIndex] ?? null;
 
-  const singleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'single');
-  const bundleListings = (product.marketplaceListings || []).filter((l) => l.kind === 'bundle');
+  const singleSkus = (product.marketplaceSkus || []).filter((s) => s.kind === 'single');
+  const bundleSkus = (product.marketplaceSkus || []).filter((s) => s.kind === 'bundle');
+  const singleGroups = groupMarketplaceSkusByMarketplace(singleSkus);
+  const bundleGroups = groupMarketplaceSkusByMarketplace(bundleSkus);
+
+  const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const handleDeleteLink = useCallback(
     async (fileId: string, variantId: string) => {
@@ -195,9 +211,22 @@ export default function ProductDetailCard({
     [ds.products, showToast, t]
   );
 
+  const handleCopyArticle = useCallback(
+    (e: React.MouseEvent, article: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigator.clipboard.writeText(article).catch(() => {});
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      setCopiedArticle(article);
+      copyTimerRef.current = setTimeout(() => setCopiedArticle(null), 1500);
+      showToast(`${t('sku.copied')}: ${article}`, 'info');
+    },
+    [showToast, t]
+  );
+
   const MarketplaceBadge = ({ marketplace }: { marketplace: 'wb' | 'ozon' }) => (
     <span
-      className="inline-flex items-center justify-center min-w-[36px] sm:min-w-[44px] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md text-[9px] sm:text-[10px] font-semibold border"
+      className="inline-flex items-center justify-center w-10 sm:w-11 h-5 sm:h-6 rounded-md text-[9px] sm:text-[10px] font-semibold border"
       style={{
         background: marketplace === 'wb' ? 'var(--color-wb-bg)' : 'var(--color-ozon-bg)',
         color: marketplace === 'wb' ? 'var(--color-wb)' : 'var(--color-ozon)',
@@ -207,6 +236,36 @@ export default function ProductDetailCard({
       {marketplace === 'wb' ? 'WB' : 'OZON'}
     </span>
   );
+
+  const EntityBadge = ({ entity }: { entity: import('@app-types').MarketplaceEntityCode }) => (
+    <span className="inline-flex items-center justify-center w-10 sm:w-11 h-5 sm:h-6 rounded-md text-[9px] sm:text-[10px] font-semibold bg-bg-tertiary text-text-secondary border border-border-subtle">
+      {ENTITY_LABELS[entity]}
+    </span>
+  );
+
+  const CopyableArticle = ({ article }: { article: string }) => {
+    const isCopied = copiedArticle === article;
+    return (
+      <code
+        onClick={(e) => handleCopyArticle(e, article)}
+        className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] px-1 py-0.5 rounded border font-mono mt-0.5 cursor-pointer transition-all duration-150 select-none ${
+          isCopied
+            ? 'bg-success/10 border-success/30 text-success scale-105'
+            : 'bg-accent/10 border-accent/20 text-accent hover:bg-accent/20'
+        }`}
+        title={isCopied ? t('sku.copied') : `${t('sku.copy')}: ${article}`}
+      >
+        {isCopied ? (
+          <>
+            <Check className="w-2.5 h-2.5" />
+            <span>{t('sku.copied')}</span>
+          </>
+        ) : (
+          article
+        )}
+      </code>
+    );
+  };
 
   // ─── Аналитическая вкладка (заглушка под API Seller WB / Ozon) ───────
   // Структура: сравнительная таблица WB vs Ozon, без отдельных карточек
@@ -479,44 +538,84 @@ export default function ProductDetailCard({
                 </div>
               </div>
             )}
-            {(singleListings.length > 0 || bundleListings.length > 0) && (
-              <div className="space-y-2">
+            {(singleSkus.length > 0 || bundleSkus.length > 0) && (
+              <div className="space-y-3">
                 <h3 className="text-[10px] sm:text-xs font-medium text-text-tertiary flex items-center gap-1.5">
                   <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   {t('detail.marketplaces')}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {singleListings.length > 0 && (
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* ─── Single: выставлен как товар ─── */}
+                  {singleSkus.length > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.listed_as_product')}</p>
-                      <div className="space-y-1">
-                        {singleListings.map((listing, i) => (
-                          <a key={`single-${i}`} href={buildMarketplaceUrl(listing.marketplace, listing.article)} target="_blank" rel="noreferrer"
-                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
-                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">{listing.article}</p>
+                      <div className="space-y-2">
+                        {(['wb', 'ozon'] as const).map((mp) => {
+                          const items = singleGroups[mp];
+                          if (items.length === 0) return null;
+                          return (
+                            <div key={`single-${mp}`} className="space-y-1">
+                              {items.map((sku, i) => (
+                                <a
+                                  key={`single-${mp}-${i}`}
+                                  href={buildMarketplaceUrl(mp, sku.article)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs text-text-primary truncate" title={sku.title}>
+                                      {sku.title}
+                                    </p>
+                                    <CopyableArticle article={sku.article} />
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <EntityBadge entity={sku.entity} />
+                                    <MarketplaceBadge marketplace={mp} />
+                                  </div>
+                                </a>
+                              ))}
                             </div>
-                            <MarketplaceBadge marketplace={listing.marketplace} />
-                          </a>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
-                  {bundleListings.length > 0 && (
+
+                  {/* ─── Bundle: входит в комплекты ─── */}
+                  {bundleSkus.length > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-[9px] sm:text-[10px] text-text-tertiary">{t('detail.included_in_bundles')}</p>
-                      <div className="space-y-1">
-                        {bundleListings.map((listing, i) => (
-                          <a key={`bundle-${i}`} href={buildMarketplaceUrl(listing.marketplace, listing.article)} target="_blank" rel="noreferrer"
-                            className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[10px] sm:text-xs text-text-primary truncate">{listing.title}</p>
-                              <p className="text-[9px] sm:text-[10px] text-text-tertiary mt-0.5">{listing.article}</p>
+                      <div className="space-y-2">
+                        {(['wb', 'ozon'] as const).map((mp) => {
+                          const items = bundleGroups[mp];
+                          if (items.length === 0) return null;
+                          return (
+                            <div key={`bundle-${mp}`} className="space-y-1">
+                              {items.map((sku, i) => (
+                                <a
+                                  key={`bundle-${mp}-${i}`}
+                                  href={buildMarketplaceUrl(mp, sku.article)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-lg bg-bg-tertiary border border-border-subtle hover:bg-bg-hover hover:border-border-default transition-colors"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] sm:text-xs text-text-primary truncate" title={sku.title}>
+                                      {sku.title}
+                                    </p>
+                                    <CopyableArticle article={sku.article} />
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <EntityBadge entity={sku.entity} />
+                                    <MarketplaceBadge marketplace={mp} />
+                                  </div>
+                                </a>
+                              ))}
                             </div>
-                            <MarketplaceBadge marketplace={listing.marketplace} />
-                          </a>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

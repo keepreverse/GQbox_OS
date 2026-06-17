@@ -26,6 +26,7 @@ import { useDataSourceVersion } from '@api/dataSourceContext';
 import type { ProductWithRelations, MatrixFilters } from '@app-types';
 import { useLanguage } from '@context/LanguageContext';
 import { displayProductName, displaySource, getCategoryColorVar } from '@utils/display';
+import { getProductMarketplaceSearchText } from '@utils/marketplace';
 import { categoryRequiredFields } from '@features/dashboard/dataGapsConfig';
 import ProductDetailCard from '@features/product-detail/ProductDetailCard';
 import { ResponsiveTable } from '@components/ui/ResponsiveTable';
@@ -136,7 +137,8 @@ export default function ProductMatrix({
         (p.model?.name_source?.toLowerCase() || '').includes(q) ||
         (p.model?.name_product?.toLowerCase() || '').includes(q) ||
         (p.color?.name_source?.toLowerCase() || '').includes(q) ||
-        (p.color?.name_product?.toLowerCase() || '').includes(q);
+        (p.color?.name_product?.toLowerCase() || '').includes(q) ||
+        getProductMarketplaceSearchText(p).includes(q);
 
       const matchesCategory =
         selectedCategories.length === 0 || selectedCategories.includes(p.category.code);

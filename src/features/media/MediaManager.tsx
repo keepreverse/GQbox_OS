@@ -38,6 +38,7 @@ import type { Column } from '@app-types/table';
 import type { MediaFile, ProductWithRelations } from '@app-types';
 import { formatBytes, getMediaUrl } from '@utils/media';
 import { uploadDiagnostics } from '@utils/uploadDiagnostics';
+import { getProductMarketplaceSearchText } from '@utils/marketplace';
 
 // --- DRAG & DROP ---
 import {
@@ -247,7 +248,11 @@ export default function MediaManager() {
         m.originalName.toLowerCase().includes(q) ||
         (m.linkedSkus ?? []).some((variantId) => {
           const p = products.find((p) => p.id === variantId);
-          return (p?.sku ?? variantId).toLowerCase().includes(q);
+          if (!p) return variantId.toLowerCase().includes(q);
+          return (
+            (p.sku ?? variantId).toLowerCase().includes(q) ||
+            getProductMarketplaceSearchText(p).includes(q)
+          );
         })
       );
     });

@@ -68,6 +68,7 @@ export function productToDbParams(p: Partial<RawProduct> & { id: string; sku: st
     p.connectionType ?? null,
     p.chargingProtocolId ?? null,
     p.isActive ?? true,
+    JSON.stringify(p.marketplaceSkus ?? []),
   ];
 }
 
@@ -76,12 +77,12 @@ export const PRODUCT_DB_COLUMNS = `
    body_material_id, wire_material_id, current_a, voltage_v, power_w, length_m,
    data_transfer_mbps, device_count, connector_female_id, connector_male_id,
    variant_code, length_variant, supplier_suffix, product_name, is_kit,
-   connection_type, charging_protocol_id, is_active)
+   connection_type, charging_protocol_id, is_active, marketplace_skus)
 `;
 
 export function productInsertSql(): string {
   return `INSERT INTO products ${PRODUCT_DB_COLUMNS} VALUES
-    ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+    ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
     ON CONFLICT (id) DO UPDATE SET
       sku = EXCLUDED.sku,
       sku_base = EXCLUDED.sku_base,
@@ -107,6 +108,7 @@ export function productInsertSql(): string {
       connection_type = EXCLUDED.connection_type,
       charging_protocol_id = EXCLUDED.charging_protocol_id,
       is_active = EXCLUDED.is_active,
+      marketplace_skus = EXCLUDED.marketplace_skus,
       updated_at = NOW()`;
 }
 
@@ -136,6 +138,7 @@ export function productUpdateSql(): string {
       connection_type = $23,
       charging_protocol_id = $24,
       is_active = $25,
+      marketplace_skus = $26,
       updated_at = NOW()
     WHERE id = $1`;
 }

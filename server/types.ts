@@ -33,6 +33,7 @@ export interface RawProduct {
   isActive?: boolean | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  marketplaceSkus?: MarketplaceSku[] | null;
 }
 
 export interface RawKitComponent {
@@ -119,19 +120,17 @@ export interface DictionaryItem {
   [key: string]: unknown;
 }
 
-// ─── Marketplace listings (WB, Ozon) ──────────────────────────────────────
+// ─── Marketplace SKUs (WB, Ozon) ──────────────────────────────────────────
 export type Marketplace = 'wb' | 'ozon';
-export type ListingKind = 'single' | 'bundle';
+export type MarketplaceEntityCode = 'kua' | 'kaa' | 'dev' | 'bms';
+export type MarketplaceListingKind = 'single' | 'bundle';
 
-export interface MarketplaceListing {
-  id: string;
+export interface MarketplaceSku {
   marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
   article: string;
+  kind: MarketplaceListingKind;
   title: string;
-  kind: ListingKind;
-  skus: string[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 export type DataBundle = {
@@ -147,7 +146,6 @@ export type DataBundle = {
   productMedia: RawProductMedia[];
   mediaFiles: MediaFile[];
   mediaLinks: MediaLink[];
-  marketplaces: MarketplaceListing[];
 };
 
 export type UserRole = 'admin' | 'user';
@@ -186,7 +184,6 @@ export const COLLECTIONS = [
   'productMedia',
   'mediaFiles',
   'mediaLinks',
-  'marketplaces',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 

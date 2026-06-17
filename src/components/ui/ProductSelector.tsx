@@ -25,6 +25,7 @@ import {
 import type { ProductWithRelations } from '@app-types';
 import { useDataSourceVersion } from '@api/dataSourceContext';
 import { getCategoryColorVar } from '@utils/display';
+import { getProductMarketplaceSearchText } from '@utils/marketplace';
 
 const categoryIcons: Record<string, React.ElementType> = {
   cable: Cable,
@@ -80,7 +81,8 @@ export default function ProductSelector({
         (p.color?.name_source?.toLowerCase() || '').includes(q) ||
         (p.color?.name_product?.toLowerCase() || '').includes(q) ||
         (p.category?.name_source?.toLowerCase() || '').includes(q) ||
-        (p.category?.name_product?.toLowerCase() || '').includes(q)
+        (p.category?.name_product?.toLowerCase() || '').includes(q) ||
+        getProductMarketplaceSearchText(p).includes(q)
       );
     }).slice(0, 50);
   }, [allProducts, searchQuery, selectedIds, excludedSet]);

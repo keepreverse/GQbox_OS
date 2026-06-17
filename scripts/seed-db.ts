@@ -12,7 +12,7 @@ import {
 import { ensureDefaultAdmin } from '../server/utils/dbStore';
 import { generateProductName, buildDictMaps } from '../server/utils/productNaming';
 import { DICT_TYPES } from '../server/types';
-import type { RawProduct, DictionaryItem, RawKitComponent, RawProductMedia, MarketplaceListing } from '../server/types';
+import type { RawProduct, DictionaryItem, RawKitComponent, RawProductMedia } from '../server/types';
 
 async function main() {
   console.log('Connecting to database...');
@@ -97,24 +97,6 @@ async function main() {
     );
   }
   console.log(`Seeded ${productMedia.length} product media`);
-
-  // Marketplace listings (WB, Ozon)
-  await query('DELETE FROM marketplace_listings');
-  const marketplaceListings = readCollection<MarketplaceListing>('marketplaces');
-  for (const m of marketplaceListings) {
-    await query(
-      `INSERT INTO marketplace_listings
-         (id, marketplace, article, title, kind, skus, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (marketplace, article) DO UPDATE SET
-         title = EXCLUDED.title,
-         kind = EXCLUDED.kind,
-         skus = EXCLUDED.skus,
-         updated_at = EXCLUDED.updated_at`,
-      [m.id, m.marketplace, m.article, m.title, m.kind, m.skus, m.createdAt, m.updatedAt]
-    );
-  }
-  console.log(`Seeded ${marketplaceListings.length} marketplace listings`);
 
   console.log('Database seeded successfully!');
 

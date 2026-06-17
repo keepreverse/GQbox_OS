@@ -9,7 +9,6 @@ import demoSettings from './routes/demo/settings';
 import demoNotifications from './routes/demo/notifications';
 import demoKitComponents from './routes/demo/kitComponents';
 import demoMedia from './routes/demo/media';
-import demoMarketplaces from './routes/demo/marketplaces';
 
 // Dev mode (PostgreSQL-only)
 import devProducts from './routes/dev/products';
@@ -18,7 +17,6 @@ import devSettings from './routes/dev/settings';
 import devNotifications from './routes/dev/notifications';
 import devKitComponents from './routes/dev/kitComponents';
 import devMedia from './routes/dev/media';
-import devMarketplaces from './routes/dev/marketplaces';
 import devInspector from './routes/dev/inspect';
 
 import auth from './routes/auth';
@@ -78,7 +76,6 @@ app.use('/api/demo', demoSettings);
 app.use('/api/demo/notifications', demoNotifications);
 app.use('/api/demo/kit-components', demoKitComponents);
 app.use('/api/demo/media', demoMedia);
-app.use('/api/demo/marketplaces', demoMarketplaces);
 
 // ─── Dev (PostgreSQL) ────────────────────────────────────────────────────
 // Everything under /api/dev requires admin authentication.
@@ -89,7 +86,6 @@ app.use('/api/dev', devSettings);
 app.use('/api/dev/notifications', devNotifications);
 app.use('/api/dev/kit-components', devKitComponents);
 app.use('/api/dev/media', devMedia);
-app.use('/api/dev/marketplaces', devMarketplaces);
 app.use('/api/dev/inspector', devInspector);
 app.use('/api/dev/users', devUsers);
 

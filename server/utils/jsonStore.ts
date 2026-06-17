@@ -9,7 +9,6 @@ import type {
   CollectionName,
   DataBundle,
   DictionaryItem,
-  MarketplaceListing,
   RawProduct,
   RawKitComponent,
   RawProductMedia,
@@ -96,7 +95,6 @@ export function restoreAllFromDefaults(): { restored: string[]; skipped: string[
     'chargingProtocols',
     'materials',
     'kitComponents',
-    'marketplaces',
   ] as CollectionName[]) {
     if (defaultsExist(name)) {
       restoreOne(name);
@@ -142,7 +140,6 @@ export function exportAll(): DataBundle {
     mediaFiles: readCollection<import('../types').MediaFile>('mediaFiles'),
     mediaLinks: readCollection<import('../types').MediaLink>('mediaLinks'),
     productMedia: readCollection<RawProductMedia>('productMedia'),
-    marketplaces: readCollection<MarketplaceListing>('marketplaces'),
   };
 }
 
@@ -163,7 +160,6 @@ export function importAll(bundle: Partial<DataBundle>): string[] {
     'materials',
     'kitComponents',
     'productMedia',
-    'marketplaces',
   ] as CollectionName[]) {
     const data = (bundle as any)?.[name];
     if (Array.isArray(data) && data.length > 0) {

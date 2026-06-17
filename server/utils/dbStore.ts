@@ -11,7 +11,6 @@ import {
   DICT_TYPES,
   type DataBundle,
   type DictionaryItem,
-  type MarketplaceListing,
   type RawProduct,
   type RawProductMedia,
   type User,
@@ -339,115 +338,6 @@ export async function clearMediaLinksForVariant(variantId: string): Promise<void
   await query('DELETE FROM product_media_links WHERE variant_id = $1', [variantId]);
 }
 
-// ─── Marketplace listings (WB, Ozon) ─────────────────────────────────────
-function mapMarketplaceRow(row: any): MarketplaceListing {
-  return {
-    id: row.id,
-    marketplace: row.marketplace,
-    article: row.article,
-    title: row.title,
-    kind: row.kind,
-    skus: row.skus ?? [],
-    createdAt: row.created_at?.toISOString?.() ?? String(row.created_at ?? ''),
-    updatedAt: row.updated_at?.toISOString?.() ?? String(row.updated_at ?? ''),
-  };
-}
-
-export async function getAllMarketplaceListings(): Promise<MarketplaceListing[]> {
-  const rows = await query<any>(
-    'SELECT * FROM marketplace_listings ORDER BY marketplace, article'
-  );
-  return rows.map(mapMarketplaceRow);
-}
-
-export async function getMarketplaceListingsBySku(
-  sku: string
-): Promise<MarketplaceListing[]> {
-  const rows = await query<any>(
-    'SELECT * FROM marketplace_listings WHERE $1 = ANY(skus) ORDER BY marketplace, article',
-    [sku]
-  );
-  return rows.map(mapMarketplaceRow);
-}
-
-export async function getMarketplaceListingById(
-  id: string
-): Promise<MarketplaceListing | null> {
-  const row = await queryOne<any>('SELECT * FROM marketplace_listings WHERE id = $1', [id]);
-  return row ? mapMarketplaceRow(row) : null;
-}
-
-export async function createMarketplaceListing(
-  input: Omit<MarketplaceListing, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
-): Promise<MarketplaceListing> {
-  const id = input.id ?? randomUUID();
-  const now = new Date().toISOString();
-  await query(
-    `INSERT INTO marketplace_listings
-       (id, marketplace, article, title, kind, skus, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     ON CONFLICT (marketplace, article) DO UPDATE SET
-       title = EXCLUDED.title,
-       kind = EXCLUDED.kind,
-       skus = EXCLUDED.skus,
-       updated_at = EXCLUDED.updated_at`,
-    [id, input.marketplace, input.article, input.title, input.kind, input.skus, now, now]
-  );
-  const created = await getMarketplaceListingById(id);
-  if (!created) throw new Error('Failed to create marketplace listing');
-  return created;
-}
-
-export async function updateMarketplaceListing(
-  id: string,
-  patch: Partial<Omit<MarketplaceListing, 'id' | 'createdAt' | 'updatedAt'>>
-): Promise<MarketplaceListing | null> {
-  const updates: string[] = [];
-  const values: unknown[] = [];
-  let idx = 1;
-
-  if (patch.marketplace !== undefined) {
-    updates.push(`marketplace = $${idx++}`);
-    values.push(patch.marketplace);
-  }
-  if (patch.article !== undefined) {
-    updates.push(`article = $${idx++}`);
-    values.push(patch.article);
-  }
-  if (patch.title !== undefined) {
-    updates.push(`title = $${idx++}`);
-    values.push(patch.title);
-  }
-  if (patch.kind !== undefined) {
-    updates.push(`kind = $${idx++}`);
-    values.push(patch.kind);
-  }
-  if (patch.skus !== undefined) {
-    updates.push(`skus = $${idx++}`);
-    values.push(patch.skus);
-  }
-  if (updates.length === 0) {
-    return getMarketplaceListingById(id);
-  }
-  updates.push(`updated_at = $${idx++}`);
-  values.push(new Date().toISOString());
-  values.push(id);
-
-  await query(
-    `UPDATE marketplace_listings SET ${updates.join(', ')} WHERE id = $${idx}`,
-    values
-  );
-  return getMarketplaceListingById(id);
-}
-
-export async function deleteMarketplaceListing(id: string): Promise<boolean> {
-  const result = await queryOne<{ count: number }>(
-    'WITH deleted AS (DELETE FROM marketplace_listings WHERE id = $1 RETURNING id) SELECT COUNT(*)::int AS count FROM deleted',
-    [id]
-  );
-  return (result?.count ?? 0) > 0;
-}
-
 /** Вспомогательная: вернуть MediaFile + linkedSkus для фронтенда */
 export async function getMediaFilesWithLinks(): Promise<
   (import('../types').MediaFile & { linkedSkus: string[] })[]
@@ -523,7 +413,7 @@ export async function deleteDictionaryItem(
 // ─── Bulk operations: reset / import / export ─────────────────────────────
 
 export async function truncateAll(): Promise<void> {
-  await query('TRUNCATE products, dictionaries, kit_components, notifications, media_files, product_media_links, marketplace_listings RESTART IDENTITY CASCADE');
+  await query('TRUNCATE products, dictionaries, kit_components, notifications, media_files, product_media_links RESTART IDENTITY CASCADE');
 }
 
 export async function exportAll(): Promise<DataBundle> {
@@ -566,7 +456,6 @@ export async function exportAll(): Promise<DataBundle> {
     mediaFiles,
     mediaLinks,
     productMedia,
-    marketplaces: await getAllMarketplaceListings(),
   };
 }
 
@@ -616,21 +505,6 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
           sortOrder: m.sortOrder,
           uploadedAt: m.uploadedAt,
         });
-      }
-    } else if (name === 'marketplaces') {
-      await query('DELETE FROM marketplace_listings');
-      for (const m of data as MarketplaceListing[]) {
-        await query(
-          `INSERT INTO marketplace_listings
-             (id, marketplace, article, title, kind, skus, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           ON CONFLICT (marketplace, article) DO UPDATE SET
-             title = EXCLUDED.title,
-             kind = EXCLUDED.kind,
-             skus = EXCLUDED.skus,
-             updated_at = EXCLUDED.updated_at`,
-          [m.id, m.marketplace, m.article, m.title, m.kind, m.skus, m.createdAt, m.updatedAt]
-        );
       }
     } else {
       await query('DELETE FROM dictionaries WHERE type = $1', [name]);
