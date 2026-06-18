@@ -27,17 +27,20 @@ export interface WbArticleMetrics {
   nmId: number;
   vendorCode: string;
   selected: {
+    openCount: number;
     orderCount: number;
     orderSum: number;
     buyoutCount: number;
   };
   past: {
+    openCount: number;
     orderCount: number;
     orderSum: number;
     buyoutCount: number;
   };
   dynamics: {
-    orderCount: number; // уже в %, как отдаёт WB
+    openCount: number; // уже в %, как отдаёт WB
+    orderCount: number;
     orderSum: number;
     buyoutCount: number;
   };
@@ -257,16 +260,19 @@ interface WbRawProduct {
   };
   statistic: {
     selected: {
+      openCount: number;
       orderCount: number;
       orderSum: number;
       buyoutCount: number;
     };
-    past: {
+    past?: {
+      openCount: number;
       orderCount: number;
       orderSum: number;
       buyoutCount: number;
     };
-    comparison: {
+    comparison?: {
+      openCountDynamic: number;
       orderCountDynamic: number;
       orderSumDynamic: number;
       buyoutCountDynamic: number;
@@ -288,20 +294,27 @@ function normalizeProduct(p: WbRawProduct): WbArticleMetrics {
     nmId: p.product.nmId,
     vendorCode: p.product.vendorCode,
     selected: {
+      openCount: p.statistic.selected.openCount,
       orderCount: p.statistic.selected.orderCount,
       orderSum: p.statistic.selected.orderSum,
       buyoutCount: p.statistic.selected.buyoutCount,
     },
-    past: {
-      orderCount: p.statistic.past.orderCount,
-      orderSum: p.statistic.past.orderSum,
-      buyoutCount: p.statistic.past.buyoutCount,
-    },
-    dynamics: {
-      orderCount: p.statistic.comparison.orderCountDynamic,
-      orderSum: p.statistic.comparison.orderSumDynamic,
-      buyoutCount: p.statistic.comparison.buyoutCountDynamic,
-    },
+    past: p.statistic.past
+      ? {
+          openCount: p.statistic.past.openCount,
+          orderCount: p.statistic.past.orderCount,
+          orderSum: p.statistic.past.orderSum,
+          buyoutCount: p.statistic.past.buyoutCount,
+        }
+      : { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 },
+    dynamics: p.statistic.comparison
+      ? {
+          openCount: p.statistic.comparison.openCountDynamic,
+          orderCount: p.statistic.comparison.orderCountDynamic,
+          orderSum: p.statistic.comparison.orderSumDynamic,
+          buyoutCount: p.statistic.comparison.buyoutCountDynamic,
+        }
+      : { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 },
   };
 }
 
@@ -317,11 +330,16 @@ async function fetchBatchFromWb(
   }
 
   const past = computePastPeriod(start, end);
-  const body = JSON.stringify({
+  const pastWithinLimit = past.start >= shiftDate(todayISO(), -365);
+
+  const bodyObj: Record<string, unknown> = {
     selectedPeriod: { start, end },
-    pastPeriod: { start: past.start, end: past.end },
     nmIds,
-  });
+  };
+  if (pastWithinLimit) {
+    bodyObj.pastPeriod = { start: past.start, end: past.end };
+  }
+  const body = JSON.stringify(bodyObj);
 
   const res = await throttledFetchWithRetry(body);
 
