@@ -28,6 +28,7 @@ import { requireAuth, requireAdmin } from './middleware/auth';
 import { closePool } from './utils/db';
 import { startHourlyRefresh } from './services/wbAnalytics';
 import { startHourlyRefresh as startSearchReportRefresh } from './services/wbSearchReport';
+import { startHourlyRefresh as startOzonAnalyticsRefresh } from './services/ozonAnalytics';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 const app = express();
@@ -108,6 +109,7 @@ app.listen(PORT, () => {
   console.log(`  demo: /api/demo/*  (JSON files)`);
   console.log(`  dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
   console.log(`  analytics: /api/analytics/wb/*  (WB Seller API proxy)`);
+  console.log(`  analytics: /api/analytics/ozon/*  (Ozon Seller API proxy)`);
   console.log(`  static: /uploads/*  (uploaded media files)`);
   // Фоновый warmup кэша WB-аналитики + обновление каждый час.
   // Неблокирующий — сервер стартует сразу, warmup идёт в фоне через 5 сек.
@@ -115,6 +117,8 @@ app.listen(PORT, () => {
   // Search Report: warmup стартует позже (через 8 сек) и идёт отдельной
   // serial-очередью с интервалом ~1 мин, чтобы не словить 429 от WB.
   startSearchReportRefresh();
+  // Ozon Analytics: warmup стартует через 7 сек (после WB 5s).
+  startOzonAnalyticsRefresh();
 });
 
 process.on('SIGINT', async () => {

@@ -18,7 +18,7 @@ export default defineConfig({
       name: 'static-cache-headers',
       configureServer(server) {
         server.httpServer?.on('request', (req, res) => {
-          if (req.url?.endsWith('.woff2')) {
+          if (req.url?.endsWith('.woff2') && !res.headersSent) {
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
           }
         });
