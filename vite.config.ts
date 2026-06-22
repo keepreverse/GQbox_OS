@@ -9,7 +9,22 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig({
   base: '/',
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    // Кэширование шрифтов на клиенте — без этого браузер
+    // перезапрашивает .woff2 при каждом resize/layout-change
+    {
+      name: 'static-cache-headers',
+      configureServer(server) {
+        server.httpServer?.on('request', (req, res) => {
+          if (req.url?.endsWith('.woff2')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

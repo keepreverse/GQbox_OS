@@ -109,7 +109,7 @@ app.listen(PORT, () => {
   console.log(`  dev:  /api/dev/*   (PostgreSQL, requires db:start)`);
   console.log(`  analytics: /api/analytics/wb/*  (WB Seller API proxy)`);
   console.log(`  static: /uploads/*  (uploaded media files)`);
-  // Фоновый warmup кеша WB-аналитики + обновление каждый час.
+  // Фоновый warmup кэша WB-аналитики + обновление каждый час.
   // Неблокирующий — сервер стартует сразу, warmup идёт в фоне через 5 сек.
   startHourlyRefresh();
   // Search Report: warmup стартует позже (через 8 сек) и идёт отдельной
