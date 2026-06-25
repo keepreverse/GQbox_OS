@@ -13,9 +13,12 @@
 //   - не словить 400 "Check correctness of nm id" от чужого кабинета;
 //   - добавлять новые кабинеты просто добавив токен в .env.
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import AdmZip from 'adm-zip';
+import { parse as csvParse } from 'csv-parse/sync';
 import type { RawProduct, MarketplaceEntityCode } from '../types';
 import { saveCache, loadCache, saveRefreshTimestamp, loadRefreshTimestamp, deleteRefreshTimestamp, deleteServiceCache } from './cacheStore';
 
@@ -29,6 +32,12 @@ const CACHE_TTL_MS = 2 * 60 * 60 * 1000;
 const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const MAX_429_RETRIES = 3;
 const SERVICE_NAME = 'wb-analytics';
+const SERVICE_DAILY_NAME = 'wb-analytics-daily';
+const WB_CSV_API_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/downloads';
+const WB_HISTORY_API_URL = 'https://seller-analytics-api.wildberries.ru/api/analytics/v3/sales-funnel/products/history';
+const WB_MAX_NMIDS_PER_HISTORY = 20;
+const CSV_REPORT_DAILY_LIMIT = 20;
+const CSV_DAILY_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'data', 'cache', 'wb-csv-reports');
 
 // ─── Entity / token resolution ────────────────────────────────────────────
 
@@ -80,6 +89,36 @@ export interface WbSalesFunnelResponse {
   articles: WbArticleMetrics[];
   cached: boolean;
   updating?: boolean;
+}
+
+// ─── Time Series types ────────────────────────────────────────────────────
+
+export interface WbTimeSeriesPoint {
+  date: string;
+  metrics: {
+    openCount: number;
+    orderCount: number;
+    orderSum: number;
+    buyoutCount: number;
+  };
+}
+
+export interface WbTimeSeriesResponse {
+  points: WbTimeSeriesPoint[] | null;
+  cached: boolean;
+  updating?: boolean;
+}
+
+interface WbDailyMetrics {
+  openCount: number;
+  orderCount: number;
+  orderSum: number;
+  buyoutCount: number;
+}
+
+interface DailyCacheEntry {
+  article: WbDailyMetrics;
+  expiresAt: number;
 }
 
 export class WbAnalyticsError extends Error {
@@ -196,21 +235,32 @@ class WbEntityAnalyticsService {
   private entity: MarketplaceEntityCode;
   private token: string;
   private cache: Map<number, Map<string, CacheEntry>>;
+  /** Daily cache: Map<nmId, Map<dateISO, DailyCacheEntry>> */
+  private dailyCache: Map<number, Map<string, DailyCacheEntry>>;
   private lastRequestAt: number;
   private warmupInProgress: boolean;
   private backgroundQueue: Array<{ nmIds: number[]; start: string; end: string }>;
   private backgroundRunning: boolean;
   private backgroundPendingPeriods: Set<string>;
+  private csvReportInProgress: boolean;
+  private csvReportCountsToday: number;
+  private csvReportDate: string;
+  private historyApiLastRequestAt: number;
 
   constructor(entity: MarketplaceEntityCode, token: string) {
     this.entity = entity;
     this.token = token;
     this.cache = new Map();
+    this.dailyCache = new Map();
     this.lastRequestAt = 0;
     this.warmupInProgress = false;
     this.backgroundQueue = [];
     this.backgroundRunning = false;
     this.backgroundPendingPeriods = new Set();
+    this.csvReportInProgress = false;
+    this.csvReportCountsToday = 0;
+    this.csvReportDate = '';
+    this.historyApiLastRequestAt = 0;
 
     // Загружаем кэш с диска, чтобы пережить рестарт сервера
     const nmIds = readEntityNmIdsFromJson(entity);
@@ -219,6 +269,17 @@ class WbEntityAnalyticsService {
       this.cache = loaded as Map<number, Map<string, CacheEntry>>;
       console.log(`[wb-analytics:${entity}] loaded: ${this.cache.size} articles`);
     }
+
+    // Загружаем daily кэш
+    const dailyLoaded = loadCache(SERVICE_DAILY_NAME, entity, nmIds);
+    if (dailyLoaded.size > 0) {
+      this.dailyCache = dailyLoaded as Map<number, Map<string, DailyCacheEntry>>;
+      const totalEntries = [...this.dailyCache.values()].reduce((s, m) => s + m.size, 0);
+      console.log(`[wb-analytics:${entity}] daily loaded: ${this.dailyCache.size} articles / ${totalEntries} daily entries`);
+    }
+
+    // Восстанавливаем счётчик CSV-отчётов из файла
+    this.loadCsvReportCount();
   }
 
   // ─── Cache helpers ──────────────────────────────────────────────────────
@@ -642,6 +703,366 @@ class WbEntityAnalyticsService {
 
     return { articles: ordered, cached: true, updating: this.backgroundPendingPeriods.has(key) || this.warmupInProgress };
   }
+
+  // ─── Daily cache helpers ─────────────────────────────────────────────
+
+  private getDailyMetrics(nmId: number, date: string): WbDailyMetrics | null {
+    const byDate = this.dailyCache.get(nmId);
+    if (!byDate) return null;
+    const entry = byDate.get(date);
+    if (!entry || entry.expiresAt <= Date.now()) {
+      if (entry) byDate.delete(date);
+      return null;
+    }
+    return entry.article;
+  }
+
+  private setDailyMetrics(nmId: number, date: string, metrics: WbDailyMetrics): void {
+    let byDate = this.dailyCache.get(nmId);
+    if (!byDate) {
+      byDate = new Map();
+      this.dailyCache.set(nmId, byDate);
+    }
+    byDate.set(date, {
+      article: metrics,
+      expiresAt: Date.now() + CACHE_TTL_MS,
+    });
+  }
+
+  private persistDailyCache(): void {
+    saveCache(SERVICE_DAILY_NAME, this.entity, this.dailyCache);
+  }
+
+  public clearDailyCache(): void {
+    this.dailyCache.clear();
+    deleteServiceCache(SERVICE_DAILY_NAME, this.entity);
+  }
+
+  // ─── CSV report generation (DETAIL_HISTORY_REPORT) ───────────────────
+
+  private loadCsvReportCount(): void {
+    try {
+      const path = resolve(CSV_DAILY_DIR, `${this.entity}-count.json`);
+      if (!existsSync(path)) return;
+      const raw = readFileSync(path, 'utf-8');
+      const data = JSON.parse(raw) as { date: string; count: number };
+      const today = todayISO();
+      if (data.date === today) {
+        this.csvReportCountsToday = data.count;
+        this.csvReportDate = today;
+      }
+    } catch { /* ignore */ }
+  }
+
+  private saveCsvReportCount(): void {
+    try {
+      if (!existsSync(CSV_DAILY_DIR)) mkdirSync(CSV_DAILY_DIR, { recursive: true });
+      const path = resolve(CSV_DAILY_DIR, `${this.entity}-count.json`);
+      writeFileSync(path, JSON.stringify({ date: this.csvReportDate, count: this.csvReportCountsToday }), 'utf-8');
+    } catch { /* ignore */ }
+  }
+
+  private canCreateCsvReport(): boolean {
+    const today = todayISO();
+    if (this.csvReportDate !== today) {
+      this.csvReportDate = today;
+      this.csvReportCountsToday = 0;
+    }
+    return this.csvReportCountsToday < CSV_REPORT_DAILY_LIMIT && !this.csvReportInProgress;
+  }
+
+  private async generateAndDownloadCsvReport(startDate: string, endDate: string): Promise<void> {
+    if (this.csvReportInProgress) return;
+    this.csvReportInProgress = true;
+
+    const nmIds = readEntityNmIdsFromJson(this.entity);
+    if (nmIds.length === 0) {
+      this.csvReportInProgress = false;
+      return;
+    }
+
+    const uuid = crypto.randomUUID();
+    console.log(`[wb-analytics:${this.entity}] CSV report: creating (${uuid}) for ${nmIds.length} nmIds`);
+
+    try {
+      const createBody = JSON.stringify({
+        id: uuid,
+        reportType: 'DETAIL_HISTORY_REPORT',
+        params: {
+          nmIDs: nmIds,
+          startDate,
+          endDate,
+          timezone: 'Europe/Moscow',
+          aggregationLevel: 'day',
+          skipDeletedNm: false,
+        },
+      });
+
+      let res = await this.throttledCsvFetch(
+        WB_CSV_API_URL,
+        { method: 'POST', headers: { Authorization: this.token, 'Content-Type': 'application/json' }, body: createBody }
+      );
+      if (!res.ok) {
+        console.error(`[wb-analytics:${this.entity}] CSV report create failed: ${res.status}`);
+        this.csvReportInProgress = false;
+        return;
+      }
+
+      // Poll status
+      let status: string | null = null;
+      let pollCount = 0;
+      while (status !== 'done' && pollCount < 60) {
+        await sleep(15_000);
+        pollCount++;
+        const statusRes = await this.throttledCsvFetch(
+          `${WB_CSV_API_URL}?filter[downloadIds][]=${uuid}`,
+          { method: 'GET', headers: { Authorization: this.token } }
+        );
+        if (!statusRes.ok) continue;
+        const statusData = (await statusRes.json()) as { data?: Array<{ status?: string }> };
+        const entryStatus = statusData?.data?.[0]?.status;
+        if (!entryStatus) continue;
+        if (entryStatus === 'done') { status = 'done'; }
+        else if (entryStatus === 'failed') {
+          console.log(`[wb-analytics:${this.entity}] CSV report failed, retrying...`);
+          await this.throttledCsvFetch(
+            `${WB_CSV_API_URL}/retry`,
+            { method: 'POST', headers: { Authorization: this.token, 'Content-Type': 'application/json' }, body: JSON.stringify({ downloadId: uuid }) }
+          );
+          status = null;
+        }
+      }
+
+      if (status !== 'done') {
+        console.error(`[wb-analytics:${this.entity}] CSV report timeout after ${pollCount} polls`);
+        this.csvReportInProgress = false;
+        return;
+      }
+
+      // Download ZIP
+      console.log(`[wb-analytics:${this.entity}] CSV report: downloading`);
+      const fileRes = await this.throttledCsvFetch(
+        `${WB_CSV_API_URL}/file/${uuid}`,
+        { method: 'GET', headers: { Authorization: this.token } }
+      );
+      if (!fileRes.ok) {
+        console.error(`[wb-analytics:${this.entity}] CSV report download failed: ${fileRes.status}`);
+        this.csvReportInProgress = false;
+        return;
+      }
+      const zipBuffer = Buffer.from(await fileRes.arrayBuffer());
+
+      // Parse ZIP → CSV → dailyCache
+      const zip = new AdmZip(zipBuffer);
+      const csvEntries = zip.getEntries().filter((e) => e.name.endsWith('.csv') || e.name.endsWith('.CSV'));
+      if (csvEntries.length === 0) {
+        console.error(`[wb-analytics:${this.entity}] CSV report: no CSV files in ZIP`);
+        this.csvReportInProgress = false;
+        return;
+      }
+
+      let parsedCount = 0;
+      for (const csvEntry of csvEntries) {
+        const csvContent = csvEntry.getData().toString('utf-8');
+        parsedCount += this.parseAndStoreCsv(csvContent);
+      }
+      this.persistDailyCache();
+      console.log(`[wb-analytics:${this.entity}] CSV report: stored ${parsedCount} daily entries`);
+
+      // Bump report count for today
+      const today = todayISO();
+      if (this.csvReportDate !== today) { this.csvReportDate = today; this.csvReportCountsToday = 0; }
+      this.csvReportCountsToday++;
+      this.saveCsvReportCount();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[wb-analytics:${this.entity}] CSV report failed: ${msg}`);
+    } finally {
+      this.csvReportInProgress = false;
+    }
+  }
+
+  private async throttledCsvFetch(url: string, init: RequestInit): Promise<Response> {
+    const elapsed = Date.now() - this.historyApiLastRequestAt;
+    if (elapsed < 21_000) {
+      await sleep(21_000 - elapsed);
+    }
+    this.historyApiLastRequestAt = Date.now();
+    return fetch(url, init);
+  }
+
+  private parseAndStoreCsv(csv: string): number {
+    let rows: Record<string, string>[];
+    try {
+      rows = csvParse(csv, { columns: true, skip_empty_lines: true, trim: true }) as Record<string, string>[];
+    } catch {
+      return 0;
+    }
+    const firstRow = rows[0];
+    if (!firstRow) return 0;
+
+    const colNames = Object.keys(firstRow);
+    const nmIdCol = colNames.find((c) => /nmId|nmID|nm_id|артикул/i.test(c));
+    const dateCol = colNames.find((c) => /^date$|^day$|дата/i.test(c));
+    const openCol = colNames.find((c) => /openCount|open_card|open_count|переход/i.test(c));
+    const orderCountCol = colNames.find((c) => /ordersCount|orderCount|order_count|заказов всего|заказы, шт/i.test(c));
+    const orderSumCol = colNames.find((c) => /ordersSumRub|orderSum|order_sum|сумма заказов|заказы, руб/i.test(c));
+    const buyoutCol = colNames.find((c) => /buyoutsCount|buyoutCount|buyout_count|выкупов всего|выкупы, шт/i.test(c));
+    if (!nmIdCol || !dateCol || !openCol || !orderCountCol) return 0;
+
+    let stored = 0;
+    for (const row of rows) {
+      const nmId = parseInt(row[nmIdCol], 10);
+      const date = row[dateCol]?.trim();
+      if (!Number.isFinite(nmId) || nmId <= 0 || !date) continue;
+      const open = parseInt(row[openCol], 10) || 0;
+      const orders = parseInt(row[orderCountCol], 10) || 0;
+      const sum = orderSumCol ? Math.round((parseFloat(row[orderSumCol]) || 0) * 100) / 100 : 0;
+      const buyouts = buyoutCol ? parseInt(row[buyoutCol], 10) || 0 : 0;
+      this.setDailyMetrics(nmId, date, { openCount: open, orderCount: orders, orderSum: sum, buyoutCount: buyouts });
+      stored++;
+    }
+    return stored;
+  }
+
+  // ─── /products/history fetcher (last 7 days, max 20 nmIds/req) ──────
+
+  private async fetchDailyHistoryBatch(nmIds: number[], start: string, end: string): Promise<void> {
+    const historyUrl = WB_HISTORY_API_URL;
+    const body = JSON.stringify({
+      selectedPeriod: { start, end },
+      nmIds,
+      aggregationLevel: 'day',
+      skipDeletedNm: true,
+    });
+
+    const elapsed = Date.now() - this.historyApiLastRequestAt;
+    if (elapsed < 21_000) {
+      await sleep(21_000 - elapsed);
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(historyUrl, {
+        method: 'POST',
+        headers: { Authorization: this.token, 'Content-Type': 'application/json' },
+        body,
+      });
+    } catch (err) {
+      throw new WbAnalyticsError(
+        `Не удалось связаться с WB API: ${err instanceof Error ? err.message : String(err)}`, 502
+      );
+    }
+    this.historyApiLastRequestAt = Date.now();
+
+    if (!res.ok) {
+      let detail = `WB /history [${this.entity}] вернул ${res.status}`;
+      try { const e = (await res.json()) as { detail?: string }; if (e.detail) detail = e.detail; } catch { /* */ }
+      throw new WbAnalyticsError(detail, res.status);
+    }
+
+    type HistoryRow = { date: string; openCount: number; orderCount: number; orderSum: number; buyoutCount: number };
+    type HistoryProduct = { product: { nmId: number }; history: HistoryRow[] };
+    const raw = (await res.json()) as HistoryProduct[];
+
+    for (const prod of raw) {
+      const nmId = prod.product?.nmId;
+      if (!nmId) continue;
+      for (const row of prod.history || []) {
+        this.setDailyMetrics(nmId, row.date, {
+          openCount: row.openCount ?? 0,
+          orderCount: row.orderCount ?? 0,
+          orderSum: Math.round((row.orderSum ?? 0) * 100) / 100,
+          buyoutCount: row.buyoutCount ?? 0,
+        });
+      }
+    }
+  }
+
+  private async refreshRecentDailyHistory(nmIds: number[], start: string, end: string): Promise<void> {
+    for (let i = 0; i < nmIds.length; i += WB_MAX_NMIDS_PER_HISTORY) {
+      const chunk = nmIds.slice(i, i + WB_MAX_NMIDS_PER_HISTORY);
+      await this.fetchDailyHistoryBatch(chunk, start, end);
+    }
+    this.persistDailyCache();
+  }
+
+  // ─── Time series public API ───────────────────────────────────────────
+
+  public async getTimeSeries(
+    nmIds: number[],
+    startDate: string,
+    endDate: string,
+    groupBy: 'day' | 'week'
+  ): Promise<{ points: WbTimeSeriesPoint[]; cached: boolean; updating: boolean }> {
+    if (nmIds.length === 0) {
+      return { points: [], cached: false, updating: false };
+    }
+
+    const dates = dateRange(startDate, endDate);
+    const dateMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+    const missingDates: string[] = [];
+
+    for (const date of dates) {
+      let hasData = false;
+      let open = 0, orders = 0, sum = 0, buyouts = 0;
+      for (const nmId of nmIds) {
+        const m = this.getDailyMetrics(nmId, date);
+        if (m) {
+          open += m.openCount;
+          orders += m.orderCount;
+          sum += m.orderSum;
+          buyouts += m.buyoutCount;
+          hasData = true;
+        }
+      }
+      if (hasData) {
+        dateMap.set(date, { openCount: open, orderCount: orders, orderSum: sum, buyoutCount: buyouts });
+      } else {
+        missingDates.push(date);
+      }
+    }
+
+    const hasAll = missingDates.length === 0;
+
+    if (!hasAll && !this.csvReportInProgress) {
+      const periodDays = diffDays(startDate, endDate);
+      if (periodDays > 14 && this.canCreateCsvReport()) {
+        console.log(`[wb-analytics:${this.entity}] getTimeSeries: generating CSV report for ${startDate}..${endDate}`);
+        this.generateAndDownloadCsvReport(startDate, endDate);
+      } else if (periodDays <= 7) {
+        this.refreshRecentDailyHistory(nmIds, startDate, endDate);
+      }
+    }
+
+    if (groupBy === 'week') {
+      const weekMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+      for (const [date, m] of dateMap) {
+        const d = new Date(date + 'T00:00:00Z');
+        const dayOfWeek = d.getUTCDay();
+        const monday = new Date(d);
+        monday.setUTCDate(d.getUTCDate() - ((dayOfWeek + 6) % 7));
+        const weekKey = monday.toISOString().slice(0, 10);
+        const existing = weekMap.get(weekKey) || { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 };
+        existing.openCount += m.openCount;
+        existing.orderCount += m.orderCount;
+        existing.orderSum += m.orderSum;
+        existing.buyoutCount += m.buyoutCount;
+        weekMap.set(weekKey, existing);
+      }
+      return {
+        points: [...weekMap.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, metrics]) => ({ date, metrics })),
+        cached: hasAll,
+        updating: !hasAll && this.csvReportInProgress,
+      };
+    }
+
+    return {
+      points: [...dateMap.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, metrics]) => ({ date, metrics })),
+      cached: hasAll,
+      updating: !hasAll && this.csvReportInProgress,
+    };
+  }
 }
 
 // ─── Raw response types ────────────────────────────────────────────────────
@@ -672,6 +1093,16 @@ function computePastPeriod(start: string, end: string): { start: string; end: st
     start: shiftDate(start, -(len + 1)),
     end: shiftDate(start, -1),
   };
+}
+
+function dateRange(start: string, end: string): string[] {
+  const result: string[] = [];
+  let d = start;
+  while (d <= end) {
+    result.push(d);
+    d = shiftDate(d, 1);
+  }
+  return result;
 }
 
 // ─── Service registry ─────────────────────────────────────────────────────
@@ -774,4 +1205,71 @@ export async function fetchWbSalesFunnel(
   allArticles.sort((a, b) => (orderMap.get(a.nmId) ?? 0) - (orderMap.get(b.nmId) ?? 0));
 
   return { currency: 'RUB', articles: allArticles, cached: allCached, updating: anyUpdating || undefined };
+}
+
+export async function fetchWbTimeSeries(
+  entity: MarketplaceEntityCode | undefined,
+  nmIds: number[],
+  startDate: string,
+  endDate: string,
+  groupBy: 'day' | 'week' = 'day'
+): Promise<WbTimeSeriesResponse> {
+  if (nmIds.length === 0) {
+    return { points: [], cached: false, updating: false };
+  }
+
+  if (entity) {
+    const svc = getService(entity);
+    if (!svc) return { points: [], cached: false, updating: false };
+    try {
+      const result = await svc.getTimeSeries(nmIds, startDate, endDate, groupBy);
+      return { points: result.points, cached: result.cached, updating: result.updating || undefined };
+    } catch (err) {
+      console.error(`[wb-analytics:${entity}] getTimeSeries failed: ${err instanceof Error ? err.message : String(err)}`);
+      return { points: [] as WbTimeSeriesPoint[], cached: false, updating: false };
+    }
+  }
+
+  // No entity — sum across all
+  const groups = groupNmIdsByEntity(nmIds);
+  const configuredEntities = new Set(getConfiguredEntities());
+  for (const e of groups.keys()) {
+    if (!configuredEntities.has(e)) groups.delete(e);
+  }
+  if (groups.size === 0) return { points: [], cached: false, updating: false };
+
+  const results = await Promise.all(
+    [...groups.entries()].map(async ([e, entityNmIds]) => {
+      const svc = getService(e);
+      if (!svc) return { points: [] as WbTimeSeriesPoint[], cached: true };
+      try {
+        return await svc.getTimeSeries(entityNmIds, startDate, endDate, groupBy);
+      } catch (err) {
+        console.error(`[wb-analytics:${e}] getTimeSeries failed: ${err instanceof Error ? err.message : String(err)}`);
+        return { points: [] as WbTimeSeriesPoint[], cached: false, updating: false };
+      }
+    })
+  );
+
+  const mergedMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+  for (const r of results) {
+    for (const p of r.points) {
+      const existing = mergedMap.get(p.date) || { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 };
+      existing.openCount += p.metrics.openCount;
+      existing.orderCount += p.metrics.orderCount;
+      existing.orderSum += p.metrics.orderSum;
+      existing.buyoutCount += p.metrics.buyoutCount;
+      mergedMap.set(p.date, existing);
+    }
+  }
+
+  const allCached = results.every((r) => r.cached);
+  const anyUpdating = results.some((r) => 'updating' in r && r.updating);
+  return {
+    points: [...mergedMap.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, metrics]) => ({ date, metrics })),
+    cached: allCached,
+    updating: anyUpdating || undefined,
+  };
 }

@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Package,
   BarChart3,
+  ChartLine,
   Check,
   TrendingUp,
   TrendingDown,
@@ -42,6 +43,7 @@ import {
   aggregateSearchReport,
   type WbSearchReportArticle,
 } from '@api/wbSearchReport';
+import { AnalyticsChart } from './AnalyticsChart';
 
 // ─── Аналитика продаж ─────────────────────────────────────────────────────
 // Метрики берутся из WB Seller Analytics API через наш бэкенд-прокси
@@ -152,7 +154,7 @@ export default function ProductDetailCard({
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
   const [confirmDeleteLink, setConfirmDeleteLink] = useState<MediaLink | null>(null);
   const [removedFileIds, setRemovedFileIds] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'info' | 'analytics'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'analytics' | 'charts'>('info');
 
   // ─── Аналитика: период + состояние загрузки WB ────────────────────────
   const initialPeriod = useMemo<{ start: string; end: string }>(() => {
@@ -393,6 +395,7 @@ export default function ProductDetailCard({
     () => [
       { id: 'info' as const, label: t('detail.tab.info'), icon: Package },
       { id: 'analytics' as const, label: t('detail.tab.analytics'), icon: BarChart3 },
+      { id: 'charts' as const, label: t('detail.tab.charts'), icon: ChartLine },
     ],
     [t]
   );
@@ -1497,6 +1500,16 @@ export default function ProductDetailCard({
         )}
 
         {activeTab === 'analytics' && AnalyticsTab()}
+        {activeTab === 'charts' && (
+          <div className="p-3 sm:p-4">
+            <AnalyticsChart
+              wbNmIds={wbNmIds}
+              ozonSkus={ozonSkus}
+              startDate={appliedPeriod.start}
+              endDate={appliedPeriod.end}
+            />
+          </div>
+        )}
       </div>
 
       {/* Lightbox */}
@@ -1540,7 +1553,7 @@ export default function ProductDetailCard({
         onClose={handleClose}
         onExitComplete={onClose}
         showCloseButton={false}
-        height="clamp(70dvh, 80dvh, 95dvh)"
+        height="clamp(75dvh, 90dvh, 95dvh)"
         pinned
         className="sm:!max-w-[clamp(600px,75vw,1400px)] sm:rounded-2xl"
         contentClassName="p-0 flex flex-col"

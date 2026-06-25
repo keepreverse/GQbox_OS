@@ -42,6 +42,34 @@ export interface OzonAnalyticsResponse {
   updating?: boolean;
 }
 
+export interface OzonTimeSeriesPoint {
+  date: string;
+  metrics: {
+    openCount: number;
+    orderCount: number;
+    orderSum: number;
+    buyoutCount: number;
+  };
+}
+
+export interface OzonTimeSeriesResponse {
+  points: OzonTimeSeriesPoint[];
+  cached: boolean;
+}
+
+export async function fetchOzonTimeSeries(
+  entity: string | undefined,
+  skus: number[],
+  startDate: string,
+  endDate: string,
+  groupBy: 'day' | 'week' = 'day'
+): Promise<OzonTimeSeriesResponse> {
+  return request<OzonTimeSeriesResponse>('/api/analytics/ozon/timeseries', {
+    method: 'POST',
+    body: JSON.stringify({ entity, skus, startDate, endDate, groupBy }),
+  });
+}
+
 export async function fetchOzonAnalytics(
   skus: number[],
   startDate: string,

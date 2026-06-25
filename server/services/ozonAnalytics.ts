@@ -87,6 +87,23 @@ export interface OzonAnalyticsResponse {
   updating?: boolean;
 }
 
+// ─── Time Series types ────────────────────────────────────────────────────
+
+export interface OzonTimeSeriesPoint {
+  date: string;
+  metrics: {
+    openCount: number;
+    orderCount: number;
+    orderSum: number;
+    buyoutCount: number;
+  };
+}
+
+export interface OzonTimeSeriesResponse {
+  points: OzonTimeSeriesPoint[];
+  cached: boolean;
+}
+
 export class OzonAnalyticsError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -398,6 +415,108 @@ class OzonEntityAnalyticsService {
     }
 
     return { articles, missingDates: [...missingDatesSet] };
+  }
+
+  // ─── Time series (графики) ─────────────────────────────────────────────
+
+  private getDailyTimeSeries(
+    skus: number[],
+    start: string,
+    end: string,
+    groupBy: 'day' | 'week'
+  ): { points: OzonTimeSeriesPoint[]; missingDates: string[] } {
+    const dates = dateRange(start, end);
+    const missingDatesSet = new Set<string>();
+
+    // Sum metrics across all requested SKUs per date
+    const dateMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+
+    for (const date of dates) {
+      let hasData = false;
+      let open = 0, orders = 0, sum = 0, buyouts = 0;
+
+      for (const sku of skus) {
+        const m = this.getDailyMetrics(sku, date);
+        if (m) {
+          open += m.openCount;
+          orders += m.orderCount;
+          sum += m.orderSum;
+          buyouts += m.buyoutCount;
+          hasData = true;
+        }
+      }
+
+      if (!hasData) {
+        missingDatesSet.add(date);
+        continue;
+      }
+
+      dateMap.set(date, { openCount: open, orderCount: orders, orderSum: sum, buyoutCount: buyouts });
+    }
+
+    // Group by week if needed
+    if (groupBy === 'week') {
+      const weekMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+      for (const [date, m] of dateMap) {
+        const d = new Date(date + 'T00:00:00Z');
+        const dayOfWeek = d.getUTCDay();
+        const monday = new Date(d);
+        monday.setUTCDate(d.getUTCDate() - ((dayOfWeek + 6) % 7));
+        const weekKey = monday.toISOString().slice(0, 10);
+        const existing = weekMap.get(weekKey) || { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 };
+        existing.openCount += m.openCount;
+        existing.orderCount += m.orderCount;
+        existing.orderSum += m.orderSum;
+        existing.buyoutCount += m.buyoutCount;
+        weekMap.set(weekKey, existing);
+      }
+      return {
+        points: [...weekMap.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, metrics]) => ({ date, metrics })),
+        missingDates: [...missingDatesSet],
+      };
+    }
+
+    return {
+      points: [...dateMap.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, metrics]) => ({ date, metrics })),
+      missingDates: [...missingDatesSet],
+    };
+  }
+
+  public async getTimeSeries(
+    skus: number[],
+    startDate: string,
+    endDate: string,
+    groupBy: 'day' | 'week'
+  ): Promise<{ points: OzonTimeSeriesPoint[]; cached: boolean; updating: boolean }> {
+    if (skus.length === 0) {
+      return { points: [], cached: false, updating: false };
+    }
+
+    const { points, missingDates } = this.getDailyTimeSeries(skus, startDate, endDate, groupBy);
+
+    const hasAll = missingDates.length === 0;
+    if (!hasAll && !this.warmupInProgress) {
+      // Schedule background fetch for missing dates
+      const ranges = this.splitIntoChunks(startDate, endDate, CHUNK_DAYS);
+      for (const chunk of ranges) {
+        const rangeKey = `${chunk.start}|${chunk.end}`;
+        if (!this.backgroundPendingRanges.has(rangeKey)) {
+          this.backgroundPendingRanges.add(rangeKey);
+          this.backgroundQueue.push({ start: chunk.start, end: chunk.end });
+        }
+      }
+      this.processBackgroundQueue();
+    }
+
+    return {
+      points,
+      cached: hasAll,
+      updating: !hasAll && (this.warmupInProgress || this.backgroundPendingRanges.size > 0),
+    };
   }
 
   // ─── API request: daily data ─────────────────────────────────────────
@@ -867,4 +986,70 @@ export async function fetchOzonAnalytics(
   allArticles.sort((a, b) => (orderMap.get(a.sku) ?? 0) - (orderMap.get(b.sku) ?? 0));
 
   return { currency: 'RUB', articles: allArticles, cached: allCached, updating: anyUpdating || undefined };
+}
+
+export async function fetchOzonTimeSeries(
+  entity: MarketplaceEntityCode | undefined,
+  skus: number[],
+  startDate: string,
+  endDate: string,
+  groupBy: 'day' | 'week' = 'day'
+): Promise<OzonTimeSeriesResponse> {
+  if (skus.length === 0) {
+    return { points: [], cached: false };
+  }
+
+  if (entity) {
+    const svc = getService(entity);
+    if (!svc) return { points: [], cached: false };
+    try {
+      const result = await svc.getTimeSeries(skus, startDate, endDate, groupBy);
+      return { points: result.points, cached: result.cached };
+    } catch (err) {
+      console.error(`[ozon-analytics:${entity}] getTimeSeries failed: ${err instanceof Error ? err.message : String(err)}`);
+      return { points: [], cached: false };
+    }
+  }
+
+  // No entity specified — sum across all entities
+  const groups = groupSkusByEntity(skus);
+  const configuredEntities = new Set(getConfiguredEntities());
+  for (const e of groups.keys()) {
+    if (!configuredEntities.has(e)) groups.delete(e);
+  }
+  if (groups.size === 0) return { points: [], cached: false };
+
+  const results = await Promise.all(
+    [...groups.entries()].map(async ([e, entitySkus]) => {
+      const svc = getService(e);
+      if (!svc) return { points: [] as OzonTimeSeriesPoint[], cached: true };
+      try {
+        return await svc.getTimeSeries(entitySkus, startDate, endDate, groupBy);
+      } catch (err) {
+        console.error(`[ozon-analytics:${e}] getTimeSeries failed: ${err instanceof Error ? err.message : String(err)}`);
+        return { points: [] as OzonTimeSeriesPoint[], cached: false };
+      }
+    })
+  );
+
+  // Merge points by date across all entities
+  const mergedMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
+  for (const r of results) {
+    for (const p of r.points) {
+      const existing = mergedMap.get(p.date) || { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 };
+      existing.openCount += p.metrics.openCount;
+      existing.orderCount += p.metrics.orderCount;
+      existing.orderSum += p.metrics.orderSum;
+      existing.buyoutCount += p.metrics.buyoutCount;
+      mergedMap.set(p.date, existing);
+    }
+  }
+
+  const allCached = results.every((r) => r.cached);
+  return {
+    points: [...mergedMap.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, metrics]) => ({ date, metrics })),
+    cached: allCached,
+  };
 }

@@ -34,6 +34,35 @@ export interface WbSalesFunnelResponse {
   updating?: boolean;
 }
 
+export interface WbTimeSeriesPoint {
+  date: string;
+  metrics: {
+    openCount: number;
+    orderCount: number;
+    orderSum: number;
+    buyoutCount: number;
+  };
+}
+
+export interface WbTimeSeriesResponse {
+  points: WbTimeSeriesPoint[] | null;
+  cached: boolean;
+  updating?: boolean;
+}
+
+export async function fetchWbTimeSeries(
+  entity: string | undefined,
+  nmIds: number[],
+  startDate: string,
+  endDate: string,
+  groupBy: 'day' | 'week' = 'day'
+): Promise<WbTimeSeriesResponse> {
+  return request<WbTimeSeriesResponse>('/api/analytics/wb/timeseries', {
+    method: 'POST',
+    body: JSON.stringify({ entity, nmIds, startDate, endDate, groupBy }),
+  });
+}
+
 export async function fetchWbSalesFunnel(
   nmIds: number[],
   startDate: string,

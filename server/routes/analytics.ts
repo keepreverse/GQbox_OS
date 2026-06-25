@@ -1,11 +1,12 @@
 import { Router, type Request, type Response } from 'express';
-import { fetchWbSalesFunnel, WbAnalyticsError, forceRefresh as forceWbRefresh } from '../services/wbAnalytics';
+import { fetchWbSalesFunnel, fetchWbTimeSeries, WbAnalyticsError, forceRefresh as forceWbRefresh } from '../services/wbAnalytics';
 import {
   fetchWbSearchReport,
   WbSearchReportError,
   forceRefresh as forceWbSearchRefresh,
 } from '../services/wbSearchReport';
-import { fetchOzonAnalytics, OzonAnalyticsError, forceRefresh as forceOzonRefresh } from '../services/ozonAnalytics';
+import { fetchOzonAnalytics, fetchOzonTimeSeries, OzonAnalyticsError, forceRefresh as forceOzonRefresh } from '../services/ozonAnalytics';
+import type { MarketplaceEntityCode } from '../types';
 
 const router = Router();
 
@@ -139,6 +140,73 @@ router.post('/ozon/sales-funnel', async (req: Request, res: Response) => {
     res.json(result);
   } catch (err) {
     if (err instanceof OzonAnalyticsError) {
+      res.status(err.status).json({ error: err.message });
+      return;
+    }
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: msg });
+  }
+});
+
+// ─── Time series endpoints (графики) ─────────────────────────────────────
+
+function validateDateParams(startDate: unknown, endDate: unknown): string | null {
+  if (!startDate || !endDate || typeof startDate !== 'string' || typeof endDate !== 'string') {
+    return 'startDate и endDate обязательны (YYYY-MM-DD)';
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+    return 'Даты должны быть в формате YYYY-MM-DD';
+  }
+  if (new Date(startDate) > new Date(endDate)) {
+    return 'startDate не может быть позже endDate';
+  }
+  return null;
+}
+
+// POST /api/analytics/ozon/timeseries
+router.post('/ozon/timeseries', async (req: Request, res: Response) => {
+  try {
+    const { entity, skus, startDate, endDate, groupBy } = req.body ?? {};
+
+    if (!Array.isArray(skus) || skus.length === 0) {
+      res.status(400).json({ error: 'skus должен быть непустым массивом' });
+      return;
+    }
+
+    const dateErr = validateDateParams(startDate, endDate);
+    if (dateErr) { res.status(400).json({ error: dateErr }); return; }
+
+    const gb = groupBy === 'week' ? 'week' : 'day';
+    const ent = entity && typeof entity === 'string' ? (entity as MarketplaceEntityCode) : undefined;
+
+    const result = await fetchOzonTimeSeries(ent, skus, startDate, endDate, gb);
+    res.json(result);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: msg });
+  }
+});
+
+// POST /api/analytics/wb/timeseries
+router.post('/wb/timeseries', async (req: Request, res: Response) => {
+  try {
+    const { entity, nmIds, startDate, endDate, groupBy } = req.body ?? {};
+
+    if (!Array.isArray(nmIds) || nmIds.length === 0) {
+      res.status(400).json({ error: 'nmIds должен быть непустым массивом' });
+      return;
+    }
+
+    const dateErr = validateDateParams(startDate, endDate);
+    if (dateErr) { res.status(400).json({ error: dateErr }); return; }
+
+    const gb = groupBy === 'week' ? 'week' : 'day';
+    const ent = entity && typeof entity === 'string' ? (entity as MarketplaceEntityCode) : undefined;
+
+    const result = await fetchWbTimeSeries(ent, nmIds, startDate, endDate, gb);
+    res.json(result);
+  } catch (err) {
+    if (err instanceof WbAnalyticsError) {
       res.status(err.status).json({ error: err.message });
       return;
     }
