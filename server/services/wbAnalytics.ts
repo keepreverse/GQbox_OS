@@ -38,6 +38,7 @@ const WB_HISTORY_API_URL = 'https://seller-analytics-api.wildberries.ru/api/anal
 const WB_MAX_NMIDS_PER_HISTORY = 20;
 const CSV_REPORT_DAILY_LIMIT = 20;
 const CSV_DAILY_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'data', 'cache', 'wb-csv-reports');
+const DAILY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // ─── Entity / token resolution ────────────────────────────────────────────
 
@@ -246,6 +247,9 @@ class WbEntityAnalyticsService {
   private csvReportCountsToday: number;
   private csvReportDate: string;
   private historyApiLastRequestAt: number;
+  private historyRefreshInProgress: boolean;
+  private dailyCacheDirty: boolean;
+  private dailyCacheSaveTimer: ReturnType<typeof setTimeout> | null;
 
   constructor(entity: MarketplaceEntityCode, token: string) {
     this.entity = entity;
@@ -261,6 +265,9 @@ class WbEntityAnalyticsService {
     this.csvReportCountsToday = 0;
     this.csvReportDate = '';
     this.historyApiLastRequestAt = 0;
+    this.historyRefreshInProgress = false;
+    this.dailyCacheDirty = false;
+    this.dailyCacheSaveTimer = null;
 
     // Загружаем кэш с диска, чтобы пережить рестарт сервера
     const nmIds = readEntityNmIdsFromJson(entity);
@@ -270,10 +277,17 @@ class WbEntityAnalyticsService {
       console.log(`[wb-analytics:${entity}] loaded: ${this.cache.size} articles`);
     }
 
-    // Загружаем daily кэш
+    // Загружаем daily кэш и продлеваем TTL (переживает рестарт)
     const dailyLoaded = loadCache(SERVICE_DAILY_NAME, entity, nmIds);
     if (dailyLoaded.size > 0) {
       this.dailyCache = dailyLoaded as Map<number, Map<string, DailyCacheEntry>>;
+      const now = Date.now();
+      for (const byDate of this.dailyCache.values()) {
+        for (const entry of byDate.values()) {
+          if (entry.expiresAt <= now) continue;
+          entry.expiresAt = now + DAILY_CACHE_TTL_MS;
+        }
+      }
       const totalEntries = [...this.dailyCache.values()].reduce((s, m) => s + m.size, 0);
       console.log(`[wb-analytics:${entity}] daily loaded: ${this.dailyCache.size} articles / ${totalEntries} daily entries`);
     }
@@ -329,7 +343,9 @@ class WbEntityAnalyticsService {
   /** Полностью очищает кэш в памяти и на диске. */
   public clearAllCache(): void {
     this.cache.clear();
+    this.dailyCache.clear();
     deleteServiceCache(SERVICE_NAME, this.entity);
+    deleteServiceCache(SERVICE_DAILY_NAME, this.entity);
   }
 
   // ─── Rate limiter ───────────────────────────────────────────────────────
@@ -517,6 +533,25 @@ class WbEntityAnalyticsService {
       this.evictStaleNmIds(nmIds);
       this.persistCache();
       saveRefreshTimestamp(SERVICE_NAME, this.entity);
+
+      // Пополняем dailyCache для последних 7 дней (чтобы графики сразу имели данные)
+      const today = todayISO();
+      const last7Start = shiftDate(today, -6);
+      const nmIdsLatest = readEntityNmIdsFromJson(this.entity);
+      // Проверяем, есть ли уже daily-данные за последние 7 дней
+      const sampleNmId = nmIdsLatest[0];
+      let hasRecentDaily = false;
+      if (sampleNmId) {
+        for (let d = last7Start; d <= today; d = shiftDate(d, 1)) {
+          if (this.getDailyMetrics(sampleNmId, d)) { hasRecentDaily = true; break; }
+        }
+      }
+      if (!hasRecentDaily && nmIdsLatest.length > 0) {
+        this.refreshRecentDailyHistory(nmIdsLatest, last7Start, today).catch((e) => {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`[wb-analytics:${this.entity}] warmup daily failed: ${msg}`);
+        });
+      }
 
       const note = nmIds.length - articles.length > 0 ? ` (${nmIds.length - articles.length} missing)` : '';
       console.log(`[wb-analytics:${this.entity}] ready: ${articles.length}/${nmIds.length} articles${note}`);
@@ -725,8 +760,20 @@ class WbEntityAnalyticsService {
     }
     byDate.set(date, {
       article: metrics,
-      expiresAt: Date.now() + CACHE_TTL_MS,
+      expiresAt: Date.now() + DAILY_CACHE_TTL_MS,
     });
+    this.markDailyCacheDirty();
+  }
+
+  private markDailyCacheDirty(): void {
+    if (this.dailyCacheDirty) return;
+    this.dailyCacheDirty = true;
+    if (this.dailyCacheSaveTimer) clearTimeout(this.dailyCacheSaveTimer);
+    this.dailyCacheSaveTimer = setTimeout(() => {
+      this.persistDailyCache();
+      this.dailyCacheDirty = false;
+      this.dailyCacheSaveTimer = null;
+    }, 3_000);
   }
 
   private persistDailyCache(): void {
@@ -980,11 +1027,19 @@ class WbEntityAnalyticsService {
   }
 
   private async refreshRecentDailyHistory(nmIds: number[], start: string, end: string): Promise<void> {
-    for (let i = 0; i < nmIds.length; i += WB_MAX_NMIDS_PER_HISTORY) {
-      const chunk = nmIds.slice(i, i + WB_MAX_NMIDS_PER_HISTORY);
-      await this.fetchDailyHistoryBatch(chunk, start, end);
+    if (this.historyRefreshInProgress) return;
+    this.historyRefreshInProgress = true;
+    try {
+      for (let i = 0; i < nmIds.length; i += WB_MAX_NMIDS_PER_HISTORY) {
+        const chunk = nmIds.slice(i, i + WB_MAX_NMIDS_PER_HISTORY);
+        await this.fetchDailyHistoryBatch(chunk, start, end);
+      }
+      this.persistDailyCache();
+    } catch (err) {
+      console.error(`[wb-analytics:${this.entity}] history refresh failed: ${err instanceof Error ? err.message : err}`);
+    } finally {
+      this.historyRefreshInProgress = false;
     }
-    this.persistDailyCache();
   }
 
   // ─── Time series public API ───────────────────────────────────────────
@@ -1025,15 +1080,28 @@ class WbEntityAnalyticsService {
 
     const hasAll = missingDates.length === 0;
 
-    if (!hasAll && !this.csvReportInProgress) {
+    if (!hasAll && !this.csvReportInProgress && !this.historyRefreshInProgress) {
       const periodDays = diffDays(startDate, endDate);
+
+      // Для любого периода: пробуем заполнить последние 7 дней через /products/history
+      const today = todayISO();
+      const last7Start = shiftDate(today, -6);
+      const recentMissing = missingDates.filter((d) => d >= last7Start && d <= today);
+      if (recentMissing.length > 0) {
+        console.log(`[wb-analytics:${this.entity}] getTimeSeries: refreshing recent ${recentMissing.length}d via /products/history`);
+        this.refreshRecentDailyHistory(nmIds, last7Start, today).catch((e) => {
+          console.error(`[wb-analytics:${this.entity}] history refresh failed: ${e instanceof Error ? e.message : e}`);
+        });
+      }
+
+      // Для длинных периодов: запускаем CSV-отчёт
       if (periodDays > 14 && this.canCreateCsvReport()) {
         console.log(`[wb-analytics:${this.entity}] getTimeSeries: generating CSV report for ${startDate}..${endDate}`);
         this.generateAndDownloadCsvReport(startDate, endDate);
-      } else if (periodDays <= 7) {
-        this.refreshRecentDailyHistory(nmIds, startDate, endDate);
       }
     }
+
+    const updating = !hasAll && (this.csvReportInProgress || this.historyRefreshInProgress || this.warmupInProgress);
 
     if (groupBy === 'week') {
       const weekMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
@@ -1053,14 +1121,14 @@ class WbEntityAnalyticsService {
       return {
         points: [...weekMap.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, metrics]) => ({ date, metrics })),
         cached: hasAll,
-        updating: !hasAll && this.csvReportInProgress,
+        updating,
       };
     }
 
     return {
       points: [...dateMap.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, metrics]) => ({ date, metrics })),
       cached: hasAll,
-      updating: !hasAll && this.csvReportInProgress,
+      updating,
     };
   }
 }

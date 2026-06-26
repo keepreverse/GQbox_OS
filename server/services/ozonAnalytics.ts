@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 
 const OZON_API_URL = 'https://api-seller.ozon.ru/v1/analytics/data';
 const MIN_INTERVAL_MS = 60_000;
-const CACHE_TTL_MS = 2 * 60 * 60 * 1000;
+const DAILY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const SERVICE_NAME = 'ozon-analytics';
 const PERIOD_CACHE_NAME = 'ozon-analytics-period';
 const CACHE_WINDOW_DAYS = 365;
@@ -235,6 +235,8 @@ class OzonEntityAnalyticsService {
   private backgroundQueue: Array<{ start: string; end: string }>;
   private backgroundRunning: boolean;
   private backgroundPendingRanges: Set<string>;
+  private dailyCacheDirty: boolean;
+  private dailyCacheSaveTimer: ReturnType<typeof setTimeout> | null;
 
   constructor(entity: MarketplaceEntityCode, credentials: OzonCredentials) {
     this.entity = entity;
@@ -246,11 +248,21 @@ class OzonEntityAnalyticsService {
     this.backgroundQueue = [];
     this.backgroundRunning = false;
     this.backgroundPendingRanges = new Set();
+    this.dailyCacheDirty = false;
+    this.dailyCacheSaveTimer = null;
 
     const skus = readEntitySkusFromJson(entity);
     const loaded = loadCache(SERVICE_NAME, entity, skus);
     if (loaded.size > 0) {
       this.dailyCache = loaded as Map<number, Map<string, DailyCacheEntry>>;
+      // Продлеваем TTL для всех загруженных записей (переживает рестарт)
+      const now = Date.now();
+      for (const byDate of this.dailyCache.values()) {
+        for (const entry of byDate.values()) {
+          if (entry.expiresAt <= now) continue;
+          entry.expiresAt = now + DAILY_CACHE_TTL_MS;
+        }
+      }
       // Clean up old period-based entries (key contains "|") from previous format
       let removed = 0;
       for (const byDate of this.dailyCache.values()) {
@@ -290,8 +302,20 @@ class OzonEntityAnalyticsService {
     }
     byDate.set(date, {
       article: { sku, selected: metrics },
-      expiresAt: Date.now() + CACHE_TTL_MS,
+      expiresAt: Date.now() + DAILY_CACHE_TTL_MS,
     });
+    this.markDailyCacheDirty();
+  }
+
+  private markDailyCacheDirty(): void {
+    if (this.dailyCacheDirty) return;
+    this.dailyCacheDirty = true;
+    if (this.dailyCacheSaveTimer) clearTimeout(this.dailyCacheSaveTimer);
+    this.dailyCacheSaveTimer = setTimeout(() => {
+      this.persistCache();
+      this.dailyCacheDirty = false;
+      this.dailyCacheSaveTimer = null;
+    }, 3_000);
   }
 
   private persistCache(): void {
@@ -564,15 +588,24 @@ class OzonEntityAnalyticsService {
       this.lastRequestAt = Date.now();
 
       if (!res.ok) {
-        let detail = `Ozon API [${this.entity}] вернул ${res.status}`;
+        let errBody: { message?: string; code?: number } | null = null;
         try {
-          const errBody = (await res.json()) as { message?: string; code?: number };
-          if (errBody.message) detail = errBody.message;
-          else if (typeof errBody.code === 'number') detail = `код ${errBody.code}: ${detail}`;
+          errBody = (await res.json()) as { message?: string; code?: number };
         } catch { /* ignore */ }
+        const errMsg = errBody?.message || '';
+        const errCode = errBody?.code;
+
+        // TooManySimultaneousQueries — transient, preserve message for retry
+        if (errMsg.includes('Too many simultaneous queries')) {
+          const msg = `${typeof errCode === 'number' ? `code: ${errCode}, ` : ''}message: ${errMsg}`;
+          throw new OzonAnalyticsError(msg, 202);
+        }
+
         if (res.status === 429) {
           throw new OzonAnalyticsError(`Ozon API rate limited (429)`, 429);
         }
+
+        const detail = errMsg || `Ozon API [${this.entity}] вернул ${res.status}`;
         throw new OzonAnalyticsError(detail, res.status);
       }
 
