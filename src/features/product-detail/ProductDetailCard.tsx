@@ -235,6 +235,39 @@ export default function ProductDetailCard({
     return map;
   }, [product.marketplaceSkus]);
 
+  // Активные кабинеты для графиков (только те, что есть в текущем товаре)
+  const WB_KNOWN_ENTITIES = ['kua', 'kaa', 'dev'] as const;
+
+  const wbChartEntities = useMemo(() => {
+    const set = new Set<import('@app-types').MarketplaceEntityCode>();
+    for (const s of product.marketplaceSkus || []) {
+      if (s.marketplace === 'wb' && s.kind === 'single' && WB_KNOWN_ENTITIES.includes(s.entity as typeof WB_KNOWN_ENTITIES[number])) set.add(s.entity);
+    }
+    return [...set];
+  }, [product.marketplaceSkus]);
+
+  const wbEntityNmIds = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    for (const s of product.marketplaceSkus || []) {
+      if (s.marketplace === 'wb' && s.kind === 'single' && WB_KNOWN_ENTITIES.includes(s.entity as typeof WB_KNOWN_ENTITIES[number])) {
+        const n = parseInt(s.article, 10);
+        if (Number.isFinite(n) && n > 0) {
+          if (!map[s.entity]) map[s.entity] = [];
+          map[s.entity].push(n);
+        }
+      }
+    }
+    return map;
+  }, [product.marketplaceSkus]);
+
+  const ozonChartEntities = useMemo(() => {
+    const set = new Set<import('@app-types').MarketplaceEntityCode>();
+    for (const s of product.marketplaceSkus || []) {
+      if (s.marketplace === 'ozon' && s.kind === 'single') set.add(s.entity);
+    }
+    return [...set];
+  }, [product.marketplaceSkus]);
+
   // ─── Загрузка WB-аналитики ────────────────────────────────────────────
   // Срабатывает при переключении на вкладку «Аналитика» и при смене
   // appliedPeriod (кнопка «Применить»). Бэкенд кэширует 1 час, поэтому
@@ -1507,6 +1540,9 @@ export default function ProductDetailCard({
               ozonSkus={ozonSkus}
               startDate={appliedPeriod.start}
               endDate={appliedPeriod.end}
+              wbActiveEntities={wbChartEntities}
+              ozonActiveEntities={ozonChartEntities}
+              wbEntityNmIds={wbEntityNmIds}
             />
           </div>
         )}

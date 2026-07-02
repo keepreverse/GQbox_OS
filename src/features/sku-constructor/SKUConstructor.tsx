@@ -26,7 +26,6 @@ interface SKUFormData {
   colorId: string;
   lengthM: string;
   supplierId: string;
-  isKit: boolean;
   powerW: string;
   currentA: string;
   voltageV: string;
@@ -45,7 +44,6 @@ const initialForm: SKUFormData = {
   colorId: '',
   lengthM: '',
   supplierId: '',
-  isKit: false,
   powerW: '',
   currentA: '',
   voltageV: '',
@@ -98,7 +96,6 @@ export default function SKUConstructor() {
     if (form.variantCode) sku += '-' + form.variantCode;
     if (selectedColor) sku += '/' + selectedColor.code;
     if (selectedSupplier && selectedSupplier.code !== '-') sku += '-' + selectedSupplier.code;
-    if (form.isKit) sku += '-K';
     return sku;
   };
 
@@ -147,7 +144,6 @@ export default function SKUConstructor() {
         if (selectedColor) altSku += '/' + selectedColor.code;
         if (selectedSupplier && selectedSupplier.code !== '-')
           altSku += '-' + selectedSupplier.code;
-        if (form.isKit) altSku += '-K';
         if (!existingSkus.has(altSku)) {
           suggestion = altSku;
           break;
@@ -193,7 +189,6 @@ export default function SKUConstructor() {
       connectorFemaleId: form.connectorFemaleId || undefined,
       connectorMaleId: form.connectorMaleId || undefined,
       variantCode: form.variantCode || undefined,
-      isKit: form.isKit || undefined,
     };
     const name = generatedName || generatedSKU;
     try {
@@ -420,20 +415,6 @@ export default function SKUConstructor() {
                   </p>
                 </div>
 
-                <div className="sm:col-span-2 pt-2">
-                  <label
-                    className="flex items-center gap-3 min-h-[44px] sm:min-h-0 text-xs sm:text-sm text-text-secondary cursor-pointer"
-                    onClick={() => {}}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.isKit}
-                      onChange={(e) => updateForm('isKit', e.target.checked)}
-                      className="w-4 h-4 rounded accent-accent"
-                    />
-                    {t('sku.is_kit_label')}
-                  </label>
-                </div>
               </div>
 
               {/* Preview */}

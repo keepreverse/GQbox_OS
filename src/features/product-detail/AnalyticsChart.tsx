@@ -31,17 +31,17 @@ const WB_ENTITIES: MarketplaceEntityCode[] = ['kua', 'kaa', 'dev'];
 const OZON_ENTITIES: MarketplaceEntityCode[] = ['kua', 'kaa', 'bms'];
 
 const WB_COLORS: Record<string, string> = {
-  kua: '#7B2FBE',
+  kua: '#8644B5',
   kaa: '#9B59B6',
   dev: '#BB8FCE',
-  marketplace: '#7B2FBE',
+  marketplace: '#8644B5',
 };
 
 const OZON_COLORS: Record<string, string> = {
-  kua: '#005BFF',
+  kua: '#1A79ED',
   kaa: '#3498DB',
   bms: '#5DADE2',
-  marketplace: '#005BFF',
+  marketplace: '#1A79ED',
 };
 
 interface AnalyticsChartProps {
@@ -49,6 +49,9 @@ interface AnalyticsChartProps {
   ozonSkus: number[];
   startDate: string;
   endDate: string;
+  wbActiveEntities?: MarketplaceEntityCode[];
+  ozonActiveEntities?: MarketplaceEntityCode[];
+  wbEntityNmIds?: Record<string, number[]>;
 }
 
 function formatChartNumber(n: number, language: 'ru' | 'en'): string {
@@ -59,13 +62,49 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Извлекает код кабинета из ключа (entity или entity-N) */
+function entityFromKey(key: string): string {
+  const m = key.match(/^([a-z]+)/);
+  return m ? m[1] : key;
+}
+
+/** Строит отображаемую подпись для линии графика */
+function lineLabel(mp: string, entity: string, key: string, data: Record<string, unknown>): string {
+  const count = Object.keys(data).filter((k) => k.startsWith(entity)).length;
+  const base = `${mp} ${ENTITY_LABELS[entity as MarketplaceEntityCode]}`;
+  if (count <= 1) return base;
+  const idx = parseInt(key.split('-')[1], 10);
+  return `${base} #${idx + 1}`;
+}
+
+/** Возвращает ожидаемые ключи WB-кабинетов (entity или entity-N при нескольких nmId) */
+function wbDataKeys(entities: string[], nmIdsMap: Record<string, number[]>): string[] {
+  const keys: string[] = [];
+  for (const entity of entities) {
+    const nmIds = nmIdsMap[entity] || [];
+    if (nmIds.length <= 1) keys.push(entity);
+    else nmIds.forEach((_, i) => keys.push(`${entity}-${i}`));
+  }
+  return keys;
+}
+
+/** Подпись для фильтра: "ДЕВ" или "ДЕВ #1" */
+function wbToggleLabel(key: string, data: Record<string, unknown>): string {
+  const entity = entityFromKey(key);
+  const base = ENTITY_LABELS[entity as MarketplaceEntityCode];
+  const count = Object.keys(data).filter((k) => k.startsWith(entity)).length;
+  if (count <= 1) return base;
+  const idx = parseInt(key.split('-')[1], 10);
+  return `${base} #${idx + 1}`;
+}
+
 const LINE_COLORS: Record<string, string> = {
-  'WB': '#7B2FBE',
-  'Ozon': '#005BFF',
-  'WB КЮА': '#7B2FBE',
+  'WB': '#8644B5',
+  'Ozon': '#1A79ED',
+  'WB КЮА': '#8644B5',
   'WB КАА': '#9B59B6',
   'WB ДЕВ': '#BB8FCE',
-  'Ozon КЮА': '#005BFF',
+  'Ozon КЮА': '#1A79ED',
   'Ozon КАА': '#3498DB',
   'Ozon БМС': '#5DADE2',
 };
@@ -114,9 +153,18 @@ function EntityToggle({ label, checked, color, onChange }: { label: string; chec
   );
 }
 
-export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, endDate: propEndDate }: AnalyticsChartProps) {
+export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, endDate: propEndDate, wbActiveEntities: wbActiveEntitiesProp, ozonActiveEntities: ozonActiveEntitiesProp, wbEntityNmIds: wbEntityNmIdsProp }: AnalyticsChartProps) {
   const { t, language } = useLanguage();
-  const [mounted, setMounted] = useState(false);
+
+
+  // Активные кабинеты для текущей карточки (только те, что есть в товаре)
+  const wbActiveEntities = useMemo(() => wbActiveEntitiesProp ?? WB_ENTITIES, [wbActiveEntitiesProp]);
+  const ozonActiveEntities = useMemo(() => ozonActiveEntitiesProp ?? OZON_ENTITIES, [ozonActiveEntitiesProp]);
+  const hasBothMarketplaces = wbActiveEntities.length > 0 && ozonActiveEntities.length > 0;
+  const wbEntityNmIds = useMemo(() => wbEntityNmIdsProp ?? {}, [wbEntityNmIdsProp]);
+  const totalActiveEntities = wbActiveEntities.length + ozonActiveEntities.length;
+  // Переключатель МП/кабинет имеет смысл, только когда хотя бы у одного МП больше одного кабинета
+  const canToggleViewMode = hasBothMarketplaces && (wbActiveEntities.length > 1 || ozonActiveEntities.length > 1);
 
   // ─── Local date state (initialized from props, user can change via DatePicker) ──
   const [chartStartDate, setChartStartDate] = useState(propStartDate);
@@ -136,18 +184,47 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
     if (chartStartDate > chartEndDate) return;
     setAppliedStartDate(chartStartDate);
     setAppliedEndDate(chartEndDate);
+    try { sessionStorage.setItem('analyticsPeriod', JSON.stringify({ start: chartStartDate, end: chartEndDate })); } catch { /* ignore */ }
   };
 
   const [metricKey, setMetricKey] = useState<MetricKey>('orderCount');
-  const [viewMode, setViewMode] = useState<ViewMode>('marketplace');
+  const [viewMode, setViewMode] = useState<ViewMode>('entity');
   const [showWb, setShowWb] = useState(true);
   const [showOzon, setShowOzon] = useState(true);
   const [wbEntityToggles, setWbEntityToggles] = useState<Record<string, boolean>>(
-    Object.fromEntries(WB_ENTITIES.map((e) => [e, true]))
+    () => { const init: Record<string, boolean> = {}; for (const k of wbDataKeys(wbActiveEntities, wbEntityNmIds)) init[k] = true; return init; }
   );
   const [ozonEntityToggles, setOzonEntityToggles] = useState<Record<string, boolean>>(
-    Object.fromEntries(OZON_ENTITIES.map((e) => [e, true]))
+    () => { const init: Record<string, boolean> = {}; for (const e of ozonActiveEntities) init[e] = true; return init; }
   );
+
+  const wbEntityKeys = useMemo(
+    () => wbDataKeys(wbActiveEntities, wbEntityNmIds),
+    [wbActiveEntities, wbEntityNmIds]
+  );
+  // Пока не загрузились данные — используем для подписей ожидаемые ключи
+  const wbToggleData = useMemo(() => {
+    const d: Record<string, null> = {};
+    for (const k of wbEntityKeys) d[k] = null;
+    return d;
+  }, [wbEntityKeys]);
+
+  // Синхронизируем toggles при смене активных кабинетов
+  useEffect(() => {
+    setWbEntityToggles((prev) => {
+      const next: Record<string, boolean> = {};
+      for (const key of wbEntityKeys) next[key] = key in prev ? prev[key] : true;
+      return next;
+    });
+  }, [wbEntityKeys]);
+  useEffect(() => {
+    setOzonEntityToggles((prev) => {
+      const next = { ...prev };
+      for (const e of ozonActiveEntities) { if (!(e in next)) next[e] = true; }
+      for (const e of Object.keys(next)) { if (!ozonActiveEntities.includes(e as MarketplaceEntityCode)) delete next[e]; }
+      return next;
+    });
+  }, [ozonActiveEntities]);
 
   // Marketplace mode data
   const [wbData, setWbData] = useState<WbTimeSeriesPoint[] | null | undefined>(undefined);
@@ -162,8 +239,6 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
   const [wbError, setWbError] = useState<string | null>(null);
   const [ozonError, setOzonError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setMounted(true); }, []);
 
   const groupBy = useMemo(() => {
     const diff = Math.round(
@@ -223,7 +298,28 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
     return () => clearInterval(interval);
   }, [wbUpdating, viewMode, wbNmIds, appliedStartDate, appliedEndDate, groupBy]);
 
-  // ─── Load entity mode data (per-entity) ───────────────────────────
+  // ─── Load entity mode data (per-SKU) ─────────────────────────────
+
+  /** Строит массив промисов для WB: по одному на nmId, если их несколько на кабинет */
+  function buildWbEntityPromises(entity: string) {
+    const nmIds = wbEntityNmIds[entity] || wbNmIds;
+    if (nmIds.length === 0) return Promise.resolve([]);
+    return Promise.all(
+      nmIds.map((nmId, idx) =>
+        fetchWbTimeSeries(entity, [nmId], appliedStartDate, appliedEndDate, groupBy)
+          .then((res) => ({ entity, idx, points: res.points, updating: res.updating ?? false }))
+          .catch((e) => {
+            setWbError(e instanceof Error ? e.message : String(e));
+            return { entity, idx, points: null as null, updating: false };
+          })
+      )
+    );
+  }
+
+  function wbEntityKey(entity: string, idx: number, total: number): string {
+    return total <= 1 ? entity : `${entity}-${idx}`;
+  }
+
   useEffect(() => {
     if (viewMode !== 'entity') return;
     let cancelled = false;
@@ -235,37 +331,40 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
       setWbEntityData({});
       setOzonEntityData({});
 
-      const wbPromises = WB_ENTITIES.map(async (entity) => {
-        if (wbNmIds.length === 0) return { entity, points: null as null, updating: false };
-        try {
-          const res = await fetchWbTimeSeries(entity, wbNmIds, appliedStartDate, appliedEndDate, groupBy);
-          return { entity, points: res.points, updating: res.updating ?? false };
-        } catch (e) {
-          setWbError(e instanceof Error ? e.message : String(e));
-          return { entity, points: null as null, updating: false };
-        }
+      const wbPromises = wbActiveEntities.map(async (entity) => {
+        const results = await buildWbEntityPromises(entity);
+        return results.map((r) => ({
+          key: wbEntityKey(entity, r.idx, results.length),
+          points: r.points,
+          updating: r.updating,
+        }));
       });
 
-      const ozonPromises = OZON_ENTITIES.map(async (entity) => {
-        if (ozonSkus.length === 0) return { entity, points: [] as OzonTimeSeriesPoint[] };
+      const ozonPromises = ozonActiveEntities.map(async (entity) => {
+        if (ozonSkus.length === 0) return [{ key: entity, points: [] as OzonTimeSeriesPoint[] }];
         try {
           const res = await fetchOzonTimeSeries(entity, ozonSkus, appliedStartDate, appliedEndDate, groupBy);
-          return { entity, points: res.points };
+          return [{ key: entity, points: res.points ?? [] }];
         } catch (e) {
           setOzonError(e instanceof Error ? e.message : String(e));
-          return { entity, points: [] as OzonTimeSeriesPoint[] };
+          return [{ key: entity, points: [] as OzonTimeSeriesPoint[] }];
         }
       });
 
-      const results = await Promise.all([...wbPromises, ...ozonPromises]);
+      const [wbResults, ozonResults] = await Promise.all([
+        Promise.all(wbPromises),
+        Promise.all(ozonPromises),
+      ]);
 
       if (cancelled) return;
       const wbMap: Record<string, WbTimeSeriesPoint[] | null> = {};
       const ozonMap: Record<string, OzonTimeSeriesPoint[]> = {};
       let anyUpdating = false;
-      for (const r of results) {
-        if ('updating' in r) { wbMap[r.entity] = r.points; if (r.updating) anyUpdating = true; }
-        else { ozonMap[r.entity] = r.points ?? []; }
+      for (const group of wbResults) {
+        for (const r of group) { wbMap[r.key] = r.points as WbTimeSeriesPoint[] | null; if (r.updating) anyUpdating = true; }
+      }
+      for (const group of ozonResults) {
+        for (const r of group) { ozonMap[r.key] = r.points; }
       }
       setWbEntityData(wbMap);
       setOzonEntityData(ozonMap);
@@ -274,7 +373,7 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
     }
     loadEntity();
     return () => { cancelled = true; };
-  }, [viewMode, wbNmIds, ozonSkus, appliedStartDate, appliedEndDate, groupBy]);
+  }, [viewMode, wbNmIds, ozonSkus, appliedStartDate, appliedEndDate, groupBy, wbActiveEntities, ozonActiveEntities, wbEntityNmIds]);
 
   // ─── Poll for WB updates (entity mode) ────────────────────────────
   useEffect(() => {
@@ -285,23 +384,26 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
       if (count > 60) { clearInterval(interval); return; }
       try {
         const results = await Promise.all(
-          WB_ENTITIES.map(async (entity) => {
-            const res = await fetchWbTimeSeries(entity, wbNmIds, appliedStartDate, appliedEndDate, groupBy);
-            return { entity, points: res.points, updating: res.updating ?? false };
-          })
+          wbActiveEntities.map(async (entity) => ({
+            entity,
+            items: await buildWbEntityPromises(entity),
+          }))
         );
         const wbMap: Record<string, WbTimeSeriesPoint[] | null> = {};
         let anyUpdating = false;
-        for (const r of results) {
-          wbMap[r.entity] = r.points;
-          if (r.updating) anyUpdating = true;
+        for (const { entity, items } of results) {
+          for (const r of items) {
+            const key = wbEntityKey(entity, r.idx, items.length);
+            wbMap[key] = r.points as WbTimeSeriesPoint[] | null;
+            if (r.updating) anyUpdating = true;
+          }
         }
         setWbEntityData(wbMap);
         if (!anyUpdating) { setWbUpdating(false); clearInterval(interval); }
       } catch { /* */ }
     }, 10_000);
     return () => clearInterval(interval);
-  }, [wbUpdating, viewMode, wbNmIds, appliedStartDate, appliedEndDate, groupBy]);
+  }, [wbUpdating, viewMode, wbNmIds, appliedStartDate, appliedEndDate, groupBy, wbActiveEntities, wbEntityNmIds]);
 
   // ─── Build chart data ──────────────────────────────────────────────
   const chartData = useMemo(() => {
@@ -311,11 +413,11 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
       for (const p of (wbData ?? [])) allDates.add(p.date);
       for (const p of (ozonData ?? [])) allDates.add(p.date);
     } else {
-      for (const entity of WB_ENTITIES) {
-        for (const p of (wbEntityData[entity] ?? [])) allDates.add(p.date);
+      for (const key of Object.keys(wbEntityData)) {
+        for (const p of (wbEntityData[key] ?? [])) allDates.add(p.date);
       }
-      for (const entity of OZON_ENTITIES) {
-        for (const p of (ozonEntityData[entity] ?? [])) allDates.add(p.date);
+      for (const key of Object.keys(ozonEntityData)) {
+        for (const p of (ozonEntityData[key] ?? [])) allDates.add(p.date);
       }
     }
 
@@ -334,23 +436,24 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
           row['Ozon'] = p ? p.metrics[metricKey] : null;
         }
       } else {
-        for (const entity of WB_ENTITIES) {
-          if (wbEntityToggles[entity]) {
-            const p = (wbEntityData[entity] ?? []).find((x) => x.date === date);
-            row[`WB ${ENTITY_LABELS[entity]}`] = p ? p.metrics[metricKey] : null;
+        for (const key of wbEntityKeys) {
+          if (wbEntityToggles[key]) {
+            const p = (wbEntityData[key] ?? []).find((x) => x.date === date);
+            if (p) row[lineLabel('WB', entityFromKey(key), key, wbEntityData)] = p.metrics[metricKey];
           }
         }
-        for (const entity of OZON_ENTITIES) {
+        for (const key of Object.keys(ozonEntityData)) {
+          const entity = entityFromKey(key);
           if (ozonEntityToggles[entity]) {
-            const p = (ozonEntityData[entity] ?? []).find((x) => x.date === date);
-            row[`Ozon ${ENTITY_LABELS[entity]}`] = p ? p.metrics[metricKey] : null;
+            const p = (ozonEntityData[key] ?? []).find((x) => x.date === date);
+            if (p) row[`Ozon ${ENTITY_LABELS[entity as MarketplaceEntityCode]}`] = p.metrics[metricKey];
           }
         }
       }
 
       return row;
     });
-  }, [wbData, ozonData, wbEntityData, ozonEntityData, metricKey, viewMode, showWb, showOzon, wbEntityToggles, ozonEntityToggles]);
+  }, [wbData, ozonData, wbEntityData, ozonEntityData, metricKey, viewMode, showWb, showOzon, wbEntityToggles, ozonEntityToggles, wbEntityKeys]);
 
   // ─── Active lines (only those with data) ───────────────────────────
   const lines = useMemo(() => {
@@ -364,64 +467,63 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
       if (showWb && wbData !== null && wbData !== undefined && hasDataForKey('WB')) result.push({ key: 'WB', color: LINE_COLORS['WB'] });
       if (showOzon && hasDataForKey('Ozon')) result.push({ key: 'Ozon', color: LINE_COLORS['Ozon'] });
     } else {
-      for (const entity of WB_ENTITIES) {
-        if (wbEntityToggles[entity]) {
-          const key = `WB ${ENTITY_LABELS[entity]}`;
-          if (hasDataForKey(key)) result.push({ key, color: LINE_COLORS[key] });
+      for (const key of wbEntityKeys) {
+        if (wbEntityToggles[key]) {
+          const entity = entityFromKey(key);
+          const label = lineLabel('WB', entity, key, wbEntityData);
+          if (hasDataForKey(label)) result.push({ key: label, color: LINE_COLORS[label] ?? LINE_COLORS[`WB ${ENTITY_LABELS[entity as MarketplaceEntityCode]}`] });
         }
       }
-      for (const entity of OZON_ENTITIES) {
+      for (const key of Object.keys(ozonEntityData)) {
+        const entity = entityFromKey(key);
         if (ozonEntityToggles[entity]) {
-          const key = `Ozon ${ENTITY_LABELS[entity]}`;
-          if (hasDataForKey(key)) result.push({ key, color: LINE_COLORS[key] });
+          const label = `Ozon ${ENTITY_LABELS[entity as MarketplaceEntityCode]}`;
+          if (hasDataForKey(label)) result.push({ key: label, color: LINE_COLORS[label] });
         }
       }
     }
 
     return result;
-  }, [viewMode, showWb, showOzon, wbEntityToggles, ozonEntityToggles, chartData, wbData]);
+  }, [viewMode, showWb, showOzon, wbEntityToggles, ozonEntityToggles, chartData, wbData, wbEntityKeys]);
 
   const hasAnyData = chartData.length > 0 && lines.some((l) => chartData.some((r) => r[l.key] != null));
 
   const chartContent = (
-    <div ref={containerRef} className="h-[250px] sm:h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid stroke="var(--color-border-subtle)" strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: 'var(--color-text-secondary)', fontSize: 10 }}
-            tickLine={{ stroke: 'var(--color-border-subtle)' }}
-            axisLine={{ stroke: 'var(--color-border-subtle)' }}
-            tickFormatter={(v: string) => {
-              if (groupBy === 'week') return v.slice(5);
-              const d = v.split('-');
-              return `${d[2]}.${d[1]}`;
-            }}
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+        <CartesianGrid stroke="var(--color-border-subtle)" strokeDasharray="3 3" />
+        <XAxis
+          dataKey="date"
+          tick={{ fill: 'var(--color-text-secondary)', fontSize: 10 }}
+          tickLine={{ stroke: 'var(--color-border-subtle)' }}
+          axisLine={{ stroke: 'var(--color-border-subtle)' }}
+          tickFormatter={(v: string) => {
+            const d = v.split('-');
+            return `${d[2]}.${d[1]}`;
+          }}
+        />
+        <YAxis
+          tick={{ fill: 'var(--color-text-secondary)', fontSize: 10 }}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(v: number) => formatChartNumber(v, language)}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--color-text-secondary)' }} />
+        {lines.map((l) => (
+          <Line
+            key={l.key}
+            type="monotone"
+            dataKey={l.key}
+            stroke={l.color}
+            strokeWidth={2}
+            dot={{ r: 2, fill: l.color }}
+            activeDot={{ r: 4 }}
+            connectNulls={false}
           />
-          <YAxis
-            tick={{ fill: 'var(--color-text-secondary)', fontSize: 10 }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v: number) => formatChartNumber(v, language)}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--color-text-secondary)' }} />
-          {lines.map((l) => (
-            <Line
-              key={l.key}
-              type="monotone"
-              dataKey={l.key}
-              stroke={l.color}
-              strokeWidth={2}
-              dot={{ r: 2, fill: l.color }}
-              activeDot={{ r: 4 }}
-              connectNulls={false}
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
   );
 
   return (
@@ -468,72 +570,83 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
         </button>
       </div>
 
-      {/* ─── Metric + View mode toggles ──────────────────────── */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <select
-          value={metricKey}
-          onChange={(e) => setMetricKey(e.target.value as MetricKey)}
-          className="bg-bg-tertiary border border-border-subtle rounded-lg px-2 py-1 text-[11px] sm:text-xs text-text-primary outline-none cursor-pointer"
-        >
-          {METRICS.map((m) => (
-            <option key={m.key} value={m.key}>{t(m.i18nKey)}</option>
-          ))}
-        </select>
+      {totalActiveEntities > 1 && (
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <select
+            value={metricKey}
+            onChange={(e) => setMetricKey(e.target.value as MetricKey)}
+            className="bg-bg-tertiary border border-border-subtle rounded-lg px-2 py-1 text-[11px] sm:text-xs text-text-primary outline-none cursor-pointer"
+          >
+            {METRICS.map((m) => (
+              <option key={m.key} value={m.key}>{t(m.i18nKey)}</option>
+            ))}
+          </select>
 
-        <div className="flex bg-bg-tertiary rounded-lg p-0.5 gap-0.5 border border-border-subtle">
-          <button
-            className={`px-2 py-1 text-[10px] sm:text-xs rounded-md transition-colors ${
-              viewMode === 'marketplace' ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
-            }`}
-            onClick={() => setViewMode('marketplace')}
-          >
-            {t('detail.charts.by_marketplace')}
-          </button>
-          <button
-            className={`px-2 py-1 text-[10px] sm:text-xs rounded-md transition-colors ${
-              viewMode === 'entity' ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
-            }`}
-            onClick={() => setViewMode('entity')}
-          >
-            {t('detail.charts.by_entity')}
-          </button>
+          {canToggleViewMode && (
+          <div className="flex bg-bg-tertiary rounded-lg p-0.5 gap-0.5 border border-border-subtle">
+            <button
+              className={`px-2 py-1 text-[10px] sm:text-xs rounded-md transition-colors ${
+                viewMode === 'marketplace' ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
+              }`}
+              onClick={() => setViewMode('marketplace')}
+            >
+              {t('detail.charts.by_marketplace')}
+            </button>
+            <button
+              className={`px-2 py-1 text-[10px] sm:text-xs rounded-md transition-colors ${
+                viewMode === 'entity' ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary'
+              }`}
+              onClick={() => setViewMode('entity')}
+            >
+              {t('detail.charts.by_entity')}
+            </button>
+          </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* ─── Entity toggles ──────────────────────────────────── */}
-      {viewMode === 'marketplace' ? (
-        <div className="flex items-center gap-3 sm:gap-4">
+      {totalActiveEntities > 1 && canToggleViewMode && viewMode === 'marketplace' ? (
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">МП</span>
           <EntityToggle label="WB" checked={showWb} color={WB_COLORS.marketplace} onChange={() => setShowWb(!showWb)} />
           <EntityToggle label="Ozon" checked={showOzon} color={OZON_COLORS.marketplace} onChange={() => setShowOzon(!showOzon)} />
         </div>
-      ) : (
+      ) : totalActiveEntities > 1 ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">WB</span>
-            {WB_ENTITIES.map((entity) => (
-              <EntityToggle
-                key={entity}
-                label={ENTITY_LABELS[entity]}
-                checked={wbEntityToggles[entity]}
-                color={WB_COLORS[entity]}
-                onChange={() => setWbEntityToggles((prev) => ({ ...prev, [entity]: !prev[entity] }))}
-              />
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">Ozon</span>
-            {OZON_ENTITIES.map((entity) => (
-              <EntityToggle
-                key={entity}
-                label={ENTITY_LABELS[entity]}
-                checked={ozonEntityToggles[entity]}
-                color={OZON_COLORS[entity]}
-                onChange={() => setOzonEntityToggles((prev) => ({ ...prev, [entity]: !prev[entity] }))}
-              />
-            ))}
-          </div>
+          {wbActiveEntities.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">WB</span>
+              {wbEntityKeys.map((key) => {
+                const entity = entityFromKey(key);
+                return (
+                  <EntityToggle
+                    key={key}
+                    label={wbToggleLabel(key, wbToggleData)}
+                    checked={!!wbEntityToggles[key]}
+                    color={WB_COLORS[entity]}
+                    onChange={() => setWbEntityToggles((prev) => ({ ...prev, [key]: !prev[key] }))}
+                  />
+                );
+              })}
+            </div>
+          )}
+          {ozonActiveEntities.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">Ozon</span>
+              {ozonActiveEntities.map((entity) => (
+                <EntityToggle
+                  key={entity}
+                  label={ENTITY_LABELS[entity]}
+                  checked={!!ozonEntityToggles[entity]}
+                  color={OZON_COLORS[entity]}
+                  onChange={() => setOzonEntityToggles((prev) => ({ ...prev, [entity]: !prev[entity] }))}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* ─── Error states ────────────────────────────────────── */}
       {(wbError || ozonError) && (
@@ -544,19 +657,19 @@ export function AnalyticsChart({ wbNmIds, ozonSkus, startDate: propStartDate, en
       )}
 
       {/* ─── Chart area ──────────────────────────────────────── */}
-      {loading ? (
-        <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : !hasAnyData && !wbUpdating ? (
-        <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-text-muted text-xs">
-          {t('detail.charts.no_data')}
-        </div>
-      ) : !mounted ? (
-        <div className="h-[250px] sm:h-[300px]" />
-      ) : (
-        chartContent
-      )}
+      <div ref={containerRef} className="h-[250px] sm:h-[300px] w-full">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : !hasAnyData && !wbUpdating ? (
+          <div className="flex items-center justify-center h-full text-text-muted text-xs">
+            {t('detail.charts.no_data')}
+          </div>
+        ) : (
+          chartContent
+        )}
+      </div>
     </div>
   );
 }

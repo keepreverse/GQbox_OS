@@ -223,6 +223,22 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// ─── Глобальный rate limiter для Ozon API (1 req/min на всех) ──────
+// Если Ozon режет по IP (а не только по Client-Id), даже разные креды
+// не спасут — все запросы идут с одного сервера. Этот лимитер гарантирует,
+// что суммарно все entity делают не более 1 запроса в 60 секунд.
+const sharedRateLimitMs = 60_000;
+let lastSharedRequestAt = 0;
+
+async function acquireSharedOzonSlot(): Promise<void> {
+  const elapsed = Date.now() - lastSharedRequestAt;
+  if (elapsed < sharedRateLimitMs) {
+    const wait = sharedRateLimitMs - elapsed;
+    await sleep(wait);
+  }
+  lastSharedRequestAt = Date.now();
+}
+
 class OzonEntityAnalyticsService {
   private entity: MarketplaceEntityCode;
   private credentials: OzonCredentials;
@@ -255,11 +271,10 @@ class OzonEntityAnalyticsService {
     const loaded = loadCache(SERVICE_NAME, entity, skus);
     if (loaded.size > 0) {
       this.dailyCache = loaded as Map<number, Map<string, DailyCacheEntry>>;
-      // Продлеваем TTL для всех загруженных записей (переживает рестарт)
+      // Продлеваем TTL всем загруженным записям (переживает рестарт)
       const now = Date.now();
       for (const byDate of this.dailyCache.values()) {
         for (const entry of byDate.values()) {
-          if (entry.expiresAt <= now) continue;
           entry.expiresAt = now + DAILY_CACHE_TTL_MS;
         }
       }
@@ -563,6 +578,9 @@ class OzonEntityAnalyticsService {
         offset,
       });
 
+      // Глобальный rate limiter (1 req/min на всех)
+      await acquireSharedOzonSlot();
+      // Per-entity rate limiter (собственный лимит кабинета)
       const elapsed = Date.now() - this.lastRequestAt;
       if (elapsed < MIN_INTERVAL_MS) {
         await sleep(MIN_INTERVAL_MS - elapsed);
@@ -705,10 +723,18 @@ class OzonEntityAnalyticsService {
       return rows;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      const is429 = err instanceof OzonAnalyticsError && err.status === 429;
       // TooManySimultaneousQueries — transient, retry with backoff
       if (msg.includes('Too many simultaneous queries') && attempt < 3) {
         const wait = Math.min(30_000 * attempt, 60_000);
         console.log(`[ozon-analytics:${this.entity}] retry ${attempt}/3 after ${wait / 1000}s: ${msg.slice(0, 80)}`);
+        await sleep(wait);
+        return this.fetchAndCacheDailyChunk(start, end, attempt + 1);
+      }
+      // 429 — rate limited, wait 60s and retry up to 3 times
+      if (is429 && attempt < 3) {
+        const wait = 60_000;
+        console.log(`[ozon-analytics:${this.entity}] 429 retry ${attempt}/3 after ${wait / 1000}s`);
         await sleep(wait);
         return this.fetchAndCacheDailyChunk(start, end, attempt + 1);
       }
@@ -958,8 +984,8 @@ export function startHourlyRefresh(): void {
   entities.forEach((entity, i) => {
     const svc = getService(entity);
     if (svc) {
-      // Разные задержки, чтобы warmup-ы не стартовали одновременно
-      svc.startHourlyRefresh(4_000 + i * 6_000);
+      // Разные задержки (65с интервал), чтобы warmup-ы не превышали 1 req/min суммарно
+      svc.startHourlyRefresh(4_000 + i * 65_000);
     }
   });
 }

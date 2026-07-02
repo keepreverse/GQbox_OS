@@ -120,13 +120,11 @@ export function loadCache(
 
   if (parsed.version !== 1 || !Array.isArray(parsed.entries)) return new Map();
 
-  const now = Date.now();
   const validNmIds = new Set(nmIds);
   const cache = new Map<number, Map<string, { article: unknown; expiresAt: number }>>();
   const nmIdSet = new Set<number>();
 
   for (const entry of parsed.entries) {
-    if (entry.expiresAt <= now) continue;
     if (!validNmIds.has(entry.nmId)) continue;
 
     let byPeriod = cache.get(entry.nmId);

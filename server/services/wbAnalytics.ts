@@ -37,6 +37,8 @@ const WB_CSV_API_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-re
 const WB_HISTORY_API_URL = 'https://seller-analytics-api.wildberries.ru/api/analytics/v3/sales-funnel/products/history';
 const WB_MAX_NMIDS_PER_HISTORY = 20;
 const CSV_REPORT_DAILY_LIMIT = 20;
+const CSV_HISTORY_INTERVAL_MS = 22_000; // 3 req/min лимит → 22s между запросами
+const MASTER_CSV_INTERVAL_MS = 6 * 60 * 60 * 1000; // мастер-отчёт раз в 6 часов
 const CSV_DAILY_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'data', 'cache', 'wb-csv-reports');
 const DAILY_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -248,6 +250,9 @@ class WbEntityAnalyticsService {
   private csvReportDate: string;
   private historyApiLastRequestAt: number;
   private historyRefreshInProgress: boolean;
+  private masterCsvInProgress: boolean;
+  private lastMasterCsvCompletedAt: number;
+  private lastMasterCsvRange: { start: string; end: string } | null;
   private dailyCacheDirty: boolean;
   private dailyCacheSaveTimer: ReturnType<typeof setTimeout> | null;
 
@@ -266,6 +271,9 @@ class WbEntityAnalyticsService {
     this.csvReportDate = '';
     this.historyApiLastRequestAt = 0;
     this.historyRefreshInProgress = false;
+    this.masterCsvInProgress = false;
+    this.lastMasterCsvCompletedAt = 0;
+    this.lastMasterCsvRange = null;
     this.dailyCacheDirty = false;
     this.dailyCacheSaveTimer = null;
 
@@ -281,10 +289,10 @@ class WbEntityAnalyticsService {
     const dailyLoaded = loadCache(SERVICE_DAILY_NAME, entity, nmIds);
     if (dailyLoaded.size > 0) {
       this.dailyCache = dailyLoaded as Map<number, Map<string, DailyCacheEntry>>;
+      // Всегда продлеваем TTL, независимо от старого expiresAt (старый мог быть 2ч)
       const now = Date.now();
       for (const byDate of this.dailyCache.values()) {
         for (const entry of byDate.values()) {
-          if (entry.expiresAt <= now) continue;
           entry.expiresAt = now + DAILY_CACHE_TTL_MS;
         }
       }
@@ -294,6 +302,9 @@ class WbEntityAnalyticsService {
 
     // Восстанавливаем счётчик CSV-отчётов из файла
     this.loadCsvReportCount();
+
+    // Восстанавливаем состояние мастер-CSV (когда был последний успешный отчёт)
+    this.loadMasterCsvState();
   }
 
   // ─── Cache helpers ──────────────────────────────────────────────────────
@@ -344,6 +355,8 @@ class WbEntityAnalyticsService {
   public clearAllCache(): void {
     this.cache.clear();
     this.dailyCache.clear();
+    this.lastMasterCsvCompletedAt = 0;
+    this.lastMasterCsvRange = null;
     deleteServiceCache(SERVICE_NAME, this.entity);
     deleteServiceCache(SERVICE_DAILY_NAME, this.entity);
   }
@@ -552,6 +565,12 @@ class WbEntityAnalyticsService {
           console.error(`[wb-analytics:${this.entity}] warmup daily failed: ${msg}`);
         });
       }
+
+      // Запускаем мастер-CSV (1 раз в 6 часов, фоновый, не блокирует warmup)
+      this.refreshMasterDailyCache().catch((e) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(`[wb-analytics:${this.entity}] master CSV refresh failed: ${msg}`);
+      });
 
       const note = nmIds.length - articles.length > 0 ? ` (${nmIds.length - articles.length} missing)` : '';
       console.log(`[wb-analytics:${this.entity}] ready: ${articles.length}/${nmIds.length} articles${note}`);
@@ -785,6 +804,34 @@ class WbEntityAnalyticsService {
     deleteServiceCache(SERVICE_DAILY_NAME, this.entity);
   }
 
+  // ─── Master CSV state (persists last successful report timestamps) ────
+
+  private masterCsvStatePath(): string {
+    return resolve(CSV_DAILY_DIR, `last-master-csv-${this.entity}.json`);
+  }
+
+  private loadMasterCsvState(): void {
+    try {
+      const p = this.masterCsvStatePath();
+      if (!existsSync(p)) return;
+      const raw = readFileSync(p, 'utf-8');
+      const data = JSON.parse(raw) as { completedAt: number; range: { start: string; end: string } };
+      this.lastMasterCsvCompletedAt = data.completedAt;
+      this.lastMasterCsvRange = data.range;
+      console.log(`[wb-analytics:${this.entity}] master CSV state: completedAt=${new Date(data.completedAt).toISOString()} range=${data.range.start}..${data.range.end}`);
+    } catch { /* ignore */ }
+  }
+
+  private saveMasterCsvState(): void {
+    try {
+      if (!existsSync(CSV_DAILY_DIR)) mkdirSync(CSV_DAILY_DIR, { recursive: true });
+      writeFileSync(this.masterCsvStatePath(), JSON.stringify({
+        completedAt: this.lastMasterCsvCompletedAt,
+        range: this.lastMasterCsvRange,
+      }), 'utf-8');
+    } catch { /* ignore */ }
+  }
+
   // ─── CSV report generation (DETAIL_HISTORY_REPORT) ───────────────────
 
   private loadCsvReportCount(): void {
@@ -869,7 +916,7 @@ class WbEntityAnalyticsService {
         const statusData = (await statusRes.json()) as { data?: Array<{ status?: string }> };
         const entryStatus = statusData?.data?.[0]?.status;
         if (!entryStatus) continue;
-        if (entryStatus === 'done') { status = 'done'; }
+        if (entryStatus === 'SUCCESS') { status = 'done'; }
         else if (entryStatus === 'failed') {
           console.log(`[wb-analytics:${this.entity}] CSV report failed, retrying...`);
           await this.throttledCsvFetch(
@@ -929,10 +976,10 @@ class WbEntityAnalyticsService {
     }
   }
 
-  private async throttledCsvFetch(url: string, init: RequestInit): Promise<Response> {
+  private async throttledCsvFetch(url: string, init?: RequestInit): Promise<Response> {
     const elapsed = Date.now() - this.historyApiLastRequestAt;
-    if (elapsed < 21_000) {
-      await sleep(21_000 - elapsed);
+    if (elapsed < CSV_HISTORY_INTERVAL_MS) {
+      await sleep(CSV_HISTORY_INTERVAL_MS - elapsed);
     }
     this.historyApiLastRequestAt = Date.now();
     return fetch(url, init);
@@ -950,12 +997,15 @@ class WbEntityAnalyticsService {
 
     const colNames = Object.keys(firstRow);
     const nmIdCol = colNames.find((c) => /nmId|nmID|nm_id|артикул/i.test(c));
-    const dateCol = colNames.find((c) => /^date$|^day$|дата/i.test(c));
-    const openCol = colNames.find((c) => /openCount|open_card|open_count|переход/i.test(c));
+    const dateCol = colNames.find((c) => /^date$|^day$|^dt$|дата/i.test(c));
+    const openCol = colNames.find((c) => /openCount|openCardCount|open_card|open_count|переход/i.test(c));
     const orderCountCol = colNames.find((c) => /ordersCount|orderCount|order_count|заказов всего|заказы, шт/i.test(c));
     const orderSumCol = colNames.find((c) => /ordersSumRub|orderSum|order_sum|сумма заказов|заказы, руб/i.test(c));
     const buyoutCol = colNames.find((c) => /buyoutsCount|buyoutCount|buyout_count|выкупов всего|выкупы, шт/i.test(c));
-    if (!nmIdCol || !dateCol || !openCol || !orderCountCol) return 0;
+    if (!nmIdCol || !dateCol || !openCol || !orderCountCol) {
+      console.warn(`[wb-analytics:${this.entity}] CSV: columns not found! headers=${JSON.stringify(colNames)} found: nmId=${nmIdCol} date=${dateCol} open=${openCol} orders=${orderCountCol}`);
+      return 0;
+    }
 
     let stored = 0;
     for (const row of rows) {
@@ -972,10 +1022,57 @@ class WbEntityAnalyticsService {
     return stored;
   }
 
+  // ─── Master CSV refresh (background, max 1x per 6h per entity) ─────
+  // Создаёт один DETAIL_HISTORY_REPORT на все SKU кабинета × 1 год,
+  // парсит в dailyCache. Вызывается ТОЛЬКО из warmup-цикла, никогда из
+  // getTimeSeries(). После успеха сохраняет timestamp + range на диск.
+
+  public async refreshMasterDailyCache(): Promise<void> {
+    // Проверка интервала
+    const elapsed = this.lastMasterCsvCompletedAt ? Date.now() - this.lastMasterCsvCompletedAt : Infinity;
+    if (elapsed < MASTER_CSV_INTERVAL_MS) {
+      return;
+    }
+
+    // Проверка дневного лимита
+    if (!this.canCreateCsvReport()) {
+      console.log(`[wb-analytics:${this.entity}] master CSV: daily limit reached, skipping`);
+      return;
+    }
+
+    if (this.masterCsvInProgress) return;
+    this.masterCsvInProgress = true;
+
+    try {
+      const today = todayISO();
+      const yearAgo = shiftDate(today, -365);
+      const nmIds = readEntityNmIdsFromJson(this.entity);
+
+      if (nmIds.length === 0) {
+        this.masterCsvInProgress = false;
+        return;
+      }
+
+      console.log(`[wb-analytics:${this.entity}] master CSV: generating for ${nmIds.length} nmIds, ${yearAgo}..${today}`);
+
+      await this.generateAndDownloadCsvReport(yearAgo, today);
+
+      // Сохраняем состояние успешного завершения
+      this.lastMasterCsvCompletedAt = Date.now();
+      this.lastMasterCsvRange = { start: yearAgo, end: today };
+      this.saveMasterCsvState();
+      console.log(`[wb-analytics:${this.entity}] master CSV: completed, range=${yearAgo}..${today}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[wb-analytics:${this.entity}] master CSV failed: ${msg}`);
+    } finally {
+      this.masterCsvInProgress = false;
+    }
+  }
+
   // ─── /products/history fetcher (last 7 days, max 20 nmIds/req) ──────
 
   private async fetchDailyHistoryBatch(nmIds: number[], start: string, end: string): Promise<void> {
-    const historyUrl = WB_HISTORY_API_URL;
     const body = JSON.stringify({
       selectedPeriod: { start, end },
       nmIds,
@@ -983,14 +1080,9 @@ class WbEntityAnalyticsService {
       skipDeletedNm: true,
     });
 
-    const elapsed = Date.now() - this.historyApiLastRequestAt;
-    if (elapsed < 21_000) {
-      await sleep(21_000 - elapsed);
-    }
-
     let res: Response;
     try {
-      res = await fetch(historyUrl, {
+      res = await this.throttledCsvFetch(WB_HISTORY_API_URL, {
         method: 'POST',
         headers: { Authorization: this.token, 'Content-Type': 'application/json' },
         body,
@@ -1000,7 +1092,6 @@ class WbEntityAnalyticsService {
         `Не удалось связаться с WB API: ${err instanceof Error ? err.message : String(err)}`, 502
       );
     }
-    this.historyApiLastRequestAt = Date.now();
 
     if (!res.ok) {
       let detail = `WB /history [${this.entity}] вернул ${res.status}`;
@@ -1078,30 +1169,22 @@ class WbEntityAnalyticsService {
       }
     }
 
-    const hasAll = missingDates.length === 0;
+    let hasAll = missingDates.length === 0;
 
-    if (!hasAll && !this.csvReportInProgress && !this.historyRefreshInProgress) {
-      const periodDays = diffDays(startDate, endDate);
-
-      // Для любого периода: пробуем заполнить последние 7 дней через /products/history
-      const today = todayISO();
-      const last7Start = shiftDate(today, -6);
-      const recentMissing = missingDates.filter((d) => d >= last7Start && d <= today);
-      if (recentMissing.length > 0) {
-        console.log(`[wb-analytics:${this.entity}] getTimeSeries: refreshing recent ${recentMissing.length}d via /products/history`);
-        this.refreshRecentDailyHistory(nmIds, last7Start, today).catch((e) => {
-          console.error(`[wb-analytics:${this.entity}] history refresh failed: ${e instanceof Error ? e.message : e}`);
-        });
-      }
-
-      // Для длинных периодов: запускаем CSV-отчёт
-      if (periodDays > 14 && this.canCreateCsvReport()) {
-        console.log(`[wb-analytics:${this.entity}] getTimeSeries: generating CSV report for ${startDate}..${endDate}`);
-        this.generateAndDownloadCsvReport(startDate, endDate);
+    // Если мастер-CSV покрывает запрашиваемый диапазон — заполняем пропуски нулями
+    if (!hasAll && this.lastMasterCsvRange) {
+      const rangeCovers = this.lastMasterCsvRange.start <= startDate && this.lastMasterCsvRange.end >= endDate;
+      if (rangeCovers) {
+        for (const date of missingDates) {
+          dateMap.set(date, { openCount: 0, orderCount: 0, orderSum: 0, buyoutCount: 0 });
+        }
+        missingDates.length = 0;
+        hasAll = true;
       }
     }
 
-    const updating = !hasAll && (this.csvReportInProgress || this.historyRefreshInProgress || this.warmupInProgress);
+    const hasMasterCsvEverRun = this.lastMasterCsvCompletedAt > 0;
+    const updating = !hasAll && (this.masterCsvInProgress || (!hasMasterCsvEverRun && this.warmupInProgress));
 
     if (groupBy === 'week') {
       const weekMap = new Map<string, { openCount: number; orderCount: number; orderSum: number; buyoutCount: number }>();
