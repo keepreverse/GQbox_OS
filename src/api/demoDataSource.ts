@@ -153,7 +153,7 @@ export function createDemoDataSource(): DataSource {
         body: JSON.stringify(item),
       });
       dicts[type] = [...(dicts[type] ?? []), item];
-      notify('dictionaries');
+      notify('all');
     },
     async update(type, id, patch) {
       await request<RawDictItem>(`${API_PREFIX}/dictionaries/${type}/${id}`, {
@@ -163,14 +163,14 @@ export function createDemoDataSource(): DataSource {
       const list = dicts[type] ?? [];
       const idx = list.findIndex((d) => d.id === id);
       if (idx !== -1) list[idx] = { ...list[idx], ...patch };
-      notify('dictionaries');
+      notify('all');
     },
     async remove(type, id) {
       await request<unknown>(`${API_PREFIX}/dictionaries/${type}/${id}`, {
         method: 'DELETE',
       });
       dicts[type] = (dicts[type] ?? []).filter((d) => d.id !== id);
-      notify('dictionaries');
+      notify('all');
     },
   };
 

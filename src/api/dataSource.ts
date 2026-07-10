@@ -444,7 +444,7 @@ export function hydrateProduct(
     model,
     color,
     supplier,
-    productName: raw.productName || buildName(),
+    productName: buildName() || (raw.productName ?? ''),
     bodyMaterial,
     wireMaterial,
     currentA: raw.currentA,
