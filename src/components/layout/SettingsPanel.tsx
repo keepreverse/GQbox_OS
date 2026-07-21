@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw, RefreshCw, Database, User as UserIcon } from 'lucide-react';
+import { Settings, LogOut, Shield, Code2, Key, Download, Upload, RotateCcw, RefreshCw, Database, GitMerge, User as UserIcon } from 'lucide-react';
 import Modal from '@components/ui/Modal';
 import ConfirmModal from '@components/ui/ConfirmModal';
 import Toggle from '@components/ui/Toggle';
@@ -33,7 +33,7 @@ function SettingsRow({ label, value, description }: { label: React.ReactNode; va
   );
 }
 
-type ConfirmAction = 'reset' | 'seed' | null;
+type ConfirmAction = 'reset' | 'reset_2' | 'seed' | null;
 
 export default function SettingsPanel({
   open,
@@ -89,6 +89,20 @@ export default function SettingsPanel({
     }
   }, [ds, showToast, t]);
 
+  const handleResetFrom = useCallback(async (source: string) => {
+    try {
+      ds.beginBatch();
+      await ds.settings.resetFrom(source);
+      const key = source === '.defaults_2' ? 'settings.notif_reset_2' : 'settings.notif_reset';
+      await ds.notifications.add({ title: t(key), type: 'warning' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      showToast(t('settings.toast_reset_error', { message }), 'error');
+    } finally {
+      ds.endBatch();
+    }
+  }, [ds, showToast, t]);
+
   const handleSeed = useCallback(async () => {
     try {
       ds.beginBatch();
@@ -101,6 +115,22 @@ export default function SettingsPanel({
       ds.endBatch();
     }
   }, [ds, showToast, t]);
+
+  const handleMigrateListings = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/${ds.mode}/marketplace-listings/migrate`, { method: 'POST' });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      const result = await res.json();
+      showToast(`Миграция: создано ${result.created}, обновлено ${result.updated}, удалено ${result.removed} записей`);
+      await ds.refresh();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      showToast(`Ошибка миграции: ${msg}`, 'error');
+    }
+  }, [ds, showToast]);
 
   const handleForceRefresh = useCallback(async () => {
     try {
@@ -341,6 +371,24 @@ export default function SettingsPanel({
                   <RotateCcw className="w-3.5 h-3.5" />
                   {t('settings.reset_to_defaults')}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction('reset_2')}
+                  className="w-full py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-warning/20 transition-colors border border-warning/20 cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  {t('settings.reset_from_defaults_2')}
+                </button>
+                <div className="border-t border-border-subtle pt-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={handleMigrateListings}
+                    className="w-full py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-accent/20 transition-colors border border-accent/30 cursor-pointer"
+                  >
+                    <GitMerge className="w-3.5 h-3.5" />
+                    Мигрировать комплекты в marketplace_listings
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -364,6 +412,17 @@ export default function SettingsPanel({
         onConfirm={() => {
           setConfirmAction(null);
           handleReset();
+        }}
+      />
+      <ConfirmModal
+        open={confirmAction === 'reset_2'}
+        variant="warning"
+        title={t('settings.confirm_reset_2_title')}
+        description={t('settings.confirm_reset_2_desc')}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          setConfirmAction(null);
+          handleResetFrom('.defaults_2');
         }}
       />
       <ConfirmModal

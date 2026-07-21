@@ -313,6 +313,41 @@ export function kitComponentDeleteSql(): string {
   return `DELETE FROM kit_components WHERE kit_id = $1 AND component_id = $2`;
 }
 
+// ─── Marketplace Listings ──────────────────────────────────────────────
+
+export function mapMarketplaceListingRow(row: Record<string, unknown> | null | undefined): import('../types').MarketplaceListing | null {
+  if (!row) return null;
+  return {
+    id: String(row.id ?? ''),
+    marketplace: String(row.marketplace ?? '') as import('../types').Marketplace,
+    entity: String(row.entity ?? '') as import('../types').MarketplaceEntityCode,
+    article: String(row.article ?? ''),
+    title: String(row.title ?? ''),
+    kind: String(row.kind ?? 'single') as import('../types').MarketplaceListingKind,
+    skus: Array.isArray(row.skus) ? (row.skus as string[]) : [],
+    createdAt: String(row.created_at ?? new Date().toISOString()),
+    updatedAt: String(row.updated_at ?? new Date().toISOString()),
+  };
+}
+
+// ─── Sku Listings ──────────────────────────────────────────────────────
+
+export function mapSkuListingRow(row: Record<string, unknown> | null | undefined): import('../types').SkuListing | null {
+  if (!row) return null;
+  return {
+    id: String(row.id ?? ''),
+    sku: String(row.sku ?? ''),
+    marketplace: String(row.marketplace ?? '') as import('../types').Marketplace,
+    entity: String(row.entity ?? '') as import('../types').MarketplaceEntityCode,
+    article: String(row.article ?? ''),
+    kind: String(row.kind ?? 'single') as import('../types').MarketplaceListingKind,
+    listingId: row.listing_id ? String(row.listing_id) : undefined,
+    title: row.title ? String(row.title) : undefined,
+    createdAt: String(row.created_at ?? new Date().toISOString()),
+    updatedAt: String(row.updated_at ?? new Date().toISOString()),
+  };
+}
+
 // ─── Media Files ────────────────────────────────────────────────────────
 
 export function mapMediaFileRow(row: Record<string, unknown> | null | undefined): import('../types').MediaFile {

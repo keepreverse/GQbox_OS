@@ -27,6 +27,7 @@ import {
 import type {
   AppNotification,
   CategoryAttribute,
+  SkuListing,
   NamingTemplate,
   MediaFile,
   MediaLink,
@@ -56,6 +57,7 @@ export function createDemoDataSource(): DataSource {
   let rawKitComponents: import('@app-types').RawKitComponent[] = [];
   let rawMediaFiles: MediaFile[] = [];
   let rawMediaLinks: MediaLink[] = [];
+  let skuListings: SkuListing[] = [];
   const dicts: Record<string, RawDictItem[]> = {
     categories: [],
     models: [],
@@ -92,7 +94,7 @@ export function createDemoDataSource(): DataSource {
         { categories, models, colors, suppliers, connectors, materials, chargingProtocols },
         rawMediaFiles,
         rawMediaLinks,
-        raw.marketplaceSkus ?? []
+        skuListings
       )
     );
     // Attach kit components to kit products
@@ -417,6 +419,13 @@ export function createDemoDataSource(): DataSource {
       await request<{ ok: boolean }>(`${API_PREFIX}/reset`, { method: 'POST' });
       await refresh();
     },
+    async resetFrom(source: string) {
+      await request<{ ok: boolean }>(`${API_PREFIX}/reset-from`, {
+        method: 'POST',
+        body: JSON.stringify({ source }),
+      });
+      await refresh();
+    },
     async seed() {
       throw new Error('Seed is only available in dev mode (PostgreSQL).');
     },
@@ -440,18 +449,20 @@ export function createDemoDataSource(): DataSource {
 
   async function refresh(): Promise<void> {
     try {
-      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks] = await Promise.all([
+      const [rawProductsNew, dictsNew, notifs, kitComps, mediaFiles, mediaLinks, sl] = await Promise.all([
         request<RawProduct[]>(`${API_PREFIX}/products`),
         fetchDictionaries(),
         request<AppNotification[]>(`${API_PREFIX}/notifications`).catch(() => [] as AppNotification[]),
         request<import('@app-types').RawKitComponent[]>(`${API_PREFIX}/kit-components`).catch(() => [] as import('@app-types').RawKitComponent[]),
         request<MediaFile[]>(`${API_PREFIX}/media`).catch(() => [] as MediaFile[]),
         request<MediaLink[]>(`${API_PREFIX}/media/links`).catch(() => [] as MediaLink[]),
+        request<SkuListing[]>(`${API_PREFIX}/sku-listings`).catch((e) => { console.error('sku-listings fetch failed', e); return [] as SkuListing[]; }),
       ]);
       rawProducts = rawProductsNew;
       rawKitComponents = kitComps;
       rawMediaFiles = mediaFiles;
       rawMediaLinks = mediaLinks;
+      skuListings = sl;
       for (const name of DICT_TYPE_NAMES) {
         dicts[name] = dictsNew[name] ?? [];
       }

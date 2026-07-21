@@ -21,34 +21,6 @@
     "lengthVariant": "1",
     "marketplaceSkus": [
       {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "888067142",
-        "title": "Комплект. Кабель. L-USB ZS 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "147808092",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "148963113",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "888066703",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
         "marketplace": "wb",
         "entity": "kua",
         "article": "597015220",
@@ -68,20 +40,6 @@
         "article": "418231219",
         "title": "Кабель. L-USB ZS 1м ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "417531633",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1739911936",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -106,69 +64,6 @@
     "variantCode": "E",
     "lengthVariant": "1",
     "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "147817988",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "148963115",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "888066716",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "147808092",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "148963113",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "888066703",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "508417663",
-        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "147817989",
-        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "148954610",
-        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "kua",
@@ -210,20 +105,6 @@
         "article": "818814489",
         "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "158416000",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. L-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1407910339",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. L-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -248,13 +129,6 @@
     "variantCode": "E",
     "lengthVariant": "2",
     "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "888067134",
-        "title": "Комплект. Кабель. L-USB ZS 2м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "kua",
@@ -306,34 +180,6 @@
     "variantCode": "E",
     "lengthVariant": "2",
     "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "560166005",
-        "title": "Комплект. Кабель. L-USB ZS 2м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "560299895",
-        "title": "Комплект. Кабель. L-USB ZS 2м БЕЛЫЙ 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "147817989",
-        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "148954610",
-        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "kua",
@@ -418,13 +264,6 @@
     "connectorMaleId": "conn-usb",
     "lengthVariant": "1",
     "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "1313669158",
-        "title": "Комплект. Кабель. L-USB PR 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "kua",
@@ -568,48 +407,6 @@
     "marketplaceSkus": [
       {
         "marketplace": "wb",
-        "entity": "kaa",
-        "article": "161927978",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "891861328",
-        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "881213419",
-        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "891861338",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "881214894",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "447277048",
-        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
         "entity": "kua",
         "article": "598858039",
         "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
@@ -635,13 +432,6 @@
         "article": "881213442",
         "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "583343068",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -665,48 +455,6 @@
     "connectorMaleId": "conn-usb",
     "lengthVariant": "1",
     "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "54589387",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "891861353",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "891861338",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "881214894",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "448895966",
-        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "412176198",
-        "title": "Комплект. Кабель. TC-USB ZS 1м + Кабель. TC-USB ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "kua",
@@ -734,41 +482,6 @@
         "article": "881214524",
         "title": "Кабель. TC-USB ZS 1м БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "158423864",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "958553481",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "161579755",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "408211636",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1403239194",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -795,27 +508,6 @@
       {
         "marketplace": "wb",
         "entity": "kaa",
-        "article": "410152828",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1354042955",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "1352552046",
-        "title": "Комплект. Кабель. TC-TC PR 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
         "article": "115093202",
         "title": "Кабель. TC-TC PR 1м ЧЕРНЫЙ",
         "kind": "single"
@@ -826,20 +518,6 @@
         "article": "1350443347",
         "title": "Кабель. TC-TC PR 1м ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "417531633",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1739911936",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -864,13 +542,6 @@
     "lengthVariant": "1",
     "marketplaceSkus": [
       {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "1352616628",
-        "title": "Комплект. Кабель. TC-TC PR 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
         "marketplace": "wb",
         "entity": "dev",
         "article": "194116510",
@@ -890,27 +561,6 @@
         "article": "217120185",
         "title": "Кабель. TC-TC PR 1м БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "1418522742",
-        "title": "Комплект. СЗУ. PD TC 25+25W + Кабель. TC-TC PR 1м + Кабель. L-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "836049628",
-        "title": "Комплект. СЗУ. PD TC 18W + Кабель. TC-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "197813189",
-        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. TC-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -991,13 +641,6 @@
         "article": "1931445509",
         "title": "Кабель. TC-TC ST 1м ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "565913853",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ST 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -1041,13 +684,6 @@
         "article": "1931446033",
         "title": "Кабель. TC-TC ST 1м БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "460782043",
-        "title": "Комплект. СЗУ. PD TC 35W + Кабель. TC-TC ST 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -1071,34 +707,6 @@
     "connectorMaleId": "conn-usb",
     "lengthVariant": "1",
     "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "889537202",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "880682006",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "889537218",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "880681782",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
       {
         "marketplace": "wb",
         "entity": "dev",
@@ -1150,41 +758,6 @@
     "lengthVariant": "1",
     "marketplaceSkus": [
       {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "889536875",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "880703588",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "889537218",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "880681782",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "448887911",
-        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 3 шт.",
-        "kind": "bundle"
-      },
-      {
         "marketplace": "wb",
         "entity": "dev",
         "article": "71873312",
@@ -1211,27 +784,6 @@
         "article": "880684818",
         "title": "Кабель. Micro-USB ZS 1м БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "44702470",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "408221388",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1403561541",
-        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -1819,15 +1371,7 @@
     "powerW": 18,
     "deviceCount": 1,
     "connectorFemaleId": "conn-tc",
-    "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "836049628",
-        "title": "Комплект. СЗУ. PD TC 18W + Кабель. TC-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p43",
@@ -1859,15 +1403,7 @@
     "deviceCount": 1,
     "connectorFemaleId": "conn-tc",
     "supplierSuffix": "A",
-    "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "317925123",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p45",
@@ -1926,76 +1462,6 @@
         "article": "1418514352",
         "title": "СЗУ. PD TC 20W БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "332485524",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "2329691216",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "560582425",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC ZS 1.2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "404199276",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "3169178450",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "565910883",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ZS 1.2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "3496776924",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ZS 1.2м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "197809852",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "161897250",
-        "title": "Комплект. СЗУ. PD TC 20W БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "3169396887",
-        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC ZS 2м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2013,22 +1479,7 @@
     "powerW": 40,
     "deviceCount": 2,
     "connectorFemaleId": "conn-tc2",
-    "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "197813188",
-        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. L-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "dev",
-        "article": "197813189",
-        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. TC-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p125",
@@ -2097,27 +1548,6 @@
         "article": "824069871",
         "title": "СЗУ. UTC USB-TC 2x20W ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "417531633",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1739911936",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "583343068",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2150,20 +1580,6 @@
         "article": "824069888",
         "title": "СЗУ. UTC USB-TC 2x20W БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "158423864",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "958553481",
-        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2506,27 +1922,6 @@
         "article": "824067562",
         "title": "АЗУ. ZS USB-TC 20W ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "161927978",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "410152828",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1354042955",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2566,20 +1961,6 @@
         "article": "823171665",
         "title": "АЗУ. ZS USB-TC 20W БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kaa",
-        "article": "1742528981",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "412218580",
-        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2813,34 +2194,6 @@
         "article": "286874503",
         "title": "Наушники. Jack EarPads ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "54417557",
-        "title": "Комплект. Наушники. Jack EarPads ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "441159356",
-        "title": "Комплект. Наушники. Jack EarPads ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "112408916",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "641638993",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -2877,34 +2230,6 @@
         "article": "201501407",
         "title": "Наушники. Jack EarPads БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "54417560",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "441340796",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kaa",
-        "article": "112408916",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "641638993",
-        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -3035,13 +2360,6 @@
         "article": "201501393",
         "title": "Наушники. L EarPads Bluetooth БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "445904789",
-        "title": "Комплект. Наушники. L EarPads Bluetooth БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
       }
     ]
   },
@@ -3158,20 +2476,6 @@
         "article": "946418845",
         "title": "Наушники. L PRO ONLY MUSIC БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "946419719",
-        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "946416498",
-        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ + Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -3194,20 +2498,6 @@
         "article": "946416501",
         "title": "Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "946416626",
-        "title": "Комплект. Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ 2 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "946416498",
-        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ + Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -3237,13 +2527,6 @@
         "article": "1304176255",
         "title": "Наушники. TC PRO БЕЛЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "1304176722",
-        "title": "Комплект. Наушники. TC PRO БЕЛЫЙ + Наушники. TC PRO ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -3273,13 +2556,6 @@
         "article": "1304176355",
         "title": "Наушники. TC PRO ЧЕРНЫЙ",
         "kind": "single"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "bms",
-        "article": "1304176722",
-        "title": "Комплект. Наушники. TC PRO БЕЛЫЙ + Наушники. TC PRO ЧЕРНЫЙ",
-        "kind": "bundle"
       }
     ]
   },
@@ -3398,57 +2674,7 @@
     "voltageV": 7,
     "powerW": 15,
     "connectorFemaleId": "conn-l",
-    "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "43865623",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. L 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "43976937",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031182780",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "252667199",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031298057",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "15452539",
-        "title": "Комплект. Пин. L 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "282399770",
-        "title": "Комплект. Пин. L 3 шт.",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p89",
@@ -3462,78 +2688,7 @@
     "voltageV": 7,
     "powerW": 15,
     "connectorFemaleId": "conn-tc",
-    "marketplaceSkus": [
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "44201805",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. TC 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "360161804",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. TC 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "43976937",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031182780",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "246684049",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. TC 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031212969",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. TC 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "252667199",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031298057",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "15452540",
-        "title": "Комплект. Пин. TC 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "282345344",
-        "title": "Комплект. Пин. TC 3 шт.",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p90",
@@ -3547,71 +2702,7 @@
     "voltageV": 7,
     "powerW": 15,
     "connectorFemaleId": "conn-micro",
-    "marketplaceSkus": [
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031134966",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "43976937",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031182780",
-        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "246686846",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031248766",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "252667199",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "2031298057",
-        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "wb",
-        "entity": "kua",
-        "article": "15452541",
-        "title": "Комплект. Пин. Micro 3 шт.",
-        "kind": "bundle"
-      },
-      {
-        "marketplace": "ozon",
-        "entity": "kua",
-        "article": "282417063",
-        "title": "Комплект. Пин. Micro 3 шт.",
-        "kind": "bundle"
-      }
-    ]
+    "marketplaceSkus": []
   },
   {
     "id": "p91",

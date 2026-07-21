@@ -129,7 +129,7 @@ export default function ProductMatrix({
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [exporting, setExporting] = useState(false);
   const [tableKey, setTableKey] = useState(0);
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(25);
   const [pageSizeOpen, setPageSizeOpen] = useState(false);
   const pageSizeRef = useRef<HTMLDivElement>(null);
   const pageSizeOptions = [15, 25, 50, 100];

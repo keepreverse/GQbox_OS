@@ -227,6 +227,55 @@ export async function initSchema(): Promise<void> {
   await query(`DELETE FROM product_media_links WHERE file_id IS NULL OR file_id = ''`);
   await query(`DELETE FROM products WHERE id IS NULL OR id = ''`);
 
+  // ─── marketplace_listings ──────────────────────────────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS marketplace_listings (
+      id VARCHAR(40) PRIMARY KEY,
+      marketplace VARCHAR(10) NOT NULL,
+      entity VARCHAR(10) NOT NULL,
+      article VARCHAR(50) NOT NULL,
+      title TEXT NOT NULL,
+      kind VARCHAR(10) NOT NULL DEFAULT 'single',
+      skus JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Migration: add missing columns to marketplace_listings (if table existed from old schema)
+  await query(`ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS entity VARCHAR(10) NOT NULL DEFAULT 'WB'`);
+  await query(`ALTER TABLE marketplace_listings ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'single'`);
+  // Migration: convert skus from old text[] to jsonb
+  await query(`
+    DO $$ BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='marketplace_listings' AND column_name='skus' AND data_type='ARRAY'
+      ) THEN
+        ALTER TABLE marketplace_listings ALTER COLUMN skus DROP DEFAULT;
+        ALTER TABLE marketplace_listings ALTER COLUMN skus TYPE JSONB USING to_jsonb(skus);
+        ALTER TABLE marketplace_listings ALTER COLUMN skus SET DEFAULT '[]'::jsonb;
+      END IF;
+    END $$;
+  `);
+
+  // ─── sku_listings ──────────────────────────────────────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS sku_listings (
+      id VARCHAR(40) PRIMARY KEY,
+      sku VARCHAR(50) NOT NULL,
+      marketplace VARCHAR(10) NOT NULL,
+      entity VARCHAR(10) NOT NULL,
+      article VARCHAR(50) NOT NULL,
+      kind VARCHAR(10) NOT NULL DEFAULT 'single',
+      listing_id VARCHAR(40),
+      title TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(sku, marketplace, entity, article)
+    )
+  `);
+
   // ─── users ──────────────────────────────────────────────────────────────
   await query(`
     CREATE TABLE IF NOT EXISTS users (

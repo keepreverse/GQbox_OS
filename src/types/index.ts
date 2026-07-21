@@ -186,6 +186,31 @@ export interface MarketplaceSku {
   title: string;
 }
 
+export interface MarketplaceListing {
+  id: string;
+  marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
+  article: string;
+  title: string;
+  kind: MarketplaceListingKind;
+  skus: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SkuListing {
+  id: string;
+  sku: string;
+  marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
+  article: string;
+  kind: MarketplaceListingKind;
+  listingId?: string;
+  title?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PackagingItem {
   id: string;
   sku: string;

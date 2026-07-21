@@ -9,9 +9,11 @@ import type {
   CollectionName,
   DataBundle,
   DictionaryItem,
+  MarketplaceListing,
   RawProduct,
   RawKitComponent,
   RawProductMedia,
+  SkuListing,
 } from '../types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +62,10 @@ export function readDefaults<T = unknown>(name: CollectionName): T[] {
   return readJson<T[]>(filePath(DEFAULTS_DIR, name), []);
 }
 
+export function readDefaultsFromDir<T = unknown>(dir: string, name: CollectionName): T[] {
+  return readJson<T[]>(filePath(resolve(DATA_DIR, dir), name), []);
+}
+
 export function defaultsExist(name: CollectionName): boolean {
   return existsSync(filePath(DEFAULTS_DIR, name));
 }
@@ -82,6 +88,31 @@ export function restoreOne(name: CollectionName): number {
  * к артикулам сохраняются между сбросами, чтобы не терять загруженные файлы.
  * Физические файлы в server/uploads/ также не удаляются.
  */
+export function restoreAllFromDir(dir: string): { restored: string[]; skipped: string[] } {
+  const restored: string[] = [];
+  const skipped: string[] = [];
+  for (const name of [
+    'products',
+    'categories',
+    'models',
+    'colors',
+    'suppliers',
+    'connectors',
+    'chargingProtocols',
+    'materials',
+    'kitComponents',
+  ] as CollectionName[]) {
+    const data = readDefaultsFromDir<unknown>(dir, name);
+    if (Array.isArray(data) && data.length > 0) {
+      writeCollection(name, data);
+      restored.push(name);
+    } else {
+      skipped.push(name);
+    }
+  }
+  return { restored, skipped };
+}
+
 export function restoreAllFromDefaults(): { restored: string[]; skipped: string[] } {
   const restored: string[] = [];
   const skipped: string[] = [];
@@ -140,6 +171,8 @@ export function exportAll(): DataBundle {
     mediaFiles: readCollection<import('../types').MediaFile>('mediaFiles'),
     mediaLinks: readCollection<import('../types').MediaLink>('mediaLinks'),
     productMedia: readCollection<RawProductMedia>('productMedia'),
+    marketplaceListings: readCollection<MarketplaceListing>('marketplaceListings'),
+    skuListings: readCollection<SkuListing>('skuListings'),
   };
 }
 
@@ -147,7 +180,7 @@ export function exportAll(): DataBundle {
  * Применяет присланный бандл: каждая непустая коллекция перезаписывает
  * соответствующий live-файл. Возвращает список импортированных коллекций.
  */
-export function importAll(bundle: Partial<DataBundle>): string[] {
+export function importAll(bundle: Partial<DataBundle>, skipRebuild?: boolean): string[] {
   const imported: string[] = [];
   for (const name of [
     'products',
@@ -160,16 +193,140 @@ export function importAll(bundle: Partial<DataBundle>): string[] {
     'materials',
     'kitComponents',
     'productMedia',
+    'marketplaceListings',
   ] as CollectionName[]) {
     const data = (bundle as any)?.[name];
     if (Array.isArray(data) && data.length > 0) {
       writeCollection(name, data);
       imported.push(name);
     } else if (Array.isArray(data) && data.length === 0) {
-      // Пустой массив — это явный сигнал «очистить коллекцию».
       writeCollection(name, []);
       imported.push(name);
     }
   }
+  // Always rebuild derived skuListings after import
+  if (!skipRebuild) {
+    rebuildSkuListings();
+  }
   return imported;
+}
+
+/**
+ * Полностью перестраивает sku_listings из двух источников:
+ * 1. products.marketplace_skus (kind='single') — одна строка на SKU продукта
+ * 2. marketplace_listings (kind='bundle') — развернуть skus[] в отдельные строки
+ */
+export function rebuildSkuListings(): { created: number } {
+  const products = readCollection<RawProduct>('products');
+  const listings = readCollection<MarketplaceListing>('marketplaceListings');
+  const rows: SkuListing[] = [];
+
+  for (const p of products) {
+    if (!p.marketplaceSkus) continue;
+    for (const ms of p.marketplaceSkus) {
+      const kind = ms.kind ?? 'single';
+      if (kind !== 'single') continue;
+      rows.push({
+        id: `sl-${p.sku}-${ms.marketplace}-${ms.entity}-${ms.article}`,
+        sku: p.sku,
+        marketplace: ms.marketplace,
+        entity: ms.entity,
+        article: ms.article,
+        kind: 'single',
+        title: ms.title,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  for (const listing of listings) {
+    if (listing.kind !== 'bundle') continue;
+    for (const sku of listing.skus) {
+      rows.push({
+        id: `sl-${sku}-${listing.marketplace}-${listing.entity}-${listing.article}`,
+        sku,
+        marketplace: listing.marketplace,
+        entity: listing.entity,
+        article: listing.article,
+        kind: 'bundle',
+        listingId: listing.id,
+        title: listing.title,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  writeCollection('skuListings', rows);
+  return { created: rows.length };
+}
+
+/**
+ * Извлекает bundle-записи из marketplaceSkus всех продуктов,
+ * создаёт/обновляет marketplace_listings и удаляет bundle-записи из продуктов.
+ */
+export function migrateMarketplaceListings(): { created: number; updated: number; removed: number } {
+  const products = readCollection<RawProduct>('products');
+  const existingListings = readCollection<import('../types').MarketplaceListing>('marketplaceListings');
+  const listingMap = new Map<string, { listing: Omit<import('../types').MarketplaceListing, 'id' | 'createdAt' | 'updatedAt'>; productSkus: Set<string> }>();
+
+  for (const p of products) {
+    if (!p.marketplaceSkus) continue;
+    for (const ms of p.marketplaceSkus) {
+      if (ms.kind !== 'bundle') continue;
+      const key = `${ms.marketplace}:${ms.entity}:${ms.article}`;
+      if (!listingMap.has(key)) {
+        listingMap.set(key, {
+          listing: { marketplace: ms.marketplace, entity: ms.entity, article: ms.article, title: ms.title, kind: ms.kind, skus: [] },
+          productSkus: new Set(),
+        });
+      }
+      listingMap.get(key)!.productSkus.add(p.sku);
+    }
+  }
+
+  let created = 0;
+  let updated = 0;
+
+  for (const [, data] of listingMap) {
+    const skus = Array.from(data.productSkus).sort();
+    const existing = existingListings.find(
+      (l) => l.marketplace === data.listing.marketplace && l.entity === data.listing.entity && l.article === data.listing.article
+    );
+    if (existing) {
+      existing.skus = Array.from(new Set([...existing.skus, ...skus])).sort();
+      existing.updatedAt = new Date().toISOString();
+      updated++;
+    } else {
+      const now = new Date().toISOString();
+      existingListings.push({
+        id: `listing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ...data.listing,
+        skus,
+        createdAt: now,
+        updatedAt: now,
+      });
+      created++;
+    }
+  }
+
+  // Remove bundle entries from individual products
+  let removed = 0;
+  for (const p of products) {
+    if (!p.marketplaceSkus || p.marketplaceSkus.length === 0) continue;
+    const oldLen = p.marketplaceSkus.length;
+    p.marketplaceSkus = p.marketplaceSkus.filter((s) => s.kind !== 'bundle');
+    removed += oldLen - p.marketplaceSkus.length;
+  }
+
+  writeCollection('marketplaceListings', existingListings);
+  if (removed > 0) {
+    writeCollection('products', products);
+  }
+
+  // Rebuild derived skuListings
+  rebuildSkuListings();
+
+  return { created, updated, removed };
 }

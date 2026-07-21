@@ -11,6 +11,8 @@ import {
   DICT_TYPES,
   type DataBundle,
   type DictionaryItem,
+  type MarketplaceListing,
+  type SkuListing,
   type RawProduct,
   type RawProductMedia,
   type User,
@@ -21,6 +23,8 @@ import {
   dictInsertSql,
   dictNameToJson,
   mapDictionaryRow,
+  mapMarketplaceListingRow,
+  mapSkuListingRow,
   mapProductRow,
   mapKitComponentRow,
   kitComponentToDbParams,
@@ -353,6 +357,237 @@ export async function getMediaFilesWithLinks(): Promise<
   return files.map((f) => ({ ...f, linkedSkus: linksByFile.get(f.id) ?? [] }));
 }
 
+// ─── Marketplace Listings ───────────────────────────────────────────────
+
+export async function getAllMarketplaceListings(): Promise<MarketplaceListing[]> {
+  const rows = await query<any>('SELECT * FROM marketplace_listings ORDER BY created_at DESC');
+  return rows.map(mapMarketplaceListingRow).filter(Boolean) as MarketplaceListing[];
+}
+
+export async function getMarketplaceListingById(id: string): Promise<MarketplaceListing | null> {
+  const row = await queryOne<any>('SELECT * FROM marketplace_listings WHERE id = $1', [id]);
+  return mapMarketplaceListingRow(row);
+}
+
+export async function createMarketplaceListing(
+  raw: Omit<MarketplaceListing, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<MarketplaceListing> {
+  const id = randomUUID();
+  await query(
+    `INSERT INTO marketplace_listings (id, marketplace, entity, article, title, kind, skus)
+     VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+    [id, raw.marketplace, raw.entity, raw.article, raw.title, raw.kind, JSON.stringify(raw.skus)]
+  );
+  const created = await getMarketplaceListingById(id);
+  return created ?? {
+    id,
+    ...raw,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export async function updateMarketplaceListing(
+  id: string,
+  patch: Partial<MarketplaceListing>
+): Promise<MarketplaceListing | null> {
+  const existing = await getMarketplaceListingById(id);
+  if (!existing) return null;
+  const merged = { ...existing, ...patch, id, updatedAt: new Date().toISOString() };
+  await query(
+    `UPDATE marketplace_listings
+     SET marketplace = $2, entity = $3, article = $4, title = $5, kind = $6, skus = $7::jsonb, updated_at = NOW()
+     WHERE id = $1`,
+    [id, merged.marketplace, merged.entity, merged.article, merged.title, merged.kind, JSON.stringify(merged.skus)]
+  );
+  return merged;
+}
+
+export async function deleteMarketplaceListing(id: string): Promise<MarketplaceListing | null> {
+  const existing = await getMarketplaceListingById(id);
+  if (!existing) return null;
+  await query('DELETE FROM marketplace_listings WHERE id = $1', [id]);
+  return existing;
+}
+
+/**
+ * One-time migration: reads all products' marketplace_skus, extracts bundle
+ * entries, deduplicates them into marketplace_listings, and removes bundle
+ * entries from individual products.
+ */
+export async function migrateMarketplaceListings(): Promise<{ created: number; updated: number; removed: number }> {
+  const products = await getAllProducts();
+  const listingMap = new Map<string, { listing: Omit<MarketplaceListing, 'id' | 'createdAt' | 'updatedAt'>; productSkus: Set<string> }>();
+
+  let removed = 0;
+  for (const p of products) {
+    if (!p.marketplaceSkus || p.marketplaceSkus.length === 0) continue;
+    const oldLen = p.marketplaceSkus.length;
+    const singleSkus = p.marketplaceSkus.filter((s) => s.kind !== 'bundle');
+    removed += oldLen - singleSkus.length;
+
+    for (const ms of p.marketplaceSkus) {
+      if (ms.kind !== 'bundle') continue;
+      const key = `${ms.marketplace}:${ms.entity}:${ms.article}`;
+      if (!listingMap.has(key)) {
+        listingMap.set(key, {
+          listing: { marketplace: ms.marketplace, entity: ms.entity, article: ms.article, title: ms.title, kind: ms.kind, skus: [] },
+          productSkus: new Set(),
+        });
+      }
+      listingMap.get(key)!.productSkus.add(p.sku);
+    }
+  }
+
+  let created = 0;
+  let updated = 0;
+  for (const [key, data] of listingMap) {
+    const skus = Array.from(data.productSkus).sort();
+    const existing = await getMarketplaceListingById(key);
+    if (existing) {
+      const mergedSkus = Array.from(new Set([...existing.skus, ...skus])).sort();
+      await updateMarketplaceListing(existing.id, { ...existing, skus: mergedSkus });
+      updated++;
+    } else {
+      const [marketplace, entity, article] = key.split(':') as [string, string, string];
+      await createMarketplaceListing({
+        marketplace: marketplace as any,
+        entity: entity as any,
+        article,
+        title: data.listing.title,
+        kind: 'bundle',
+        skus,
+      });
+      created++;
+    }
+  }
+
+  // Remove bundle entries from individual products
+  for (const p of products) {
+    if (!p.marketplaceSkus || p.marketplaceSkus.length === 0) continue;
+    const singleSkus = p.marketplaceSkus.filter((s) => s.kind !== 'bundle');
+    if (singleSkus.length !== p.marketplaceSkus.length) {
+      await query(
+        'UPDATE products SET marketplace_skus = $1::jsonb, updated_at = NOW() WHERE id = $2',
+        [JSON.stringify(singleSkus), p.id]
+      );
+    }
+  }
+
+  // Rebuild derived skuListings after migration
+  await rebuildSkuListings();
+
+  return { created, updated, removed };
+}
+
+// ─── Sku Listings ────────────────────────────────────────────────────────
+
+export async function getAllSkuListings(): Promise<SkuListing[]> {
+  const rows = await query<any>('SELECT * FROM sku_listings ORDER BY sku, marketplace, entity, article');
+  return rows.map(mapSkuListingRow).filter(Boolean) as SkuListing[];
+}
+
+export async function getSkuListingById(id: string): Promise<SkuListing | null> {
+  const row = await queryOne<any>('SELECT * FROM sku_listings WHERE id = $1', [id]);
+  return mapSkuListingRow(row);
+}
+
+export async function createSkuListing(
+  raw: Omit<SkuListing, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<SkuListing> {
+  const id = randomUUID();
+  await query(
+    `INSERT INTO sku_listings (id, sku, marketplace, entity, article, kind, listing_id, title)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [id, raw.sku, raw.marketplace, raw.entity, raw.article, raw.kind, raw.listingId ?? null, raw.title ?? null]
+  );
+  const created = await getSkuListingById(id);
+  return created ?? {
+    id,
+    ...raw,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export async function deleteSkuListing(id: string): Promise<SkuListing | null> {
+  const existing = await getSkuListingById(id);
+  if (!existing) return null;
+  await query('DELETE FROM sku_listings WHERE id = $1', [id]);
+  return existing;
+}
+
+/**
+ * Полностью перестраивает sku_listings из двух источников:
+ * 1. products.marketplace_skus (kind='single') — одна строка на SKU
+ * 2. marketplace_listings (kind='bundle') — развернуть skus[] в строки
+ */
+export async function rebuildSkuListings(): Promise<{ created: number }> {
+  await query(`
+    CREATE TABLE IF NOT EXISTS sku_listings (
+      id VARCHAR(40) PRIMARY KEY,
+      sku VARCHAR(50) NOT NULL,
+      marketplace VARCHAR(10) NOT NULL,
+      entity VARCHAR(10) NOT NULL,
+      article VARCHAR(50) NOT NULL,
+      kind VARCHAR(10) NOT NULL DEFAULT 'single',
+      listing_id VARCHAR(40),
+      title TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(sku, marketplace, entity, article)
+    )
+  `);
+  await query('DELETE FROM sku_listings');
+
+  let created = 0;
+
+  const products = await getAllProducts();
+  for (const p of products) {
+    if (!p.marketplaceSkus) continue;
+    for (const ms of p.marketplaceSkus) {
+      const kind = ms.kind ?? 'single';
+      if (kind !== 'single') continue;
+      try {
+        await createSkuListing({
+          sku: p.sku,
+          marketplace: ms.marketplace,
+          entity: ms.entity,
+          article: ms.article,
+          kind: 'single',
+          title: ms.title,
+        });
+        created++;
+      } catch (e: any) {
+        console.error(`rebuildSkuListings: skip single duplicate (sku=${p.sku}, mp=${ms.marketplace}, ent=${ms.entity}, art=${ms.article}): ${e.message}`);
+      }
+    }
+  }
+
+  const listings = await getAllMarketplaceListings();
+  for (const listing of listings) {
+    if (listing.kind !== 'bundle') continue;
+    for (const sku of listing.skus) {
+      try {
+        await createSkuListing({
+          sku,
+          marketplace: listing.marketplace,
+          entity: listing.entity,
+          article: listing.article,
+          kind: 'bundle',
+          listingId: listing.id,
+          title: listing.title,
+        });
+        created++;
+      } catch (e: any) {
+        console.error(`rebuildSkuListings: skip bundle duplicate (sku=${sku}, mp=${listing.marketplace}, ent=${listing.entity}, art=${listing.article}): ${e.message}`);
+      }
+    }
+  }
+
+  return { created };
+}
+
 // ─── Dictionaries ─────────────────────────────────────────────────────────
 
 export async function getDictionary(type: string): Promise<DictionaryItem[]> {
@@ -413,7 +648,7 @@ export async function deleteDictionaryItem(
 // ─── Bulk operations: reset / import / export ─────────────────────────────
 
 export async function truncateAll(): Promise<void> {
-  await query('TRUNCATE products, dictionaries, kit_components, notifications, media_files, product_media_links RESTART IDENTITY CASCADE');
+  await query('TRUNCATE products, dictionaries, kit_components, notifications, media_files, product_media_links, marketplace_listings, sku_listings RESTART IDENTITY CASCADE');
 }
 
 export async function exportAll(): Promise<DataBundle> {
@@ -456,6 +691,8 @@ export async function exportAll(): Promise<DataBundle> {
     mediaFiles,
     mediaLinks,
     productMedia,
+    marketplaceListings: await getAllMarketplaceListings(),
+    skuListings: await getAllSkuListings(),
   };
 }
 
@@ -464,70 +701,105 @@ export async function importAll(bundle: Partial<DataBundle>): Promise<string[]> 
   for (const name of COLLECTIONS) {
     const data = (bundle as any)?.[name];
     if (!Array.isArray(data)) continue;
-    if (name === 'products') {
-      await query('DELETE FROM products');
-      for (const p of data as RawProduct[]) {
-        const product: RawProduct = { ...p, id: p.id, sku: p.sku };
-        const vals = productToDbParams(product as any);
-        await query(productInsertSql(), vals);
-      }
-    } else if (name === 'notifications') {
-      await query('DELETE FROM notifications');
-    } else if (name === 'kitComponents') {
-      await query('DELETE FROM kit_components');
-      for (const k of data as import('../types').RawKitComponent[]) {
-        const vals = kitComponentToDbParams(k);
-        await query(kitComponentInsertSql(), vals);
-      }
-    } else if (name === 'productMedia') {
-      await query('DELETE FROM product_media_links');
-      await query('DELETE FROM media_files');
-      const fileMap = new Map<string, import('../types').MediaFile>();
-      for (const m of data as RawProductMedia[]) {
-        let file = fileMap.get(m.url);
-        if (!file) {
-          file = {
-            id: m.id,
-            filename: m.url.replace(/^\/uploads\//, ''),
-            originalName: m.fileName,
-            mimeType: m.mimeType,
-            sizeBytes: m.sizeBytes,
-            url: m.url,
-            createdAt: m.uploadedAt,
-          };
-          fileMap.set(m.url, file);
-          await insertMediaFile(file);
+    try {
+      if (name === 'products') {
+        await query('DELETE FROM products');
+        for (const p of data as RawProduct[]) {
+          const product: RawProduct = { ...p, id: p.id, sku: p.sku };
+          const vals = productToDbParams(product as any);
+          await query(productInsertSql(), vals);
         }
-        await insertMediaLink({
-          fileId: file.id,
-          variantId: m.variantId,
-          isPrimary: m.isPrimary,
-          sortOrder: m.sortOrder,
-          uploadedAt: m.uploadedAt,
-        });
+      } else if (name === 'notifications') {
+        await query('DELETE FROM notifications');
+      } else if (name === 'kitComponents') {
+        await query('DELETE FROM kit_components');
+        for (const k of data as import('../types').RawKitComponent[]) {
+          const vals = kitComponentToDbParams(k);
+          await query(kitComponentInsertSql(), vals);
+        }
+      } else if (name === 'marketplaceListings') {
+        await query('DELETE FROM marketplace_listings');
+        for (const item of data as MarketplaceListing[]) {
+          await query(
+            `INSERT INTO marketplace_listings (id, marketplace, entity, article, title, kind, skus, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)
+             ON CONFLICT (id) DO UPDATE SET
+               marketplace = EXCLUDED.marketplace,
+               entity = EXCLUDED.entity,
+               article = EXCLUDED.article,
+               title = EXCLUDED.title,
+               kind = EXCLUDED.kind,
+               skus = EXCLUDED.skus,
+               updated_at = NOW()`,
+            [item.id, item.marketplace, item.entity, item.article, item.title, item.kind, JSON.stringify(item.skus), item.createdAt, item.updatedAt]
+          );
+        }
+      } else if (name === 'skuListings') {
+        continue;
+      } else if (name === 'mediaFiles') {
+        await query('DELETE FROM media_files');
+        for (const item of data as import('../types').MediaFile[]) {
+          await insertMediaFile(item);
+        }
+      } else if (name === 'mediaLinks') {
+        await query('DELETE FROM product_media_links');
+        for (const item of data as import('../types').MediaLink[]) {
+          await insertMediaLink(item);
+        }
+      } else if (name === 'productMedia') {
+        await query('DELETE FROM product_media_links');
+        await query('DELETE FROM media_files');
+        const fileMap = new Map<string, import('../types').MediaFile>();
+        for (const m of data as RawProductMedia[]) {
+          let file = fileMap.get(m.url);
+          if (!file) {
+            file = {
+              id: m.id,
+              filename: m.url.replace(/^\/uploads\//, ''),
+              originalName: m.fileName,
+              mimeType: m.mimeType,
+              sizeBytes: m.sizeBytes,
+              url: m.url,
+              createdAt: m.uploadedAt,
+            };
+            fileMap.set(m.url, file);
+            await insertMediaFile(file);
+          }
+          await insertMediaLink({
+            fileId: file.id,
+            variantId: m.variantId,
+            isPrimary: m.isPrimary,
+            sortOrder: m.sortOrder,
+            uploadedAt: m.uploadedAt,
+          });
+        }
+      } else {
+        await query('DELETE FROM dictionaries WHERE type = $1', [name]);
+        for (const item of data as DictionaryItem[]) {
+          const cleaned = sanitizeDictItem(item);
+          const vals = [
+            cleaned.id,
+            name,
+            dictNameToJson(cleaned),
+            cleaned.categoryId ?? cleaned.parentId ?? null,
+            cleaned.code ?? null,
+            cleaned.color ?? null,
+            cleaned.icon ?? null,
+            cleaned.description ?? null,
+            cleaned.contactInfo ?? null,
+            cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
+            cleaned.sortOrder ?? 0,
+          ];
+          await query(dictInsertSql(), vals);
+        }
       }
-    } else {
-      await query('DELETE FROM dictionaries WHERE type = $1', [name]);
-      for (const item of data as DictionaryItem[]) {
-        const cleaned = sanitizeDictItem(item);
-        const vals = [
-          cleaned.id,
-          name,
-          dictNameToJson(cleaned),
-          cleaned.categoryId ?? cleaned.parentId ?? null,
-          cleaned.code ?? null,
-          cleaned.color ?? null,
-          cleaned.icon ?? null,
-          cleaned.description ?? null,
-          cleaned.contactInfo ?? null,
-          cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
-          cleaned.sortOrder ?? 0,
-        ];
-        await query(dictInsertSql(), vals);
-      }
+      imported.push(name);
+    } catch (e: any) {
+      console.error(`importAll: error importing collection "${name}": ${e.message}`, e.stack);
+      throw e;
     }
-    imported.push(name);
   }
+  await rebuildSkuListings();
   return imported;
 }
 

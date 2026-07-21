@@ -30,6 +30,7 @@ import type {
   User,
   UserRole,
   MarketplaceSku,
+  SkuListing,
 } from '@app-types';
 
 // ─── Тип для сырого словарного элемента, как приходит с бэка ──────────────
@@ -178,6 +179,9 @@ export interface NotificationsAPI {
 export interface SettingsAPI {
   /** Полный сброс к дефолтным значениям (на бэке). */
   reset(): Promise<void>;
+
+  /** Сброс из указанной поддиректории дефолтов (напр. '.defaults_2'). */
+  resetFrom(source: string): Promise<void>;
 
   /** Сид (merge) данных из defaults в БД без удаления существующих записей. */
   seed(): Promise<void>;
@@ -338,7 +342,7 @@ export function hydrateProduct(
   },
   mediaFiles: MediaFile[] = [],
   mediaLinks: MediaLink[] = [],
-  marketplaceSkus: MarketplaceSku[] = []
+  skuListings: SkuListing[] = [],
 ): ProductWithRelations {
   const category =
     dicts.categories.find((c) => c.id === raw.categoryId) ?? { ...FALLBACK_CATEGORY };
@@ -389,7 +393,7 @@ export function hydrateProduct(
     const length = raw.lengthM ? `${raw.lengthM}м` : '';
     return `${cat} серии ${modelSrc}${power ? ` мощностью ${power}` : ''}${
       length ? ` длиной ${length}` : ''
-    }. Предназначен для быстрой и безопасной зарядки устройств.`;
+    }.`;
   };
 
   const generateUsp = (): string => {
@@ -436,6 +440,35 @@ export function hydrateProduct(
 
   const myFiles = mediaFiles.filter((f) => myLinks.some((l) => l.fileId === f.id));
 
+  const seen = new Set<string>();
+  const finalMarketplaceSkus: MarketplaceSku[] = [];
+
+  // Singles из raw.marketplaceSkus (прямой путь с сервера, всегда доступен)
+  for (const s of raw.marketplaceSkus ?? []) {
+    const kind = s.kind ?? 'single';
+    const key = `${s.marketplace}:${s.entity}:${s.article}:${kind}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      finalMarketplaceSkus.push({ ...s, kind });
+    }
+  }
+
+  // Bundles из skuListings (перестроенный источник)
+  for (const sl of skuListings) {
+    if (sl.sku !== raw.sku || sl.kind !== 'bundle') continue;
+    const key = `${sl.marketplace}:${sl.entity}:${sl.article}:bundle`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      finalMarketplaceSkus.push({
+        marketplace: sl.marketplace,
+        entity: sl.entity,
+        article: sl.article,
+        kind: 'bundle',
+        title: sl.title ?? '',
+      });
+    }
+  }
+
   return {
     id: raw.id ?? '',
     sku: raw.sku,
@@ -469,7 +502,7 @@ export function hydrateProduct(
     media: myMedia,
     mediaFiles: myFiles,
     mediaLinks: myLinks,
-    marketplaceSkus: marketplaceSkus,
+    marketplaceSkus: finalMarketplaceSkus,
   };
 }
 

@@ -4,20 +4,12 @@ import {
   truncateAll,
   exportAll,
   importAll,
+  migrateMarketplaceListings,
 } from '../../utils/dbStore';
-import { initSchema, query } from '../../utils/db';
-import { readDefaults, readCollection } from '../../utils/jsonStore';
+import { initSchema } from '../../utils/db';
+import { readDefaults, readDefaultsFromDir, readCollection } from '../../utils/jsonStore';
 import { COLLECTIONS } from '../../types';
-import {
-  productInsertSql,
-  productToDbParams,
-  dictInsertSql,
-  dictNameToJson,
-  sanitizeDictItem,
-  kitComponentToDbParams,
-  kitComponentInsertSql,
-} from '../../utils/mappers';
-import type { DataBundle, RawProduct, DictionaryItem } from '../../types';
+import type { DataBundle } from '../../types';
 
 const router = Router();
 
@@ -40,40 +32,15 @@ async function ensureDb(_req: Request, res: Response): Promise<boolean> {
 async function seedFromJsonDefaults(): Promise<{ seeded: string[]; counts: Record<string, number> }> {
   await truncateAll();
   await initSchema();
-  const seeded: string[] = [];
+  const bundle: Partial<DataBundle> = {};
   const counts: Record<string, number> = {};
   for (const name of COLLECTIONS) {
     const data = readDefaults<unknown>(name);
     if (!Array.isArray(data) || data.length === 0) continue;
-    if (name === 'products') {
-      for (const p of data as RawProduct[]) {
-        if (!p.id || !p.sku) continue;
-        const vals = productToDbParams(p as any);
-        await query(productInsertSql(), vals);
-      }
-    } else {
-      for (const item of data as DictionaryItem[]) {
-        if (!item.id) continue;
-        const cleaned = sanitizeDictItem(item);
-        const vals = [
-          cleaned.id,
-          name,
-          dictNameToJson(cleaned),
-          cleaned.categoryId ?? cleaned.parentId ?? null,
-          cleaned.code ?? null,
-          cleaned.color ?? null,
-          cleaned.icon ?? null,
-          cleaned.description ?? null,
-          cleaned.contactInfo ?? null,
-          cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
-          cleaned.sortOrder ?? 0,
-        ];
-        await query(dictInsertSql(), vals);
-      }
-    }
+    (bundle as any)[name] = data;
     counts[name] = data.length;
-    seeded.push(name);
   }
+  const seeded = await importAll(bundle);
   return { seeded, counts };
 }
 
@@ -84,56 +51,34 @@ async function seedFromJsonDefaults(): Promise<{ seeded: string[]; counts: Recor
 async function seedFromLiveData(): Promise<{ seeded: string[]; counts: Record<string, number> }> {
   await truncateAll();
   await initSchema();
-  const seeded: string[] = [];
+  const bundle: Partial<DataBundle> = {};
   const counts: Record<string, number> = {};
-
-  // Products
-  const products = readCollection<RawProduct>('products');
-  for (const p of products) {
-    if (!p.id || !p.sku) continue;
-    const vals = productToDbParams(p as any);
-    await query(productInsertSql(), vals);
-  }
-  counts['products'] = products.length;
-  seeded.push('products');
-
-  // Dictionaries
   for (const name of COLLECTIONS) {
-    if (name === 'products' || name === 'kitComponents' || name === 'notifications') continue;
-    const data = readCollection<DictionaryItem>(name);
-    if (data.length === 0) continue;
-    for (const item of data) {
-      if (!item.id) continue;
-      const cleaned = sanitizeDictItem(item);
-      const vals = [
-        cleaned.id,
-        name,
-        dictNameToJson(cleaned),
-        cleaned.categoryId ?? cleaned.parentId ?? null,
-        cleaned.code ?? null,
-        cleaned.color ?? null,
-        cleaned.icon ?? null,
-        cleaned.description ?? null,
-        cleaned.contactInfo ?? null,
-        cleaned.shortName ? JSON.stringify(cleaned.shortName) : null,
-        cleaned.sortOrder ?? 0,
-      ];
-      await query(dictInsertSql(), vals);
-    }
+    const data = readCollection<unknown>(name);
+    if (!Array.isArray(data) || data.length === 0) continue;
+    (bundle as any)[name] = data;
     counts[name] = data.length;
-    seeded.push(name);
   }
+  const seeded = await importAll(bundle);
+  return { seeded, counts };
+}
 
-  // Kit Components
-  const kitComponents = readCollection<import('../../types').RawKitComponent>('kitComponents');
-  for (const k of kitComponents) {
-    if (!k.kitId || !k.componentId) continue;
-    const vals = kitComponentToDbParams(k);
-    await query(kitComponentInsertSql(), vals);
+/**
+ * То же, что seedFromJsonDefaults, но читает JSON из произвольной
+ * поддиректории server/data/{dir}/.
+ */
+async function seedFromJsonDefaultsDir(dir: string): Promise<{ seeded: string[]; counts: Record<string, number> }> {
+  await truncateAll();
+  await initSchema();
+  const bundle: Partial<DataBundle> = {};
+  const counts: Record<string, number> = {};
+  for (const name of COLLECTIONS) {
+    const data = readDefaultsFromDir<unknown>(dir, name);
+    if (!Array.isArray(data) || data.length === 0) continue;
+    (bundle as any)[name] = data;
+    counts[name] = data.length;
   }
-  counts['kitComponents'] = kitComponents.length;
-  seeded.push('kitComponents');
-
+  const seeded = await importAll(bundle);
   return { seeded, counts };
 }
 
@@ -152,7 +97,25 @@ router.post('/reset', async (_req: Request, res: Response) => {
   if (!(await ensureDb(_req, res))) return;
   try {
     const result = await seedFromJsonDefaults();
-    res.json({ ok: true, mode: 'dev', ...result });
+    const migrate = await migrateMarketplaceListings();
+    res.json({ ok: true, mode: 'dev', ...result, migrate });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/dev/reset-from — TRUNCATE + seed from custom directory (e.g. .defaults_2)
+router.post('/reset-from', async (req: Request, res: Response) => {
+  if (!(await ensureDb(req, res))) return;
+  try {
+    const { source } = req.body || {};
+    if (!source || typeof source !== 'string') {
+      res.status(400).json({ error: 'Missing or invalid "source" in request body' });
+      return;
+    }
+    const result = await seedFromJsonDefaultsDir(source);
+    const migrate = await migrateMarketplaceListings();
+    res.json({ ok: true, mode: 'dev', source, ...result, migrate });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -163,8 +126,10 @@ router.post('/seed', async (_req: Request, res: Response) => {
   if (!(await ensureDb(_req, res))) return;
   try {
     const result = await seedFromLiveData();
-    res.json({ ok: true, mode: 'dev', ...result });
+    const migrate = await migrateMarketplaceListings();
+    res.json({ ok: true, mode: 'dev', ...result, migrate });
   } catch (err: any) {
+    console.error('POST /api/dev/seed failed:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -190,7 +155,8 @@ router.post('/import', async (req: Request, res: Response) => {
       return;
     }
     const collections = await importAll(bundle);
-    res.json({ ok: true, mode: 'dev', collections });
+    const migrate = bundle.marketplaceListings ? { skipped: true } : await migrateMarketplaceListings();
+    res.json({ ok: true, mode: 'dev', collections, migrate });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -133,6 +133,31 @@ export interface MarketplaceSku {
   title: string;
 }
 
+export interface MarketplaceListing {
+  id: string;
+  marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
+  article: string;
+  title: string;
+  kind: MarketplaceListingKind;
+  skus: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SkuListing {
+  id: string;
+  sku: string;
+  marketplace: Marketplace;
+  entity: MarketplaceEntityCode;
+  article: string;
+  kind: MarketplaceListingKind;
+  listingId?: string;
+  title?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type DataBundle = {
   products: RawProduct[];
   categories: DictionaryItem[];
@@ -146,6 +171,8 @@ export type DataBundle = {
   productMedia: RawProductMedia[];
   mediaFiles: MediaFile[];
   mediaLinks: MediaLink[];
+  marketplaceListings: MarketplaceListing[];
+  skuListings: SkuListing[];
 };
 
 export type UserRole = 'admin' | 'user';
@@ -184,6 +211,8 @@ export const COLLECTIONS = [
   'productMedia',
   'mediaFiles',
   'mediaLinks',
+  'marketplaceListings',
+  'skuListings',
 ] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 
