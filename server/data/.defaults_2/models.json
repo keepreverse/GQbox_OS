@@ -1,0 +1,464 @@
+[
+  {
+    "id": "mod-zs",
+    "categoryId": "cat-cable",
+    "code": "ZS",
+    "name_source": "ZS",
+    "name_product": "ZS"
+  },
+  {
+    "id": "mod-pr",
+    "categoryId": "cat-cable",
+    "code": "PR",
+    "name_source": "PR",
+    "name_product": "PR"
+  },
+  {
+    "id": "mod-st",
+    "categoryId": "cat-cable",
+    "code": "ST",
+    "name_source": "ST",
+    "name_product": "ST"
+  },
+  {
+    "id": "mod-org",
+    "categoryId": "cat-cable",
+    "code": "ORG",
+    "name_source": "ORG",
+    "name_product": "Orig"
+  },
+  {
+    "id": "mod-old",
+    "categoryId": "cat-cable",
+    "code": "OLD",
+    "name_source": "OLD",
+    "name_product": "Старый"
+  },
+  {
+    "id": "mod-braided",
+    "categoryId": "cat-cable",
+    "code": "braided",
+    "name_source": "braided",
+    "name_product": "плетеный"
+  },
+  {
+    "id": "mod-braided-pr",
+    "categoryId": "cat-cable",
+    "code": "braided PR",
+    "name_source": "braided PR",
+    "name_product": "плетеный PR"
+  },
+  {
+    "id": "mod-braided-org",
+    "categoryId": "cat-cable",
+    "code": "braided ORG",
+    "name_source": "braided ORG",
+    "name_product": "плетеный Orig"
+  },
+  {
+    "id": "mod-55w",
+    "categoryId": "cat-cable",
+    "code": "55W",
+    "name_source": "55W",
+    "name_product": "ST"
+  },
+  {
+    "id": "mod-carbon",
+    "categoryId": "cat-cable",
+    "code": "Carbon",
+    "name_source": "Carbon",
+    "name_product": "карбоновый"
+  },
+  {
+    "id": "mod-carbon-spiral",
+    "categoryId": "cat-cable",
+    "code": "Carbon Spiral",
+    "name_source": "Carbon Spiral",
+    "name_product": "карбоновая спираль"
+  },
+  {
+    "id": "mod-carbon-3in1",
+    "categoryId": "cat-cable",
+    "code": "Carbon 3in1",
+    "name_source": "Carbon 3in1",
+    "name_product": "карбоновый 3в1"
+  },
+  {
+    "id": "mod-360",
+    "categoryId": "cat-cable",
+    "code": "360",
+    "name_source": "360",
+    "name_product": "360"
+  },
+  {
+    "id": "mod-magnet",
+    "categoryId": "cat-cable",
+    "code": "Magnet",
+    "name_source": "Magnet",
+    "name_product": "магнитный"
+  },
+  {
+    "id": "mod-magnet-st",
+    "categoryId": "cat-cable",
+    "code": "Magnet ST",
+    "name_source": "Magnet ST",
+    "name_product": "магнитный"
+  },
+  {
+    "id": "mod-male",
+    "categoryId": "cat-cable",
+    "code": "Male",
+    "name_source": "Male",
+    "name_product": "Мужской"
+  },
+  {
+    "id": "mod-neck",
+    "categoryId": "cat-cable",
+    "code": "Neck",
+    "name_source": "Neck",
+    "name_product": "ремешок"
+  },
+  {
+    "id": "mod-cute",
+    "categoryId": "cat-cable",
+    "code": "Cute",
+    "name_source": "Cute",
+    "name_product": "Женский"
+  },
+  {
+    "id": "mod-pr-spiral",
+    "categoryId": "cat-cable",
+    "code": "PR Spiral",
+    "name_source": "PR Spiral",
+    "name_product": "премиальный спиральный"
+  },
+  {
+    "id": "mod-silicone",
+    "categoryId": "cat-cable",
+    "code": "Silicone",
+    "name_source": "Silicone",
+    "name_product": "силиконовый"
+  },
+  {
+    "id": "mod-game",
+    "categoryId": "cat-cable",
+    "code": "Game",
+    "name_source": "Game",
+    "name_product": "угловой геймерский"
+  },
+  {
+    "id": "mod-pl-thick",
+    "categoryId": "cat-cable",
+    "code": "PL Thick",
+    "name_source": "PL Thick",
+    "name_product": "толстый плетеный"
+  },
+  {
+    "id": "mod-colour-zs",
+    "categoryId": "cat-cable",
+    "code": "Colour ZS",
+    "name_source": "Colour ZS",
+    "name_product": "цветной ZS"
+  },
+  {
+    "id": "mod-colour-braided",
+    "categoryId": "cat-cable",
+    "code": "Colour braided",
+    "name_source": "Colour braided",
+    "name_product": "плетеный"
+  },
+  {
+    "id": "mod-watch",
+    "categoryId": "cat-cable",
+    "code": "WATCH",
+    "name_source": "WATCH",
+    "name_product": "для зарядки Apple Watch"
+  },
+  {
+    "id": "mod-watch-up",
+    "categoryId": "cat-cable",
+    "code": "WATCH UP",
+    "name_source": "WATCH UP",
+    "name_product": "для Apple Watch плетеный"
+  },
+  {
+    "id": "mod-1a",
+    "categoryId": "cat-szu",
+    "code": "1A",
+    "name_source": "1A",
+    "name_product": "1A"
+  },
+  {
+    "id": "mod-pd",
+    "categoryId": "cat-szu",
+    "code": "PD",
+    "name_source": "PD",
+    "name_product": "PD"
+  },
+  {
+    "id": "mod-qc3",
+    "categoryId": "cat-szu",
+    "code": "QC3",
+    "name_source": "QC3",
+    "name_product": "QC3"
+  },
+  {
+    "id": "mod-utc",
+    "categoryId": "cat-szu",
+    "code": "UTC",
+    "name_source": "UTC",
+    "name_product": "UTC"
+  },
+  {
+    "id": "mod-gan",
+    "categoryId": "cat-szu",
+    "code": "GAN",
+    "name_source": "GAN",
+    "name_product": "GaN"
+  },
+  {
+    "id": "mod-y9",
+    "categoryId": "cat-bzu",
+    "code": "Y9",
+    "name_source": "Y9",
+    "name_product": "Станция Y9"
+  },
+  {
+    "id": "mod-y58",
+    "categoryId": "cat-bzu",
+    "code": "Y58",
+    "name_source": "Y58",
+    "name_product": "Одиночная станция Y58"
+  },
+  {
+    "id": "mod-m2",
+    "categoryId": "cat-bzu",
+    "code": "M2",
+    "name_source": "M2",
+    "name_product": "Разборная станция M2"
+  },
+  {
+    "id": "mod-y93",
+    "categoryId": "cat-bzu",
+    "code": "Y93",
+    "name_source": "Y93",
+    "name_product": "Компактная станция Y93"
+  },
+  {
+    "id": "mod-vacuum",
+    "categoryId": "cat-bzu",
+    "code": "Vacuum",
+    "name_source": "Vacuum",
+    "name_product": "вакуумная"
+  },
+  {
+    "id": "mod-folding",
+    "categoryId": "cat-bzu",
+    "code": "Folding",
+    "name_source": "Folding",
+    "name_product": "раскладываемая"
+  },
+  {
+    "id": "mod-rgb",
+    "categoryId": "cat-azu",
+    "code": "RGB",
+    "name_source": "RGB",
+    "name_product": "RGB"
+  },
+  {
+    "id": "mod-hammer",
+    "categoryId": "cat-azu",
+    "code": "Hammer",
+    "name_source": "Hammer",
+    "name_product": "Hammer"
+  },
+  {
+    "id": "mod-invisible",
+    "categoryId": "cat-azu",
+    "code": "Invisible",
+    "name_source": "Invisible",
+    "name_product": "Невидимка"
+  },
+  {
+    "id": "mod-bullet",
+    "categoryId": "cat-azu",
+    "code": "Bullet",
+    "name_source": "Bullet",
+    "name_product": "Патрон"
+  },
+  {
+    "id": "mod-stick",
+    "categoryId": "cat-azu",
+    "code": "Stick",
+    "name_source": "Stick",
+    "name_product": "удлиненный"
+  },
+  {
+    "id": "mod-carbon-azu",
+    "categoryId": "cat-azu",
+    "code": "Carbon",
+    "name_source": "Carbon",
+    "name_product": "карбоновый"
+  },
+  {
+    "id": "mod-earpads",
+    "categoryId": "cat-headphones",
+    "code": "EarPads",
+    "name_source": "EarPads",
+    "name_product": "EarPads"
+  },
+  {
+    "id": "mod-earpads-org",
+    "categoryId": "cat-headphones",
+    "code": "EarPads ORG",
+    "name_source": "EarPads ORG",
+    "name_product": "EarPads Ориг"
+  },
+  {
+    "id": "mod-earpads-pr",
+    "categoryId": "cat-headphones",
+    "code": "EarPads PR",
+    "name_source": "EarPads PR",
+    "name_product": "EarPads Премиум"
+  },
+  {
+    "id": "mod-earpads-clr",
+    "categoryId": "cat-headphones",
+    "code": "EarPads CLR",
+    "name_source": "EarPads CLR",
+    "name_product": "EarPads Color"
+  },
+  {
+    "id": "mod-metal",
+    "categoryId": "cat-headphones",
+    "code": "Metal",
+    "name_source": "Metal",
+    "name_product": "Metal"
+  },
+  {
+    "id": "mod-pro",
+    "categoryId": "cat-headphones",
+    "code": "PRO",
+    "name_source": "PRO",
+    "name_product": "PRO"
+  },
+  {
+    "id": "mod-pro-orig",
+    "categoryId": "cat-headphones",
+    "code": "PRO Orig",
+    "name_source": "PRO Orig",
+    "name_product": "PRO Orig"
+  },
+  {
+    "id": "mod-pro-pr",
+    "categoryId": "cat-headphones",
+    "code": "PRO PR",
+    "name_source": "PRO PR",
+    "name_product": "PRO PR"
+  },
+  {
+    "id": "mod-popup",
+    "categoryId": "cat-headphones",
+    "code": "POPUP",
+    "name_source": "POPUP",
+    "name_product": "POPUP"
+  },
+  {
+    "id": "mod-popup-orig",
+    "categoryId": "cat-headphones",
+    "code": "POPUP ORIG",
+    "name_source": "POPUP ORIG",
+    "name_product": "POPUP Orig"
+  },
+  {
+    "id": "mod-popup-pr",
+    "categoryId": "cat-headphones",
+    "code": "POPUP PR",
+    "name_source": "POPUP PR",
+    "name_product": "POPUP PR"
+  },
+  {
+    "id": "mod-old-st",
+    "categoryId": "cat-adapter",
+    "code": "OLD ST",
+    "name_source": "OLD ST",
+    "name_product": "OLD ST"
+  },
+  {
+    "id": "mod-old-pr",
+    "categoryId": "cat-adapter",
+    "code": "OLD PR",
+    "name_source": "OLD PR",
+    "name_product": "OLD PR"
+  },
+  {
+    "id": "mod-old-adapter",
+    "categoryId": "cat-adapter",
+    "code": "OLD",
+    "name_source": "OLD",
+    "name_product": "Старый"
+  },
+  {
+    "id": "mod-pin",
+    "categoryId": "cat-pin",
+    "code": "PIN",
+    "name_source": "PIN",
+    "name_product": "Пин"
+  },
+  {
+    "id": "mod-old-holder",
+    "categoryId": "cat-holder",
+    "code": "OLD",
+    "name_source": "OLD",
+    "name_product": "Старый"
+  },
+  {
+    "id": "mod-butterfly",
+    "categoryId": "cat-case",
+    "code": "Butterfly",
+    "name_source": "Butterfly",
+    "name_product": "Бабочка"
+  },
+  {
+    "id": "mod-icecream",
+    "categoryId": "cat-case",
+    "code": "IceCream",
+    "name_source": "IceCream",
+    "name_product": "Мороженка"
+  },
+  {
+    "id": "mod-heart",
+    "categoryId": "cat-case",
+    "code": "Heart",
+    "name_source": "Heart",
+    "name_product": "Сердечко"
+  },
+  {
+    "id": "mod-china-braided-pr",
+    "categoryId": "cat-kit",
+    "code": "China braided PR",
+    "name_source": "China braided PR",
+    "name_product": "PD + плетеный PR"
+  },
+  {
+    "id": "mod-china-pr",
+    "categoryId": "cat-kit",
+    "code": "China PR",
+    "name_source": "China PR",
+    "name_product": "PD + PR"
+  },
+  {
+    "id": "mod-china-st",
+    "categoryId": "cat-kit",
+    "code": "China ST",
+    "name_source": "China ST",
+    "name_product": "PD + ST"
+  },
+  {
+    "id": "mod-screen-mirror",
+    "categoryId": "cat-blogo",
+    "code": "Screen Mirror",
+    "name_source": "Screen Mirror",
+    "name_product": "повторитель экрана"
+  }
+]

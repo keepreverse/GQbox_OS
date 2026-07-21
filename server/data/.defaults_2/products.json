@@ -1,0 +1,4577 @@
+[
+  {
+    "id": "p1",
+    "sku": "S10002E/01",
+    "skuBase": "S10002E",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "variantCode": "E",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "888067142",
+        "title": "Комплект. Кабель. L-USB ZS 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "147808092",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "148963113",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "888066703",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "597015220",
+        "title": "Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "137781697",
+        "title": "Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "418231219",
+        "title": "Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "417531633",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1739911936",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p2",
+    "sku": "S10002E/02",
+    "skuBase": "S10002E",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "variantCode": "E",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "147817988",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "148963115",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "888066716",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "147808092",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "148963113",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "888066703",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "508417663",
+        "title": "Комплект. Кабель. L-USB ZS 1м БЕЛЫЙ 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "147817989",
+        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "148954610",
+        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "13781411",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "71479258",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "137781695",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "151224674",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "216823744",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "818814489",
+        "title": "Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "158416000",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1407910339",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. L-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p3",
+    "sku": "S10002E-2/01",
+    "skuBase": "S10002E",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "variantCode": "E",
+    "lengthVariant": "2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "888067134",
+        "title": "Комплект. Кабель. L-USB ZS 2м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "597015221",
+        "title": "Кабель. L-USB ZS 2м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "137777686",
+        "title": "Кабель. L-USB ZS 2м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "146186773",
+        "title": "Кабель. L-USB ZS 2м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1348901995",
+        "title": "Кабель. L-USB ZS 2м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p4",
+    "sku": "S10002E-2/02",
+    "skuBase": "S10002E",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "variantCode": "E",
+    "lengthVariant": "2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "560166005",
+        "title": "Комплект. Кабель. L-USB ZS 2м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "560299895",
+        "title": "Комплект. Кабель. L-USB ZS 2м БЕЛЫЙ 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "147817989",
+        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "148954610",
+        "title": "Комплект. Кабель. L-USB ZS 1м + Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "597015222",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "137777665",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "146186772",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "175865843",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201361137",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "819322759",
+        "title": "Кабель. L-USB ZS 2м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p5",
+    "sku": "S10002/02",
+    "skuBase": "S10002",
+    "categoryId": "cat-cable",
+    "modelId": "mod-old",
+    "colorId": "col-02",
+    "supplierId": "sup-none",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p6",
+    "sku": "S10017/02",
+    "skuBase": "S10017",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1313669158",
+        "title": "Комплект. Кабель. L-USB PR 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "430930991",
+        "title": "Кабель. L-USB PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "71558982",
+        "title": "Кабель. L-USB PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "202280570",
+        "title": "Кабель. L-USB PR 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p7",
+    "sku": "S10022/02",
+    "skuBase": "S10022",
+    "categoryId": "cat-cable",
+    "modelId": "mod-org",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "271760047",
+        "title": "Кабель. L-USB Orig 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "3214834227",
+        "title": "Кабель. L-USB Orig 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p8",
+    "sku": "S10011-ST",
+    "skuBase": "S10011",
+    "categoryId": "cat-cable",
+    "modelId": "mod-st",
+    "colorId": "col-02",
+    "supplierId": "sup-both",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 4,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "ST",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p9",
+    "sku": "S10011-PR/02",
+    "skuBase": "S10011",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-both",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "PR",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p10",
+    "sku": "S10011-2",
+    "skuBase": "S10011",
+    "categoryId": "cat-cable",
+    "modelId": "mod-st",
+    "colorId": "col-02",
+    "supplierId": "sup-both",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "2"
+  },
+  {
+    "id": "p11",
+    "sku": "S10005/01",
+    "skuBase": "S10005",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "161927978",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "891861328",
+        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "881213419",
+        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "891861338",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "881214894",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "447277048",
+        "title": "Комплект. Кабель. TC-USB ZS 1м ЧЕРНЫЙ 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "598858039",
+        "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54110468",
+        "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "418161625",
+        "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "881213442",
+        "title": "Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "583343068",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p12",
+    "sku": "S10005/02",
+    "skuBase": "S10005",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54589387",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "891861353",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "891861338",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "881214894",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "448895966",
+        "title": "Комплект. Кабель. TC-USB ZS 1м БЕЛЫЙ 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "412176198",
+        "title": "Комплект. Кабель. TC-USB ZS 1м + Кабель. TC-USB ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "598858041",
+        "title": "Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "17519484",
+        "title": "Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201361145",
+        "title": "Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "881214524",
+        "title": "Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "158423864",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "958553481",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "161579755",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "408211636",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1403239194",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p13",
+    "sku": "S11007/01",
+    "skuBase": "S11007",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pr",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "410152828",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1354042955",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1352552046",
+        "title": "Комплект. Кабель. TC-TC PR 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "115093202",
+        "title": "Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1350443347",
+        "title": "Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "417531633",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1739911936",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p14",
+    "sku": "S11007/02",
+    "skuBase": "S11007",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1352616628",
+        "title": "Комплект. Кабель. TC-TC PR 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "194116510",
+        "title": "Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "115091621",
+        "title": "Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "217120185",
+        "title": "Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1418522742",
+        "title": "Комплект. СЗУ. PD TC 25+25W + Кабель. TC-TC PR 1м + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "836049628",
+        "title": "Комплект. СЗУ. PD TC 18W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "197813189",
+        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p15",
+    "sku": "S11008/02-W",
+    "skuBase": "S11008",
+    "categoryId": "cat-cable",
+    "modelId": "mod-braided",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 0.75,
+    "voltageV": 21,
+    "powerW": 60,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "12340726",
+        "title": "Кабель. TC-TC плетеный 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1598199993",
+        "title": "Кабель. TC-TC плетеный 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p16",
+    "sku": "S11040/01",
+    "skuBase": "S11040",
+    "categoryId": "cat-cable",
+    "modelId": "mod-55w",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 0.8,
+    "voltageV": 20,
+    "powerW": 55,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "154051449",
+        "title": "Кабель. TC-TC ST 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "456699173",
+        "title": "Кабель. TC-TC ST 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1931445509",
+        "title": "Кабель. TC-TC ST 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "565913853",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ST 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p17",
+    "sku": "S11040/02",
+    "skuBase": "S11040",
+    "categoryId": "cat-cable",
+    "modelId": "mod-55w",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 0.8,
+    "voltageV": 20,
+    "powerW": 55,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "456545516",
+        "title": "Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "329832869",
+        "title": "Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "1931446033",
+        "title": "Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "460782043",
+        "title": "Комплект. СЗУ. PD TC 35W + Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p18",
+    "sku": "S10006/01",
+    "skuBase": "S10006",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-micro",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "889537202",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880682006",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "889537218",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880681782",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "71873002",
+        "title": "Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54336334",
+        "title": "Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "418148351",
+        "title": "Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880681660",
+        "title": "Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p19",
+    "sku": "S10006/02",
+    "skuBase": "S10006",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 4,
+    "voltageV": 5,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-micro",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "889536875",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880703588",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "889537218",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880681782",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ + Кабель. Micro-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "448887911",
+        "title": "Комплект. Кабель. Micro-USB ZS 1м БЕЛЫЙ 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "71873312",
+        "title": "Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "23667782",
+        "title": "Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201363690",
+        "title": "Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "880684818",
+        "title": "Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "44702470",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "408221388",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1403561541",
+        "title": "Комплект. СЗУ. QC3 USB 15W + Кабель. Micro-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p20",
+    "sku": "S10029/01",
+    "skuBase": "S10029",
+    "categoryId": "cat-cable",
+    "modelId": "mod-carbon-spiral",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 2,
+    "voltageV": 5,
+    "powerW": 10,
+    "lengthM": 1.5,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "chargingProtocolId": "proto-qc",
+    "lengthVariant": "1.5",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "786690914",
+        "title": "Кабель. L-USB карбоновая спираль 1.5м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p21",
+    "sku": "S11029/01",
+    "skuBase": "S11029",
+    "categoryId": "cat-cable",
+    "modelId": "mod-carbon-spiral",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 2,
+    "voltageV": 5,
+    "powerW": 10,
+    "lengthM": 1.5,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-qc",
+    "lengthVariant": "1.5",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "786690913",
+        "title": "Кабель. USB-TC карбоновая спираль 1.5м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p22",
+    "sku": "S11043/01",
+    "skuBase": "S11043",
+    "categoryId": "cat-cable",
+    "modelId": "mod-carbon-spiral",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 2,
+    "voltageV": 20,
+    "powerW": 40,
+    "lengthM": 1.5,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "lengthVariant": "1.5",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "786690912",
+        "title": "Кабель. TC-TC карбоновая спираль 1.5м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p23",
+    "sku": "S10044/02",
+    "skuBase": "S10044",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pl-thick",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 27,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p24",
+    "sku": "S11044/02",
+    "skuBase": "S11044",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pl-thick",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 240,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p25",
+    "sku": "S10031/01",
+    "skuBase": "S10031",
+    "categoryId": "cat-cable",
+    "modelId": "mod-silicone",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 240,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tcl",
+    "connectorMaleId": "conn-usbtc",
+    "lengthVariant": "1.2"
+  },
+  {
+    "id": "p26",
+    "sku": "S10031/02",
+    "skuBase": "S10031",
+    "categoryId": "cat-cable",
+    "modelId": "mod-silicone",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 240,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tcl",
+    "connectorMaleId": "conn-usbtc",
+    "lengthVariant": "1.2"
+  },
+  {
+    "id": "p27",
+    "sku": "S10031/03",
+    "skuBase": "S10031",
+    "categoryId": "cat-cable",
+    "modelId": "mod-silicone",
+    "colorId": "col-03",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 240,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tcl",
+    "connectorMaleId": "conn-usbtc",
+    "lengthVariant": "1.2"
+  },
+  {
+    "id": "p28",
+    "sku": "S11048/01",
+    "skuBase": "S11048",
+    "categoryId": "cat-cable",
+    "modelId": "mod-neck",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 60,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1118199449",
+        "title": "Кабель. TC-TC ремешок 1м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4381660066",
+        "title": "Кабель. TC-TC ремешок 1м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p29",
+    "sku": "S11048/02",
+    "skuBase": "S11048",
+    "categoryId": "cat-cable",
+    "modelId": "mod-neck",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 60,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1118199450",
+        "title": "Кабель. TC-TC ремешок 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4381663263",
+        "title": "Кабель. TC-TC ремешок 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p30",
+    "sku": "S11048/03",
+    "skuBase": "S11048",
+    "categoryId": "cat-cable",
+    "modelId": "mod-neck",
+    "colorId": "col-03",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 60,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1118199451",
+        "title": "Кабель. TC-TC ремешок 1м КРАСНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4381660823",
+        "title": "Кабель. TC-TC ремешок 1м КРАСНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p31",
+    "sku": "S11048/06",
+    "skuBase": "S11048",
+    "categoryId": "cat-cable",
+    "modelId": "mod-neck",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 60,
+    "lengthM": 1.2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1118199452",
+        "title": "Кабель. TC-TC ремешок 1м СИНИЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4381660689",
+        "title": "Кабель. TC-TC ремешок 1м СИНИЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p32",
+    "sku": "S11049/01",
+    "skuBase": "S11049",
+    "categoryId": "cat-cable",
+    "modelId": "mod-game",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 5,
+    "voltageV": 20,
+    "powerW": 100,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p33",
+    "sku": "S11024/01",
+    "skuBase": "S11024",
+    "categoryId": "cat-cable",
+    "modelId": "mod-colour-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "lengthM": 1.3,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.3",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1026054016",
+        "title": "Кабель. TC-TC цветной 1.3м ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4205511952",
+        "title": "Кабель. TC-TC цветной 1.3м ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p34",
+    "sku": "S11024/02",
+    "skuBase": "S11024",
+    "categoryId": "cat-cable",
+    "modelId": "mod-colour-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "lengthM": 1.3,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.3",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1026054015",
+        "title": "Кабель. TC-TC цветной 1.3м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4205512052",
+        "title": "Кабель. TC-TC цветной 1.3м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p35",
+    "sku": "S11024/11",
+    "skuBase": "S11024",
+    "categoryId": "cat-cable",
+    "modelId": "mod-colour-zs",
+    "colorId": "col-13",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "lengthM": 1.3,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1.3",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "1026054013",
+        "title": "Кабель. TC-TC цветной 1.3м СИРЕНЕВЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "4205513334",
+        "title": "Кабель. TC-TC цветной 1.3м СИРЕНЕВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p36",
+    "sku": "S11046/02",
+    "skuBase": "S11046",
+    "categoryId": "cat-cable",
+    "modelId": "mod-cute",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 20,
+    "powerW": 60,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p37",
+    "sku": "S11046/05",
+    "skuBase": "S11046",
+    "categoryId": "cat-cable",
+    "modelId": "mod-cute",
+    "colorId": "col-05",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 20,
+    "powerW": 60,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p38",
+    "sku": "S11046/06",
+    "skuBase": "S11046",
+    "categoryId": "cat-cable",
+    "modelId": "mod-cute",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 20,
+    "powerW": 60,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p39",
+    "sku": "S11046/08",
+    "skuBase": "S11046",
+    "categoryId": "cat-cable",
+    "modelId": "mod-cute",
+    "colorId": "col-08",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 20,
+    "powerW": 60,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p40",
+    "sku": "S11046/17",
+    "skuBase": "S11046",
+    "categoryId": "cat-cable",
+    "modelId": "mod-cute",
+    "colorId": "col-17",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 20,
+    "powerW": 60,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p41",
+    "sku": "S10007",
+    "skuBase": "S10007",
+    "categoryId": "cat-szu",
+    "modelId": "mod-1a",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 1,
+    "voltageV": 12,
+    "powerW": 5,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-usb",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201498105",
+        "title": "СЗУ. 1A USB 5W БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p42",
+    "sku": "S19003/02",
+    "skuBase": "S19003",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "powerW": 18,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "836049628",
+        "title": "Комплект. СЗУ. PD TC 18W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p43",
+    "sku": "S19001",
+    "skuBase": "S19001",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-both",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc"
+  },
+  {
+    "id": "p44",
+    "sku": "S19001-A",
+    "skuBase": "S19001",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "supplierSuffix": "A",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "317925123",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p45",
+    "sku": "S19001-W",
+    "skuBase": "S19001",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "54411423",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "104422055",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "141187782",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "156194194",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "818855968",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1418514352",
+        "title": "СЗУ. PD TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "332485524",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "2329691216",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "560582425",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC ZS 1.2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "404199276",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3169178450",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC плетеный 2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "565910883",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ZS 1.2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3496776924",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. TC-TC ZS 1.2м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "197809852",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "161897250",
+        "title": "Комплект. СЗУ. PD TC 20W БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3169396887",
+        "title": "Комплект. СЗУ. PD TC 20W + Кабель. L-TC ZS 2м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p46",
+    "sku": "S19026/02-A",
+    "skuBase": "S19026",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 40,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-tc2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "197813188",
+        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "197813189",
+        "title": "Комплект. СЗУ. PD TC 2x25W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p125",
+    "sku": "S19026/02-W",
+    "skuBase": "S19026",
+    "categoryId": "cat-szu",
+    "modelId": "mod-pd",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 40,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-tc2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "164407926",
+        "title": "СЗУ. PD TC 2x20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "166703067",
+        "title": "СЗУ. PD TC 2x20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1401647935",
+        "title": "СЗУ. PD TC 2x20W БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p47",
+    "sku": "S19008/01",
+    "skuBase": "S19008",
+    "categoryId": "cat-szu",
+    "modelId": "mod-utc",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 38,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "115308132",
+        "title": "СЗУ. UTC USB-TC 2x20W ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "824069871",
+        "title": "СЗУ. UTC USB-TC 2x20W ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "417531633",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1739911936",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-TC PR 1м + Кабель. L-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "583343068",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p48",
+    "sku": "S19008/02",
+    "skuBase": "S19008",
+    "categoryId": "cat-szu",
+    "modelId": "mod-utc",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 38,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "115307178",
+        "title": "СЗУ. UTC USB-TC 2x20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "824069888",
+        "title": "СЗУ. UTC USB-TC 2x20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "158423864",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "958553481",
+        "title": "Комплект. СЗУ. UTC USB-TC 18+20W + Кабель. L-TC PR 1м + Кабель. TC-USB ZS 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p49",
+    "sku": "S19037/02",
+    "skuBase": "S19037",
+    "categoryId": "cat-szu",
+    "modelId": "mod-gan",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 30,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-gan",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "980962097",
+        "title": "СЗУ. GaN USB-TC 30W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4043345575",
+        "title": "СЗУ. GaN USB-TC 30W БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p50",
+    "sku": "S19038/02",
+    "skuBase": "S19038",
+    "categoryId": "cat-szu",
+    "modelId": "mod-gan",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3.25,
+    "voltageV": 20,
+    "powerW": 65,
+    "deviceCount": 3,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc2",
+    "chargingProtocolId": "proto-gan",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "980962098",
+        "title": "СЗУ. GaN USB-2TC-L 65W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3942884870",
+        "title": "СЗУ. GaN USB-2TC-L 65W БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p51",
+    "sku": "S90501/02-W",
+    "skuBase": "S90501",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-y9",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-alloy",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 3,
+    "chargingProtocolId": "proto-qi1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "241080377",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1615196121",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p52",
+    "sku": "S90501/01-W",
+    "skuBase": "S90501",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-y9",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-alloy",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 3,
+    "chargingProtocolId": "proto-qi1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "241080376",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1597592280",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p53",
+    "sku": "S90501/11-W",
+    "skuBase": "S90501",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-y9",
+    "colorId": "col-11",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-alloy",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 3,
+    "chargingProtocolId": "proto-qi1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "279530155",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 ФИОЛЕТОВЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1615899132",
+        "title": "БЗУ. 3-в-1 Станция Y9 QI1 ФИОЛЕТОВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p54",
+    "sku": "S90401/16-W",
+    "skuBase": "S90401",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-y58",
+    "colorId": "col-16",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-alloy",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 1,
+    "chargingProtocolId": "proto-qi1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "245094591",
+        "title": "БЗУ. Одиночная станция Y58 QI1 СЕРЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1624309475",
+        "title": "БЗУ. Одиночная станция Y58 QI1 СЕРЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p55",
+    "sku": "S90201/02-W",
+    "skuBase": "S90201",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-y93",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 5,
+    "voltageV": 3,
+    "powerW": 20,
+    "deviceCount": 3,
+    "chargingProtocolId": "proto-qi1",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "349613635",
+        "title": "БЗУ. 3-в-1 Компактная станция Y93 QI1 БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1919803196",
+        "title": "БЗУ. 3-в-1 Компактная станция Y93 QI1 БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p56",
+    "sku": "S90505/02",
+    "skuBase": "S90505",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-vacuum",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 1,
+    "chargingProtocolId": "proto-qi2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "1118255344",
+        "title": "БЗУ. вакуумная QI2 БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4193179656",
+        "title": "БЗУ. вакуумная QI2 БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p57",
+    "sku": "S90505/01",
+    "skuBase": "S90505",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-vacuum",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 1,
+    "chargingProtocolId": "proto-qi2"
+  },
+  {
+    "id": "p58",
+    "sku": "S90506/01",
+    "skuBase": "S90506",
+    "categoryId": "cat-bzu",
+    "modelId": "mod-folding",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 15,
+    "deviceCount": 3,
+    "chargingProtocolId": "proto-qi2",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "1024397777",
+        "title": "БЗУ. 3-в-1 раскладываемая QI2",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4193182020",
+        "title": "БЗУ. 3-в-1 раскладываемая QI2",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p59",
+    "sku": "S19016/01",
+    "skuBase": "S19016",
+    "categoryId": "cat-azu",
+    "modelId": "mod-zs",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 5,
+    "voltageV": 3,
+    "powerW": 20,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "565668051",
+        "title": "АЗУ. ZS USB-TC 20W ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "99883256",
+        "title": "АЗУ. ZS USB-TC 20W ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "824067562",
+        "title": "АЗУ. ZS USB-TC 20W ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "161927978",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-USB ZS 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "410152828",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1354042955",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. TC-TC PR 1м ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p60",
+    "sku": "S19016/02",
+    "skuBase": "S19016",
+    "categoryId": "cat-azu",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 5,
+    "voltageV": 3,
+    "powerW": 20,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "565672820",
+        "title": "АЗУ. ZS USB-TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "99883258",
+        "title": "АЗУ. ZS USB-TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "823171665",
+        "title": "АЗУ. ZS USB-TC 20W БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1742528981",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "412218580",
+        "title": "Комплект. АЗУ. ZS USB-TC 20W + Кабель. L-TC плетеный 1м БЕЛЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p61",
+    "sku": "S19036/01",
+    "skuBase": "S19036",
+    "categoryId": "cat-azu",
+    "modelId": "mod-rgb",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 60,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4192909745",
+        "title": "АЗУ. RGB USB-TC 60W ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p62",
+    "sku": "S19036/02",
+    "skuBase": "S19036",
+    "categoryId": "cat-azu",
+    "modelId": "mod-rgb",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 60,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4192909232",
+        "title": "АЗУ. RGB USB-TC 60W БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p63",
+    "sku": "S19035/01-W",
+    "skuBase": "S19035",
+    "categoryId": "cat-azu",
+    "modelId": "mod-hammer",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 75,
+    "deviceCount": 3,
+    "connectorFemaleId": "conn-usb2",
+    "connectorMaleId": "conn-tc",
+    "chargingProtocolId": "proto-pd",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4193289169",
+        "title": "АЗУ. Hammer 2USB-TC 67W ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p64",
+    "sku": "S19044/01",
+    "skuBase": "S19044",
+    "categoryId": "cat-azu",
+    "modelId": "mod-bullet",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-zinc",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 52.5,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "907166548",
+        "title": "АЗУ. Патрон USB-TC 52W",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3865873267",
+        "title": "АЗУ. Патрон USB-TC 52W",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p65",
+    "sku": "S19045/01",
+    "skuBase": "S19045",
+    "categoryId": "cat-azu",
+    "modelId": "mod-stick",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-aluminum",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 52.5,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "907203601",
+        "title": "АЗУ. удлиненный USB-TC 52W",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3865873551",
+        "title": "АЗУ. удлиненный USB-TC 52W",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p66",
+    "sku": "S19046/01",
+    "skuBase": "S19046",
+    "categoryId": "cat-azu",
+    "modelId": "mod-carbon-azu",
+    "colorId": "col-01",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-aluminum",
+    "currentA": 2.5,
+    "voltageV": 12,
+    "powerW": 52.5,
+    "deviceCount": 2,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "895475310",
+        "title": "АЗУ. карбоновый USB-TC 52W",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "3865877433",
+        "title": "АЗУ. карбоновый USB-TC 52W",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p67",
+    "sku": "S10009/02",
+    "skuBase": "S10009",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-org",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "268739675",
+        "title": "Наушники. L EarPads ORG БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p68",
+    "sku": "S10008/01",
+    "skuBase": "S10008",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "11755170",
+        "title": "Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "40511298",
+        "title": "Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "286874503",
+        "title": "Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54417557",
+        "title": "Комплект. Наушники. Jack EarPads ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "441159356",
+        "title": "Комплект. Наушники. Jack EarPads ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "112408916",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "641638993",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p69",
+    "sku": "S10008/02",
+    "skuBase": "S10008",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "11755171",
+        "title": "Наушники. Jack EarPads БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "16530335",
+        "title": "Наушники. Jack EarPads БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201501407",
+        "title": "Наушники. Jack EarPads БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54417560",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "441340796",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "112408916",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "641638993",
+        "title": "Комплект. Наушники. Jack EarPads БЕЛЫЙ + Наушники. Jack EarPads ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p70",
+    "sku": "S21011/02",
+    "skuBase": "S21011",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "3215272396",
+        "title": "Наушники. Jack EarPads PR БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p71",
+    "sku": "S10010/01",
+    "skuBase": "S10010",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-clr",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое"
+  },
+  {
+    "id": "p72",
+    "sku": "S10010/03",
+    "skuBase": "S10010",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-clr",
+    "colorId": "col-03",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "13754669",
+        "title": "Наушники. Jack EarPads Color КРАСНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p73",
+    "sku": "S10010/06",
+    "skuBase": "S10010",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-clr",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "18400397",
+        "title": "Наушники. Jack EarPads Color ГОЛУБОЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p74",
+    "sku": "S10010/11",
+    "skuBase": "S10010",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads-clr",
+    "colorId": "col-11",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-jack",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "13754670",
+        "title": "Наушники. Jack EarPads Color ФИОЛЕТОВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p75",
+    "sku": "S20001-2/02",
+    "skuBase": "S20001",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "Bluetooth",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "74484829",
+        "title": "Наушники. L EarPads Bluetooth БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "201501393",
+        "title": "Наушники. L EarPads Bluetooth БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "445904789",
+        "title": "Комплект. Наушники. L EarPads Bluetooth БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p76",
+    "sku": "S20001-2/01",
+    "skuBase": "S20001",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-earpads",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "Bluetooth",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "98705636",
+        "title": "Наушники. L EarPads Bluetooth ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "697923902",
+        "title": "Наушники. L EarPads Bluetooth ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p77",
+    "sku": "S92004-2/02",
+    "skuBase": "S92004",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-metal",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "74480600",
+        "title": "Наушники. L Metal БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "855869383",
+        "title": "Наушники. L Metal БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p78",
+    "sku": "S92004-2/01",
+    "skuBase": "S92004",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-metal",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "54401189",
+        "title": "Наушники. L Metal ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "855869395",
+        "title": "Наушники. L Metal ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p79",
+    "sku": "S20005-2/02",
+    "skuBase": "S20005",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-pro",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "ONLY MUSIC",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "197760393",
+        "title": "Наушники. L PRO ONLY MUSIC БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946418845",
+        "title": "Наушники. L PRO ONLY MUSIC БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946419719",
+        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946416498",
+        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ + Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p80",
+    "sku": "S20005-2/01",
+    "skuBase": "S20005",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-pro",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "ONLY MUSIC",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946416501",
+        "title": "Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946416626",
+        "title": "Комплект. Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ 2 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "946416498",
+        "title": "Комплект. Наушники. L PRO ONLY MUSIC БЕЛЫЙ + Наушники. L PRO ONLY MUSIC ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p81",
+    "sku": "S20005-3/02",
+    "skuBase": "S20005",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-pro",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-tc",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "222150259",
+        "title": "Наушники. TC PRO БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1304176255",
+        "title": "Наушники. TC PRO БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1304176722",
+        "title": "Комплект. Наушники. TC PRO БЕЛЫЙ + Наушники. TC PRO ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p82",
+    "sku": "S20005-3/01",
+    "skuBase": "S20005",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-pro",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-tc",
+    "connectionType": "Прямое",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "235729502",
+        "title": "Наушники. TC PRO ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1304176355",
+        "title": "Наушники. TC PRO ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1304176722",
+        "title": "Комплект. Наушники. TC PRO БЕЛЫЙ + Наушники. TC PRO ЧЕРНЫЙ",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p83",
+    "sku": "S20009-2/02",
+    "skuBase": "S20009",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-popup",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "ONLY MUSIC",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "366712668",
+        "title": "Наушники. L POPUP ONLY MUSIC БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p84",
+    "sku": "S20009-2/01",
+    "skuBase": "S20009",
+    "categoryId": "cat-headphones",
+    "modelId": "mod-popup",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "connectorFemaleId": "conn-l",
+    "connectionType": "ONLY MUSIC",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "366723944",
+        "title": "Наушники. L POPUP ONLY MUSIC ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p85",
+    "sku": "S13001",
+    "skuBase": "S13001",
+    "categoryId": "cat-adapter",
+    "modelId": "mod-old-st",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 8,
+    "voltageV": 5,
+    "powerW": 5,
+    "lengthM": 0.1,
+    "dataTransferMbps": 0,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-jack",
+    "connectionType": "Прямое"
+  },
+  {
+    "id": "p86",
+    "sku": "S13014",
+    "skuBase": "S13014",
+    "categoryId": "cat-adapter",
+    "modelId": "mod-old-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 8,
+    "voltageV": 5,
+    "powerW": 5,
+    "lengthM": 0.1,
+    "dataTransferMbps": 0,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-jack",
+    "connectionType": "Прямое"
+  },
+  {
+    "id": "p87",
+    "sku": "S13004",
+    "skuBase": "S13004",
+    "categoryId": "cat-adapter",
+    "modelId": "mod-old-adapter",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 8,
+    "voltageV": 5,
+    "powerW": 5,
+    "dataTransferMbps": 0,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-jack",
+    "connectionType": "Bluetooth"
+  },
+  {
+    "id": "p88",
+    "sku": "S10014",
+    "skuBase": "S10014",
+    "categoryId": "cat-pin",
+    "modelId": "mod-pin",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 7,
+    "powerW": 15,
+    "connectorFemaleId": "conn-l",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "43865623",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. L 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "43976937",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031182780",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "252667199",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031298057",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "15452539",
+        "title": "Комплект. Пин. L 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "282399770",
+        "title": "Комплект. Пин. L 3 шт.",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p89",
+    "sku": "S11014",
+    "skuBase": "S11014",
+    "categoryId": "cat-pin",
+    "modelId": "mod-pin",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 7,
+    "powerW": 15,
+    "connectorFemaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "44201805",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. TC 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "360161804",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. TC 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "43976937",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031182780",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "246684049",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. TC 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031212969",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. TC 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "252667199",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031298057",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "15452540",
+        "title": "Комплект. Пин. TC 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "282345344",
+        "title": "Комплект. Пин. TC 3 шт.",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p90",
+    "sku": "S12014",
+    "skuBase": "S12014",
+    "categoryId": "cat-pin",
+    "modelId": "mod-pin",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 3,
+    "voltageV": 7,
+    "powerW": 15,
+    "connectorFemaleId": "conn-micro",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031134966",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "43976937",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031182780",
+        "title": "Комплект. Кабель. USB-360 ST 1м БЕЛЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "246686846",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031248766",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "252667199",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "2031298057",
+        "title": "Комплект. Кабель. USB-360 ST 2м ЧЕРНЫЙ + Пин. Micro + TC + L",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "15452541",
+        "title": "Комплект. Пин. Micro 3 шт.",
+        "kind": "bundle"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "282417063",
+        "title": "Комплект. Пин. Micro 3 шт.",
+        "kind": "bundle"
+      }
+    ]
+  },
+  {
+    "id": "p91",
+    "sku": "S90503/01",
+    "skuBase": "S90503",
+    "categoryId": "cat-holder",
+    "modelId": "mod-old-holder",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy"
+  },
+  {
+    "id": "p92",
+    "sku": "S90504/01",
+    "skuBase": "S90504",
+    "categoryId": "cat-holder",
+    "modelId": "mod-old-holder",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy"
+  },
+  {
+    "id": "p93",
+    "sku": "S90505/01",
+    "skuBase": "S90505",
+    "categoryId": "cat-holder",
+    "modelId": "mod-old-holder",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "1118255345",
+        "title": "Держатель. Старый ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "4193179900",
+        "title": "Держатель. Старый ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p94",
+    "sku": "S98005/40-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-butterfly",
+    "colorId": "col-40",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "342714075",
+        "title": "Чехол ЗУ. Бабочка АНТИЧНЫЙ БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931547510",
+        "title": "Чехол ЗУ. Бабочка АНТИЧНЫЙ БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p95",
+    "sku": "S98005/06-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-butterfly",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "343260922",
+        "title": "Чехол ЗУ. Бабочка ГОЛУБОЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931545704",
+        "title": "Чехол ЗУ. Бабочка ГОЛУБОЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p96",
+    "sku": "S98005/11-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-butterfly",
+    "colorId": "col-11",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "344139466",
+        "title": "Чехол ЗУ. Бабочка ФИОЛЕТОВЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931545967",
+        "title": "Чехол ЗУ. Бабочка ФИОЛЕТОВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p97",
+    "sku": "S98005/28-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-icecream",
+    "colorId": "col-28",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "289098448",
+        "title": "Чехол ЗУ. Мороженка НЕБЕСНО-ГОЛУБОЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1858200857",
+        "title": "Чехол ЗУ. Мороженка НЕБЕСНО-ГОЛУБОЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p98",
+    "sku": "S98005/35-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-icecream",
+    "colorId": "col-35",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "270119691",
+        "title": "Чехол ЗУ. Мороженка ПЫЛЬНО-РОЗОВЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1858143100",
+        "title": "Чехол ЗУ. Мороженка ПЫЛЬНО-РОЗОВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p99",
+    "sku": "S98005/17-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-07",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "300112578",
+        "title": "Чехол ЗУ. Сердечко ЗЕЛЕНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931547146",
+        "title": "Чехол ЗУ. Сердечко ЗЕЛЕНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p100",
+    "sku": "S98005/03-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-03",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "320896218",
+        "title": "Чехол ЗУ. Сердечко КРАСНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931547015",
+        "title": "Чехол ЗУ. Сердечко КРАСНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p101",
+    "sku": "S98005/05-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-05",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "300110744",
+        "title": "Чехол ЗУ. Сердечко РОЗОВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p102",
+    "sku": "S98005/07-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "320908466",
+        "title": "Чехол ЗУ. Сердечко СИНИЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931549502",
+        "title": "Чехол ЗУ. Сердечко СИНИЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p103",
+    "sku": "S98005/13-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-13",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "270120306",
+        "title": "Чехол ЗУ. Сердечко СИРЕНЕВЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931548022",
+        "title": "Чехол ЗУ. Сердечко СИРЕНЕВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p104",
+    "sku": "S98005/01-W",
+    "skuBase": "S98005",
+    "categoryId": "cat-case",
+    "modelId": "mod-heart",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "300113973",
+        "title": "Чехол ЗУ. Сердечко ЧЕРНЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1931545295",
+        "title": "Чехол ЗУ. Сердечко ЧЕРНЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p105",
+    "sku": "S19024-K",
+    "skuBase": "S19024",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-braided-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "powerW": 35,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 35W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 12,
+    "dataTransferMbps": 480,
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "455253088",
+        "title": "Комплект. СЗУ. PD 35W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "1597441898",
+        "title": "Комплект. СЗУ. PD 35W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "2329688499",
+        "title": "Комплект. СЗУ. PD 35W + Кабель. TC-TC плетеный PR 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p106",
+    "sku": "S19013/02-K",
+    "skuBase": "S19013",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-braided-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "powerW": 20,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC плетеный PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480
+  },
+  {
+    "id": "p107",
+    "sku": "S19004-PR-K",
+    "skuBase": "S19004",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "powerW": 20,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "isKit": true,
+    "variantCode": "PR",
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480,
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "92306598",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "54638159",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "155925581",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "836048808",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p108",
+    "sku": "S19012/02-K",
+    "skuBase": "S19012",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "powerW": 20,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480,
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "200263618",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1418515414",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. TC-TC PR 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p109",
+    "sku": "S19017/02-K",
+    "skuBase": "S19017",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-st",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "powerW": 20,
+    "lengthM": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. TC-TC ST 1м БЕЛЫЙ",
+    "currentA": 3,
+    "voltageV": 5,
+    "dataTransferMbps": 480,
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "97877583",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kaa",
+        "article": "836075258",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. TC-TC ST 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p115",
+    "sku": "S90504/02",
+    "skuBase": "S90504",
+    "categoryId": "cat-blogo",
+    "modelId": "mod-screen-mirror",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "currentA": 1,
+    "voltageV": 5,
+    "powerW": 1.25,
+    "deviceCount": 1
+  },
+  {
+    "id": "p116",
+    "sku": "S10033/22",
+    "skuBase": "S10033",
+    "categoryId": "cat-cable",
+    "modelId": "mod-male",
+    "colorId": "col-22",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 9,
+    "powerW": 15,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "17776756",
+        "title": "Кабель. TC-USB Мужской 1м КОРИЧНЕВЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p117",
+    "sku": "S10033/06",
+    "skuBase": "S10033",
+    "categoryId": "cat-cable",
+    "modelId": "mod-male",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 9,
+    "powerW": 15,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "158709234",
+        "title": "Кабель. TC-USB Мужской 1м СИНИЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p118",
+    "sku": "S11025/22",
+    "skuBase": "S11025",
+    "categoryId": "cat-cable",
+    "modelId": "mod-male",
+    "colorId": "col-22",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 100,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p119",
+    "sku": "S11025/06",
+    "skuBase": "S11025",
+    "categoryId": "cat-cable",
+    "modelId": "mod-male",
+    "colorId": "col-06",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 100,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p120",
+    "sku": "S10361/01",
+    "skuBase": "S10361",
+    "categoryId": "cat-cable",
+    "modelId": "mod-magnet",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-zinc",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 100,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p121",
+    "sku": "S10362/01",
+    "skuBase": "S10362",
+    "categoryId": "cat-cable",
+    "modelId": "mod-magnet",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-zinc",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 9,
+    "powerW": 15,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-usb",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p122",
+    "sku": "S10363/01",
+    "skuBase": "S10363",
+    "categoryId": "cat-cable",
+    "modelId": "mod-magnet",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-zinc",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 22.5,
+    "powerW": 27,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p123",
+    "sku": "S10032/01",
+    "skuBase": "S10032",
+    "categoryId": "cat-cable",
+    "modelId": "mod-pr-spiral",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-aluminum",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 5,
+    "voltageV": 22.5,
+    "powerW": 112.5,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tcl",
+    "connectorMaleId": "conn-usbtc",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p124",
+    "sku": "S10364/01",
+    "skuBase": "S10364",
+    "categoryId": "cat-cable",
+    "modelId": "mod-magnet-st",
+    "colorId": "col-01",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-nylon",
+    "currentA": 3,
+    "voltageV": 9,
+    "powerW": 12,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-usb",
+    "connectorMaleId": "conn-360",
+    "lengthVariant": "1"
+  },
+  {
+    "id": "p110",
+    "sku": "S19003-2PR/02-K",
+    "skuBase": "S19003",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "PR",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 2м БЕЛЫЙ",
+    "marketplaceSkus": [
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1418499983",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 2м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p111",
+    "sku": "S19033/02-K",
+    "skuBase": "S19033",
+    "categoryId": "cat-kit",
+    "modelId": "mod-china-pr",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 3,
+    "voltageV": 5,
+    "powerW": 20,
+    "lengthM": 3,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "variantCode": "PR",
+    "isKit": true,
+    "productName": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 3м БЕЛЫЙ",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "198350596",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 3м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "200720603",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 3м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "bms",
+        "article": "1418499997",
+        "title": "Комплект. СЗУ. PD 20W + Кабель. L-TC PR 3м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p126",
+    "sku": "S10002-025",
+    "skuBase": "S10002",
+    "categoryId": "cat-cable",
+    "modelId": "mod-zs",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 3,
+    "voltageV": 7,
+    "powerW": 15,
+    "lengthM": 0.22,
+    "dataTransferMbps": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-usb",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "597015219",
+        "title": "Кабель. L-USB ZS 22см БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "583277051",
+        "title": "Кабель. L-USB ZS 22см БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "216825819",
+        "title": "Кабель. L-USB ZS 22см БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p127",
+    "sku": "S10011-2-A",
+    "skuBase": "S10011",
+    "categoryId": "cat-cable",
+    "modelId": "mod-st",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "supplierSuffix": "A",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "272990177",
+        "title": "Кабель. L-TC ST 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "dev",
+        "article": "144203932",
+        "title": "Кабель. L-TC ST 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "ozon",
+        "entity": "kua",
+        "article": "216806513",
+        "title": "Кабель. L-TC ST 2м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p128",
+    "sku": "S10011-2-W",
+    "skuBase": "S10011",
+    "categoryId": "cat-cable",
+    "modelId": "mod-st",
+    "colorId": "col-02",
+    "supplierId": "sup-wendy",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2.23,
+    "voltageV": 9,
+    "powerW": 20,
+    "lengthM": 2,
+    "dataTransferMbps": 1,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-l",
+    "connectorMaleId": "conn-tc",
+    "supplierSuffix": "W",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kaa",
+        "article": "143516533",
+        "title": "Кабель. L-TC ST 2м БЕЛЫЙ",
+        "kind": "single"
+      },
+      {
+        "marketplace": "wb",
+        "entity": "bms",
+        "article": "155925580",
+        "title": "Кабель. L-TC ST 2м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  },
+  {
+    "id": "p129",
+    "sku": "S11010/02-A",
+    "skuBase": "S11010",
+    "categoryId": "cat-cable",
+    "modelId": "mod-braided-org",
+    "colorId": "col-02",
+    "supplierId": "sup-angela",
+    "bodyMaterialId": "mat-plastic",
+    "wireMaterialId": "mat-silicone",
+    "currentA": 2,
+    "voltageV": 9,
+    "powerW": 18,
+    "lengthM": 1,
+    "dataTransferMbps": 480,
+    "deviceCount": 1,
+    "connectorFemaleId": "conn-tc",
+    "connectorMaleId": "conn-tc",
+    "marketplaceSkus": [
+      {
+        "marketplace": "wb",
+        "entity": "kua",
+        "article": "437940800",
+        "title": "Кабель. TC-TC плетеный Orig 1м БЕЛЫЙ",
+        "kind": "single"
+      }
+    ]
+  }
+]

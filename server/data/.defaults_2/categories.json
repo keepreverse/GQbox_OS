@@ -1,0 +1,82 @@
+[
+  {
+    "id": "cat-cable",
+    "code": "cable",
+    "name_source": "Кабель",
+    "name_product": "Кабель",
+    "color": "#aa94ee",
+    "icon": "Cable",
+    "description": "",
+    "sortOrder": 1
+  },
+  {
+    "id": "cat-szu",
+    "code": "szu",
+    "name_source": "СЗУ",
+    "name_product": "СЗУ",
+    "color": "#fbbf24",
+    "icon": "Zap",
+    "description": "",
+    "sortOrder": 2
+  },
+  {
+    "id": "cat-bzu",
+    "code": "bzu",
+    "name_source": "БЗУ",
+    "name_product": "БЗУ",
+    "color": "#34d399",
+    "icon": "Wifi",
+    "description": "",
+    "sortOrder": 3
+  },
+  {
+    "id": "cat-azu",
+    "code": "azu",
+    "name_source": "АЗУ",
+    "name_product": "АЗУ",
+    "color": "#f87171",
+    "icon": "Car",
+    "description": "",
+    "sortOrder": 4
+  },
+  {
+    "id": "cat-headphones",
+    "code": "headphones",
+    "name_source": "Наушники",
+    "name_product": "Наушники",
+    "color": "#f472b6",
+    "icon": "Headphones",
+    "description": "",
+    "sortOrder": 5
+  },
+  {
+    "id": "cat-adapter",
+    "code": "adapter",
+    "name_source": "Переходник",
+    "name_product": "Переходник",
+    "color": "#22d3ee",
+    "icon": "ArrowLeftRight",
+    "description": "",
+    "sortOrder": 6
+  },
+  {
+    "id": "cat-pin",
+    "code": "pin",
+    "name_source": "Пин",
+    "name_product": "Пин",
+    "color": "#aa94ee",
+    "icon": "Pin",
+    "description": "",
+    "sortOrder": 7
+  },
+  {
+    "id": "cat-holder",
+    "code": "holder",
+    "name_source": "Держатель",
+    "name_product": "Держатель",
+    "color": "#a3e635",
+    "icon": "GripVertical",
+    "description": "",
+    "sortOrder": 8
+  }
+]
